@@ -149,6 +149,7 @@ class App:
 
     def serve(self):
         cfg = Configuracoes()
+        modo_debug = cfg.modo == "CFG"
         self.__app.run_server(host="0.0.0.0",
                               port=str(cfg.porta_servidor),
-                              debug=True)
+                              debug=modo_debug)

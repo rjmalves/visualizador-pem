@@ -14,6 +14,7 @@ class Configuracoes(metaclass=Singleton):
     """
     def __init__(self) -> None:
         self._porta_servidor = None
+        self._modo = None
         self._periodo_atualizacao_graficos = None
         self._periodo_atualizacao_caso_atual = None
         self._caminhos_casos = None
@@ -27,6 +28,16 @@ class Configuracoes(metaclass=Singleton):
         :rtype: int
         """
         return self._porta_servidor
+
+    @property
+    def modo(self) -> str:
+        """
+        Modo de funcionamento do visualizador (DEBUG ou PROD).
+
+        :return: Modo de funcionamento.
+        :rtype: str
+        """
+        return self._modo
 
     @property
     def periodo_atualizacao_graficos(self) -> float:
@@ -67,6 +78,7 @@ class Configuracoes(metaclass=Singleton):
         var_periodo_graficos = "PERIODO_ATUALIZACAO_GRAFICOS"
         var_periodo_caso = "PERIODO_ATUALIZACAO_CASO_ATUAL"
         c = cb.porta_servidor("PORTA_SERVIDOR")\
+            .modo("MODO")\
             .periodo_atualizacao_graficos(var_periodo_graficos)\
             .periodo_atualizacao_caso_atual(var_periodo_caso)\
             .caminhos_casos("CAMINHOS_CASOS")\
@@ -89,6 +101,10 @@ class BuilderConfiguracoes:
 
     @abstractmethod
     def porta_servidor(self, variavel: str):
+        pass
+
+    @abstractmethod
+    def modo(self, variavel: str):
         pass
 
     @abstractmethod
@@ -148,6 +164,16 @@ class BuilderConfiguracoesENV(BuilderConfiguracoes):
             raise ValueError("A porta fornecida deve estar no intervalo" +
                              " [1024, 65535].")
         self._configuracoes._porta_servidor = valor
+        # Fluent method
+        self._log.info(f"Porta do servidor: {valor}")
+        return self
+
+    def modo(self, variavel: str):
+        valor = BuilderConfiguracoesENV.__le_e_confere_variavel(variavel)
+        if valor not in ["DEBUG", "PROD"]:
+            raise ValueError("O modo de operação deve ser DEBUG ou PROD. " +
+                             f"Foi fornecido {valor}")
+        self._configuracoes._modo = valor
         # Fluent method
         self._log.info(f"Porta do servidor: {valor}")
         return self
