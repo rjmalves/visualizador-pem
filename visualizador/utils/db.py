@@ -19,10 +19,12 @@ class DB:
     @staticmethod
     def le_informacoes_proximo_caso() -> pd.DataFrame:
         cfg = Configuracoes()
+        log = Log().log()
         # Descobre o caminho dos próximos casos
         arqs_proximos = [join(c, ARQUIVO_RESUMO_PROXIMO_CASO)
                          for c in cfg.caminhos_casos]
         df_casos = pd.DataFrame()
+        log.info("Lendo informações dos casos atuais")
         for a in arqs_proximos:
             # Lê o caminho
             df = pd.read_csv(a, index_col=0)
@@ -39,15 +41,18 @@ class DB:
             else:
                 df_casos = pd.concat([df_casos, df_caso],
                                      ignore_index=True)
+        log.info(df_casos)
         return df_casos
 
     @staticmethod
     def le_resumo_estudo_encadeado() -> pd.DataFrame:
         cfg = Configuracoes()
+        log = Log().log()
         # Descobre o caminho dos arquivos de estudo
         arqs_resumo = [join(c, ARQUIVO_RESUMO_ESTUDO_ENCADEADO)
                        for c in cfg.caminhos_casos]
         df_resumos = pd.DataFrame()
+        log.info("Lendo informações do estudo encadeado")
         for a in arqs_resumo:
             # Lê o resumo do estudo
             df = pd.read_csv(a, index_col=0)
@@ -60,15 +65,18 @@ class DB:
             else:
                 df_resumos = pd.concat([df_resumos, df],
                                        ignore_index=True)
+        log.info(df_resumos)
         return df_resumos
 
     @staticmethod
     def le_resumo_newaves() -> pd.DataFrame:
         cfg = Configuracoes()
+        log = Log().log()
         # Descobre o caminho dos arquivos de estudo
         arqs_resumo = [join(c, ARQUIVO_RESUMO_NEWAVES)
                        for c in cfg.caminhos_casos]
         df_resumos = pd.DataFrame()
+        log.info("Lendo informações dos NEWAVEs")
         for a in arqs_resumo:
             # Lê o resumo do estudo
             df = pd.read_csv(a, index_col=0)
@@ -81,15 +89,18 @@ class DB:
             else:
                 df_resumos = pd.concat([df_resumos, df],
                                        ignore_index=True)
+        log.info(df_resumos)
         return df_resumos
 
     @staticmethod
     def le_resumo_decomps() -> pd.DataFrame:
         cfg = Configuracoes()
+        log = Log().log()
         # Descobre o caminho dos arquivos de estudo
         arqs_resumo = [join(c, ARQUIVO_RESUMO_DECOMPS)
                        for c in cfg.caminhos_casos]
         df_resumos = pd.DataFrame()
+        log.info("Lendo informações dos DECOMPs")
         for a in arqs_resumo:
             # Lê o resumo do estudo
             df = pd.read_csv(a, index_col=0)
@@ -102,4 +113,5 @@ class DB:
             else:
                 df_resumos = pd.concat([df_resumos, df],
                                        ignore_index=True)
+        log.info(df_resumos)
         return df_resumos
