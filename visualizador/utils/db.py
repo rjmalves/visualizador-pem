@@ -41,8 +41,7 @@ class DB:
             else:
                 df_casos = pd.concat([df_casos, df_caso],
                                      ignore_index=True)
-        log.info(df_casos)
-        return df_casos
+        return df_casos.to_json(orient="split")
 
     @staticmethod
     def le_resumo_estudo_encadeado() -> pd.DataFrame:
@@ -65,8 +64,7 @@ class DB:
             else:
                 df_resumos = pd.concat([df_resumos, df],
                                        ignore_index=True)
-        log.info(df_resumos)
-        return df_resumos
+        return df_resumos.to_json(orient="split")
 
     @staticmethod
     def le_resumo_newaves() -> pd.DataFrame:
@@ -89,8 +87,7 @@ class DB:
             else:
                 df_resumos = pd.concat([df_resumos, df],
                                        ignore_index=True)
-        log.info(df_resumos)
-        return df_resumos
+        return df_resumos.to_json(orient="split")
 
     @staticmethod
     def le_resumo_decomps() -> pd.DataFrame:
@@ -113,5 +110,4 @@ class DB:
             else:
                 df_resumos = pd.concat([df_resumos, df],
                                        ignore_index=True)
-        log.info(df_resumos)
-        return df_resumos
+        return df_resumos.to_json(orient="split")

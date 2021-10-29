@@ -110,15 +110,18 @@ class App:
             Input("dados-caso-atual", "data")
         )
         def gera_tabela(dados: pd.DataFrame):
-            return App.gera_tabela(dados)
+            dados_locais: pd.DataFrame = pd.read_json(dados,
+                                                      orient="split")
+            return App.gera_tabela(dados_locais)
 
         @self.__app.callback(
             Output("grafico", "figure"),
             Input("dados-graficos", "data"),
             Input("escolhe-variavel", "value")
         )
-        def gera_graficos(dados: pd.DataFrame, variavel: str):
-            dados_locais = dados.copy()
+        def gera_graficos(dados: str, variavel: str):
+            dados_locais: pd.DataFrame = pd.read_json(dados,
+                                                      orient="split")
             if "EARM" not in variavel:
                 casos_sem_inicial = list(dados_locais["Caso"].unique())
                 casos_sem_inicial = casos_sem_inicial[1:]
