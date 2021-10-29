@@ -85,37 +85,37 @@ class App:
         ])
 
         @self.__app.callback(
-            Input("atualiza-dados-graficos", "n_intervals"),
-            Output("dados-graficos", "data")
+            Output("dados-graficos", "data"),
+            Input("atualiza-dados-graficos", "n_intervals")
         )
         def atualiza_dados_graficos(interval):
             return DB.le_resumo_decomps()
 
         @self.__app.callback(
-            Input("atualiza-dados-graficos", "n_intervals"),
-            Output("dados-estudo-encadeado", "data")
+            Output("dados-estudo-encadeado", "data"),
+            Input("atualiza-dados-graficos", "n_intervals")
         )
         def atualiza_dados_estudo(interval):
             return DB.le_resumo_estudo_encadeado()
 
         @self.__app.callback(
-            Input("atualiza-dados-caso", "n_intervals"),
-            Output("dados-caso-atual", "data")
+            Output("dados-caso-atual", "data"),
+            Input("atualiza-dados-caso", "n_intervals")
         )
         def atualiza_dados_caso(interval):
             return DB.le_informacoes_proximo_caso()
 
         @self.__app.callback(
-            Input("dados-caso-atual", "data"),
-            Output("informacao-caso-atual", "children")
+            Output("informacao-caso-atual", "children"),
+            Input("dados-caso-atual", "data")
         )
         def gera_tabela(dados: pd.DataFrame):
             return App.gera_tabela(dados)
 
         @self.__app.callback(
+            Output("grafico", "figure"),
             Input("dados-graficos", "data"),
-            Input("escolhe-variavel", "value"),
-            Output("grafico", "figure")
+            Input("escolhe-variavel", "value")
         )
         def gera_graficos(dados: pd.DataFrame, variavel: str):
             dados_locais = dados.copy()
