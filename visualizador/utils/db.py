@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from os import sep
 from os.path import join, normpath
 
@@ -18,6 +19,28 @@ class DB:
 
     @staticmethod
     def le_informacoes_proximo_caso() -> pd.DataFrame:
+
+        def resume_flexibilizacoes(df: pd.DataFrame) -> pd.DataFrame:
+            tempos_fila = df["Inicio Execucao"] - df["Entrada Fila"]
+            tempo_total_fila = np.sum(tempos_fila.to_numpy())
+            tempos_execucao = df["Fim Execucao"]
+            tempo_total_exec = np.sum(tempos_execucao.to_numpy())
+            num_flex = df.shape[0] - 1
+            indices = list(df.index)
+            indices.pop()
+            df_resumido = df.drop(index=indices)
+            colunas_a_remover = ["Tentativas",
+                                 "Processadores",
+                                 "Entrada Fila",
+                                 "Inicio Execucao",
+                                 "Fim Execucao"]
+            df_resumido = df_resumido.drop(columns=colunas_a_remover)
+            df_resumido["Tempo Total Fila"] = tempo_total_fila
+            df_resumido["Tempo Total Execucao"] = tempo_total_exec
+            df_resumido["Numero Flexibilizacoes"] = num_flex
+            return df_resumido
+
+
         cfg = Configuracoes()
         log = Log().log()
         # Descobre o caminho dos próximos casos
@@ -36,6 +59,7 @@ class DB:
             colunas_atuais = list(df_caso.columns)
             df_caso["Estudo"] = identificador_caso
             df_caso = df_caso[["Estudo"] + colunas_atuais]
+            df_caso = resume_flexibilizacoes(df_caso)
             if df_casos.empty:
                 df_casos = df_caso
             else:
