@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from os import sep
 from os.path import join, normpath
+from datetime import timedelta
 
 from visualizador.modelos.configuracoes import Configuracoes
 from visualizador.modelos.log import Log
@@ -22,9 +23,9 @@ class DB:
 
         def resume_flexibilizacoes(df: pd.DataFrame) -> pd.DataFrame:
             tempos_fila = df["Inicio Execucao"] - df["Entrada Fila"]
-            tempo_total_fila = np.sum(tempos_fila.to_numpy())
-            tempos_execucao = df["Fim Execucao"]
-            tempo_total_exec = np.sum(tempos_execucao.to_numpy())
+            tempo_total_fila = timedelta(seconds=np.sum(tempos_fila.to_numpy()))
+            tempos_execucao = df["Fim Execucao"] - df["Inicio Execucao"]
+            tempo_total_exec = timedelta(seconds=np.sum(tempos_execucao.to_numpy()))
             num_flex = df.shape[0] - 1
             indices = list(df.index)
             indices.pop()
