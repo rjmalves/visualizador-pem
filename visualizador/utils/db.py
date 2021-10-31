@@ -25,7 +25,8 @@ class DB:
             tempos_fila = df["Inicio Execucao"] - df["Entrada Fila"]
             tempo_total_fila = str(timedelta(seconds=np.sum(tempos_fila.to_numpy())))
             tempos_execucao = df["Fim Execucao"] - df["Inicio Execucao"]
-            tempo_total_exec = str(timedelta(seconds=np.sum(tempos_execucao.to_numpy())))
+            tempos_execucao = np.clip(tempos_execucao, 0, 1e12)
+            tempo_total_exec = str(timedelta(seconds=np.sum(tempos_execucao)))
             num_flex = df.shape[0] - 1
             indices = list(df.index)
             indices.pop()
