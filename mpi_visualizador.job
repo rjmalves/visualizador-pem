@@ -1,0 +1,14 @@
+# Variaveis importantes
+
+CASO=`basename $PWD`
+DIR_VISUALIZADOR=~/rotinas/visualizador-encadeador-pem
+ENCADEIA=$DIR_VISUALIZADOR/main.py
+
+echo Ativando o ambiente virtual
+source $DIR_VISUALIZADOR/venv/bin/activate
+
+echo Executando o Visualizador
+python3 $ENCADEIA
+
+echo Desativando o ambiente virtual
+deactivate
