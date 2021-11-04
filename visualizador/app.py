@@ -3,9 +3,8 @@ from dash import dcc
 from dash import html
 import plotly.express as px
 import pandas as pd
+import socket
 from dash.dependencies import Input, Output
-from os import sep
-from os.path import normpath
 from typing import List
 from waitress import serve
 
@@ -149,8 +148,9 @@ class App:
         ])
 
     def serve(self):
+        log = Log.log()
         cfg = Configuracoes()
-        modo_debug = cfg.modo == "CFG"
+        log.info(f"Visualizador: {socket.gethostname()}:{cfg.porta_servidor}")
         serve(self.__app.server,
               host="0.0.0.0",
               port=str(cfg.porta_servidor))
