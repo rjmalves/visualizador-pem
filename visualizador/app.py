@@ -150,7 +150,8 @@ class App:
     def serve(self):
         log = Log.log()
         cfg = Configuracoes()
-        log.info(f"Visualizador: {socket.gethostname()}:{cfg.porta_servidor}")
+        ip_servidor = socket.gethostbyname(socket.gethostname())
+        log.info(f"Visualizador: {ip_servidor}:{cfg.porta_servidor}")
         serve(self.__app.server,
               host="0.0.0.0",
               port=str(cfg.porta_servidor))
