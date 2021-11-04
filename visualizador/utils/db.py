@@ -11,6 +11,9 @@ ARQUIVO_RESUMO_PROXIMO_CASO = "proximo_caso.csv"
 ARQUIVO_RESUMO_ESTUDO_ENCADEADO = "estudo_encadeado.csv"
 ARQUIVO_RESUMO_NEWAVES = "newaves_encadeados.csv"
 ARQUIVO_RESUMO_DECOMPS = "decomps_encadeados.csv"
+ARQUIVO_CONVERGENCIA_NEWAVES = "convergencia_newaves.csv"
+ARQUIVO_CONVERGENCIA_DECOMPS = "convergencia_decomps.csv"
+ARQUIVO_INVIABS_DECOMPS = "inviabilidades_decomps.csv"
 
 
 class DB:
@@ -113,6 +116,8 @@ class DB:
             else:
                 df_resumos = pd.concat([df_resumos, df],
                                        ignore_index=True)
+        df_resumos["TOTAL"] = df_resumos.sum(axis=1,
+                                             numeric_only=True)
         return df_resumos.to_json(orient="split")
 
     @staticmethod

@@ -170,8 +170,8 @@ class BuilderConfiguracoesENV(BuilderConfiguracoes):
 
     def modo(self, variavel: str):
         valor = BuilderConfiguracoesENV.__le_e_confere_variavel(variavel)
-        if valor not in ["DEBUG", "PROD"]:
-            raise ValueError("O modo de operação deve ser DEBUG ou PROD. " +
+        if valor not in ["DEV", "PROD"]:
+            raise ValueError("O modo de operação deve ser DEV ou PROD. " +
                              f"Foi fornecido {valor}")
         self._configuracoes._modo = valor
         # Fluent method

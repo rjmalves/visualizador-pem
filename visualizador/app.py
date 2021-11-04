@@ -31,8 +31,7 @@ class App:
     #     return opcoes
 
     @staticmethod
-    def __opcoes_dropdown() -> List[dict]:
-        cfg = Configuracoes()
+    def __opcoes_dropdown_decomp() -> List[dict]:
         variaveis = ["CMO SE",
                      "CMO S",
                      "CMO NE",
@@ -63,16 +62,42 @@ class App:
         ]
         return opcoes
 
+    @staticmethod
+    def __opcoes_dropdown_newave() -> List[dict]:
+        variaveis = ["GERACAO TERMICA",
+                     "DEFICIT",
+                     "VERTIMENTO",
+                     "EXCESSO ENERGIA",
+                     "VIOLACAO CAR",
+                     "VIOLACAO SAR",
+                     "VIOL. OUTROS USOS",
+                     "VIOLACAO VZMIN",
+                     "INTERCAMBIO",
+                     "VERT. FIO N. TURB",
+                     "VIOLACAO GHMIN",
+                     "TOTAL"]
+        opcoes = [
+            {"label": p, "value": p}
+            for p in variaveis
+        ]
+        return opcoes
+
     def __inicializa(self):
         cfg = Configuracoes()
         self.__app.layout = html.Div([
             html.H1("Visualizador de Estudos Encadeados"),
             html.H2("Gerência de Metodologias e Modelos Energéticos - PEM"),
-            dcc.Dropdown(id="escolhe-variavel",
-                         options=App.__opcoes_dropdown(),
-                         value=App.__opcoes_dropdown()[0]["value"]),
             html.Table(id="informacao-caso-atual"),
-            dcc.Graph(id="grafico"),
+            html.H3("Resumo dos DECOMPs"),
+            dcc.Dropdown(id="escolhe-variavel-decomps",
+                         options=App.__opcoes_dropdown_decomp(),
+                         value=App.__opcoes_dropdown_decomp()[0]["value"]),
+            dcc.Graph(id="grafico-decomps"),
+            html.H3("Resumo dos NEWAVEs"),
+            dcc.Dropdown(id="escolhe-variavel-newaves",
+                         options=App.__opcoes_dropdown_newave(),
+                         value=App.__opcoes_dropdown_newave()[-1]["value"]),
+            dcc.Graph(id="grafico-newaves"),
             dcc.Interval(id="atualiza-dados-graficos",
                          interval=int(cfg.periodo_atualizacao_graficos),
                          n_intervals=0),
@@ -81,15 +106,23 @@ class App:
                          n_intervals=0),
             dcc.Store(id="dados-caso-atual"),
             dcc.Store(id="dados-estudo-encadeado"),
-            dcc.Store(id="dados-graficos")
+            dcc.Store(id="dados-grafico-decomps"),
+            dcc.Store(id="dados-grafico-newaves")
         ])
 
         @self.__app.callback(
-            Output("dados-graficos", "data"),
+            Output("dados-grafico-decomps", "data"),
             Input("atualiza-dados-graficos", "n_intervals")
         )
-        def atualiza_dados_graficos(interval):
+        def atualiza_dados_grafico_decomps(interval):
             return DB.le_resumo_decomps()
+
+        @self.__app.callback(
+            Output("dados-grafico-newaves", "data"),
+            Input("atualiza-dados-graficos", "n_intervals")
+        )
+        def atualiza_dados_grafico_newaves(interval):
+            return DB.le_resumo_newaves()
 
         @self.__app.callback(
             Output("dados-estudo-encadeado", "data"),
@@ -115,11 +148,11 @@ class App:
             return App.gera_tabela(dados_locais)
 
         @self.__app.callback(
-            Output("grafico", "figure"),
-            Input("dados-graficos", "data"),
-            Input("escolhe-variavel", "value")
+            Output("grafico-decomps", "figure"),
+            Input("dados-grafico-decomps", "data"),
+            Input("escolhe-variavel-decomps", "value")
         )
-        def gera_graficos(dados: str, variavel: str):
+        def gera_grafico_decomps(dados: str, variavel: str):
             dados_locais: pd.DataFrame = pd.read_json(dados,
                                                       orient="split")
             if "EARM" not in variavel:
@@ -127,6 +160,20 @@ class App:
                 casos_sem_inicial = casos_sem_inicial[1:]
                 filtro = dados_locais["Caso"].isin(casos_sem_inicial)
                 dados_locais = dados_locais.loc[filtro, :]
+            fig = px.line(dados_locais,
+                          x="Caso",
+                          y=variavel,
+                          color="Estudo")
+            return fig
+
+        @self.__app.callback(
+            Output("grafico-newaves", "figure"),
+            Input("dados-grafico-newaves", "data"),
+            Input("escolhe-variavel-newaves", "value")
+        )
+        def gera_grafico_newaves(dados: str, variavel: str):
+            dados_locais: pd.DataFrame = pd.read_json(dados,
+                                                      orient="split")
             fig = px.line(dados_locais,
                           x="Caso",
                           y=variavel,
@@ -152,6 +199,11 @@ class App:
         cfg = Configuracoes()
         ip_servidor = socket.gethostbyname(socket.gethostname())
         log.info(f"Visualizador: {ip_servidor}:{cfg.porta_servidor}")
-        serve(self.__app.server,
-              host="0.0.0.0",
-              port=str(cfg.porta_servidor))
+        if cfg.modo == "DEV":
+            self.__app.run_server(host="0.0.0.0",
+                                  port=str(cfg.porta_servidor),
+                                  debug=True)
+        elif cfg.modo == "PROD":
+            serve(self.__app.server,
+                  host="0.0.0.0",
+                  port=str(cfg.porta_servidor))
