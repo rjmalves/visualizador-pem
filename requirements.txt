@@ -1,3 +1,5 @@
 pandas
 plotly
 dash
+python-dotenv
+waitress

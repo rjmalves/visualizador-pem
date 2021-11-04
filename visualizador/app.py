@@ -7,6 +7,7 @@ from dash.dependencies import Input, Output
 from os import sep
 from os.path import normpath
 from typing import List
+from waitress import serve
 
 from visualizador.modelos.log import Log
 from visualizador.modelos.configuracoes import Configuracoes
@@ -150,6 +151,6 @@ class App:
     def serve(self):
         cfg = Configuracoes()
         modo_debug = cfg.modo == "CFG"
-        self.__app.run_server(host="0.0.0.0",
-                              port=str(cfg.porta_servidor),
-                              debug=modo_debug)
+        serve(self.__app.server,
+              host="0.0.0.0",
+              port=str(cfg.porta_servidor))
