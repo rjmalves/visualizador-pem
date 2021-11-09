@@ -16,7 +16,9 @@ from visualizador.utils.db import DB
 class App:
     
     def __init__(self) -> None:
-        self.__app = dash.Dash(__name__)
+        self.__app = dash.Dash(__name__,
+                               title="Encadeador",
+                               update_title="Carregando...")
         self.__inicializa()
 
     # @staticmethod
@@ -85,19 +87,84 @@ class App:
     def __inicializa(self):
         cfg = Configuracoes()
         self.__app.layout = html.Div([
-            html.H1("Visualizador de Estudos Encadeados"),
-            html.H2("Gerência de Metodologias e Modelos Energéticos - PEM"),
-            html.Table(id="informacao-caso-atual"),
-            html.H3("Resumo dos DECOMPs"),
-            dcc.Dropdown(id="escolhe-variavel-decomps",
-                         options=App.__opcoes_dropdown_decomp(),
-                         value=App.__opcoes_dropdown_decomp()[0]["value"]),
-            dcc.Graph(id="grafico-decomps"),
-            html.H3("Resumo dos NEWAVEs"),
-            dcc.Dropdown(id="escolhe-variavel-newaves",
-                         options=App.__opcoes_dropdown_newave(),
-                         value=App.__opcoes_dropdown_newave()[-1]["value"]),
-            dcc.Graph(id="grafico-newaves"),
+            html.Div(
+                children=[
+                    html.Div(
+                        children=[
+                            html.H1("Visualizador de Estudos Encadeados",
+                                    className="app-header-title"),
+                            html.H2("Gerência de Metodologias e Modelos Energéticos - PEM",
+                                    className="app-header-subtitle")
+                        ],
+                        className="app-header-titles"
+                    ),
+                    html.Div(
+                        children=[
+
+                        ],
+                        className="app-header-logo"
+                    )
+                ],
+                className="app-header"
+            ),
+            html.Div(
+                children=[
+                    html.Div(
+                        children=[
+                            html.Div(children=[
+                                html.H4("CASOS ATUAIS",
+                                        className="app-table-frame-title"),
+                                ],
+                                className="table-header"
+                            ),
+                            html.Table(id="informacao-caso-atual",
+                                       className="app-table")
+                        ],
+                        className="twelve column current-case-table-container"
+                    ),
+                    html.Div(
+                        children=[
+                            html.Div([
+                                html.H3("DECOMP",
+                                        className="app-frame-title"),
+                                html.Div(children=[
+                                    dcc.Dropdown(id="escolhe-variavel-decomps",
+                                                    options=App.__opcoes_dropdown_decomp(),
+                                                    value=App.__opcoes_dropdown_decomp()[0]["value"],
+                                                    className="variable-dropdown")
+                                    ],
+                                    className="dropdown-container"
+                                ),
+                                ],
+                                className="graph-header"
+                            ),
+                            dcc.Graph(id="grafico-decomps")
+                        ],
+                        className="twelve column graph-with-dropdown-container first"
+                    ),
+                    html.Div(
+                        children=[
+                            html.Div([
+                                html.H4("NEWAVE",
+                                        className="app-frame-title"),
+                                html.Div(children=[
+                                    dcc.Dropdown(id="escolhe-variavel-newaves",
+                                                 options=App.__opcoes_dropdown_newave(),
+                                                 value=App.__opcoes_dropdown_newave()[-1]["value"],
+                                                 className="variable-dropdown")
+                                    ],
+                                    className="dropdown-container"
+                                ),
+                                ],
+                                className="graph-header"
+                            ),
+                            dcc.Graph(id="grafico-newaves")
+                        ],
+                        className="twelve column graph-with-dropdown-container second"
+                    )
+                ],
+                className="app-content"
+            ),
             dcc.Interval(id="atualiza-dados-graficos",
                          interval=int(cfg.periodo_atualizacao_graficos),
                          n_intervals=0),
@@ -108,7 +175,9 @@ class App:
             dcc.Store(id="dados-estudo-encadeado"),
             dcc.Store(id="dados-grafico-decomps"),
             dcc.Store(id="dados-grafico-newaves")
-        ])
+        ],
+        className="app-container"
+        )
 
         @self.__app.callback(
             Output("dados-grafico-decomps", "data"),
@@ -207,3 +276,4 @@ class App:
             serve(self.__app.server,
                   host="0.0.0.0",
                   port=str(cfg.porta_servidor))
+

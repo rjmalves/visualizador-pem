@@ -34,7 +34,9 @@ class DB:
             indices = list(df.index)
             indices.pop()
             df_resumido = df.drop(index=indices)
-            colunas_a_remover = ["Tentativas",
+            colunas_a_remover = ["Caminho",
+                                 "Nome",
+                                 "Tentativas",
                                  "Processadores",
                                  "Entrada Fila",
                                  "Inicio Execucao",
