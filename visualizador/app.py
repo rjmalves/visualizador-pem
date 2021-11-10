@@ -209,7 +209,7 @@ class App:
                             ),
                             dcc.Graph(id="grafico-inviabs")
                         ],
-                        className="twelve column graph-with-dropdown-container first"
+                        className="twelve column graph-with-dropdown-container second"
                     ),
                 ],
                 className="app-content"
@@ -339,7 +339,6 @@ class App:
                 return
             df = pd.read_json(DB.le_resumo_decomps(),
                               orient="split")
-            print(f"DECOMP = {n_clicks}")
             return dcc.send_data_frame(df.to_csv, "decomps.csv")
 
         @self.__app.callback(
@@ -351,7 +350,6 @@ class App:
                 return
             df = pd.read_json(DB.le_resumo_newaves(),
                               orient="split")
-            print(f"NEWAVE = {n_clicks}")
             return dcc.send_data_frame(df.to_csv, "newaves.csv")
 
     @staticmethod
