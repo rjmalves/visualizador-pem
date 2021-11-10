@@ -38,19 +38,19 @@ class DB:
             exe = df["Estado"] == "EXECUTANDO"
             err = df["Estado"] == "ERRO"
             con = df["Estado"] == "CONCLUIDO"
-            df.loc[esp, "Tempo Total Fila"] = (time.time() -
+            df.loc[esp, "Tempo Fila"] = (time.time() -
                                                df.loc[esp, "Entrada Fila"])
-            df.loc[exe, "Tempo Total Fila"] = (df.loc[exe, "Inicio Execucao"] -
+            df.loc[exe, "Tempo Fila"] = (df.loc[exe, "Inicio Execucao"] -
                                                df.loc[exe, "Entrada Fila"])
-            df.loc[con, "Tempo Total Fila"] = (df.loc[con, "Inicio Execucao"] -
+            df.loc[con, "Tempo Fila"] = (df.loc[con, "Inicio Execucao"] -
                                                df.loc[con, "Entrada Fila"])
-            df.loc[err, "Tempo Total Fila"] = np.nan
-            df.loc[esp, "Tempo Total Execucao"] = np.nan
-            df.loc[exe, "Tempo Total Execucao"] = (time.time() -
+            df.loc[err, "Tempo Fila"] = np.nan
+            df.loc[esp, "Tempo Execucao"] = np.nan
+            df.loc[exe, "Tempo Execucao"] = (time.time() -
                                                    df.loc[exe, "Inicio Execucao"])
-            df.loc[con, "Tempo Total Execucao"] = (df.loc[con, "Fim Execucao"] -
+            df.loc[con, "Tempo Execucao"] = (df.loc[con, "Fim Execucao"] -
                                                    df.loc[con, "Inicio Execucao"])
-            df.loc[err, "Tempo Total Execucao"] = np.nan
+            df.loc[err, "Tempo Execucao"] = np.nan
             indices = list(df.index)
             indices.pop()
             dfr = df.drop(index=indices)
@@ -64,12 +64,12 @@ class DB:
             dfr = dfr.drop(columns=colunas_a_remover)
             num_flex = df.shape[0] - 1
             dfr["Numero Flexibilizacoes"] = num_flex
-            dfr["Tempo Total Fila"] = pd.to_timedelta(dfr["Tempo Total Fila"],
+            dfr["Tempo Fila"] = pd.to_timedelta(dfr["Tempo Fila"],
                                                       unit="sec")
-            dfr["Tempo Total Execucao"] = pd.to_timedelta(dfr["Tempo Total Execucao"],
+            dfr["Tempo Execucao"] = pd.to_timedelta(dfr["Tempo Execucao"],
                                                       unit="sec")
-            dfr["Tempo Total Fila"] = dfr["Tempo Total Fila"].apply(f)
-            dfr["Tempo Total Execucao"] = dfr["Tempo Total Execucao"].apply(f)
+            dfr["Tempo Fila"] = dfr["Tempo Fila"].apply(f)
+            dfr["Tempo Execucao"] = dfr["Tempo Execucao"].apply(f)
             return dfr
 
 
