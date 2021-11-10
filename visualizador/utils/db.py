@@ -54,7 +54,6 @@ class DB:
             return f'{int(hours)}:{int(minutes):02d}:{int(seconds):02d}'
 
         def resume_flexibilizacoes(df: pd.DataFrame) -> pd.DataFrame:
-            tempos_fila = df["Inicio Execucao"] - df["Entrada Fila"]
             esp = df["Estado"] == "ESPERANDO"
             exe = df["Estado"] == "EXECUTANDO"
             err = df["Estado"] == "ERRO"
@@ -122,6 +121,33 @@ class DB:
 
     @staticmethod
     def le_resumo_estudo_encadeado() -> pd.DataFrame:
+
+        def f_caso(caminho: str):
+            return caminho.split("/")[-2]
+
+        def formata_tempos(df: pd.DataFrame) -> pd.DataFrame:
+            esp = df["Estado"] == "ESPERANDO"
+            exe = df["Estado"] == "EXECUTANDO"
+            err = df["Estado"] == "ERRO"
+            con = df["Estado"] == "CONCLUIDO"
+            df.loc[esp, "Tempo Fila (min)"] = (time.time() -
+                                               df.loc[esp, "Entrada Fila"])
+            df.loc[exe, "Tempo Fila (min)"] = (df.loc[exe, "Inicio Execucao"] -
+                                               df.loc[exe, "Entrada Fila"])
+            df.loc[con, "Tempo Fila (min)"] = (df.loc[con, "Inicio Execucao"] -
+                                               df.loc[con, "Entrada Fila"])
+            df.loc[err, "Tempo Fila (min)"] = np.nan
+            df.loc[esp, "Tempo Execucao (min)"] = np.nan
+            df.loc[exe, "Tempo Execucao (min)"] = (time.time() -
+                                                   df.loc[exe, "Inicio Execucao"])
+            df.loc[con, "Tempo Execucao (min)"] = (df.loc[con, "Fim Execucao"] -
+                                                   df.loc[con, "Inicio Execucao"])
+            df.loc[err, "Tempo Execucao (min)"] = np.nan
+            # Converte para minutos
+            df["Tempo Fila (min)"] = df["Tempo Fila (min)"] / 60
+            df["Tempo Execucao (min)"] = df["Tempo Execucao (min)"] / 60
+            return df
+
         cfg = Configuracoes()
         log = Log().log()
         # Descobre o caminho dos arquivos de estudo
@@ -132,6 +158,8 @@ class DB:
         for a in arqs_resumo:
             # Lê o resumo do estudo
             df = DB.le_com_retry(a)
+            df["Caso"] = df["Caminho"].apply(f_caso)
+            df = formata_tempos(df)
             identificador_caso = normpath(a).split(sep)[-2]
             colunas_atuais = list(df.columns)
             df["Estudo"] = identificador_caso

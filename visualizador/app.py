@@ -92,6 +92,17 @@ class App:
         ]
         return opcoes
 
+    @staticmethod
+    def __opcoes_dropdown_tempo() -> List[dict]:
+        variaveis = ["NEWAVE",
+                     "DECOMP",
+                     "TOTAL"]
+        opcoes = [
+            {"label": p, "value": p}
+            for p in variaveis
+        ]
+        return opcoes
+
     def __inicializa(self):
         cfg = Configuracoes()
         self.__app.layout = html.Div([
@@ -211,6 +222,33 @@ class App:
                         ],
                         className="twelve column graph-with-dropdown-container second"
                     ),
+                    html.Div(
+                        children=[
+                            html.Div([
+                                html.H3("TEMPO EXECUCAO",
+                                        className="app-frame-title"),
+                                html.Div(children=[
+                                    html.Div(children=[
+                                        dcc.Dropdown(id="escolhe-variavel-tempo",
+                                                     options=App.__opcoes_dropdown_tempo(),
+                                                     value=App.__opcoes_dropdown_tempo()[-1]["value"],
+                                                     className="variable-dropdown")
+                                        ],
+                                        className="dropdown-container"
+                                    ),
+                                    html.Button("CSV",
+                                                id="tempo-btn",
+                                                className="download-button"),
+                                    ],
+                                    className="dropdown-button-container"
+                                ),
+                                ],
+                                className="graph-header"
+                            ),
+                            dcc.Graph(id="grafico-tempo")
+                        ],
+                        className="twelve column graph-with-dropdown-container second"
+                    ),
                 ],
                 className="app-content"
             ),
@@ -221,13 +259,14 @@ class App:
                          interval=int(cfg.periodo_atualizacao_caso_atual),
                          n_intervals=0),
             dcc.Store(id="dados-caso-atual"),
-            dcc.Store(id="dados-estudo-encadeado"),
+            dcc.Store(id="dados-grafico-estudo-encadeado"),
             dcc.Store(id="dados-grafico-decomps"),
             dcc.Store(id="dados-grafico-newaves"),
             dcc.Store(id="dados-grafico-inviabs"),
             dcc.Download(id="download-decomp"),
             dcc.Download(id="download-newave"),
             dcc.Download(id="download-inviabs"),
+            dcc.Download(id="download-tempo"),
         ],
         className="app-container"
         )
@@ -247,7 +286,7 @@ class App:
             return DB.le_resumo_newaves()
 
         @self.__app.callback(
-            Output("dados-estudo-encadeado", "data"),
+            Output("dados-grafico-estudo-encadeado", "data"),
             Input("atualiza-dados-graficos", "n_intervals")
         )
         def atualiza_dados_estudo(interval):
@@ -320,7 +359,7 @@ class App:
             if variavel != "TOTAL":
                 dados_inv = dados_locais["Tipo"] == variavel
                 dados_locais = dados_locais.loc[dados_inv, :]
-            
+
             dados_locais = dados_locais.groupby(["Estudo", "Caso", "Tipo"]).count().reset_index()
             dados_locais = dados_locais.rename(columns={"Violacao": "Num. Violacoes"})
             fig = px.bar(dados_locais,
@@ -328,6 +367,25 @@ class App:
                          y="Num. Violacoes",
                          color="Estudo",
                          hover_data=["Tipo"])
+            return fig
+
+        @self.__app.callback(
+            Output("grafico-tempo", "figure"),
+            Input("dados-grafico-estudo-encadeado", "data"),
+            Input("escolhe-variavel-tempo", "value")
+        )
+        def gera_grafico_tempo(dados: str, variavel: str):
+            dados_locais: pd.DataFrame = pd.read_json(dados,
+                                                      orient="split")
+            if variavel != "TOTAL":
+                dados_prog = dados_locais["Programa"] == variavel
+                dados_locais = dados_locais.loc[dados_prog, :]
+
+            dados_locais = dados_locais.groupby(["Estudo", "Caso"]).sum().reset_index()
+            fig = px.bar(dados_locais,
+                         x="Caso",
+                         y="Tempo Execucao (min)",
+                         color="Estudo")
             return fig
 
         @self.__app.callback(
