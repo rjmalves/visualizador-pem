@@ -98,6 +98,10 @@ body {
     min-width: 200px;
 }
 
+.download-button {
+    color: white;
+}
+
 .dropdown-button-container {
     display: flex;
     align-items: center;

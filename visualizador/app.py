@@ -73,6 +73,25 @@ class App:
         ]
         return opcoes
 
+    @staticmethod
+    def __opcoes_dropdown_inviab() -> List[dict]:
+        variaveis = ["RE",
+                     "RHQ",
+                     "TI",
+                     "RHV",
+                     "RHE",
+                     "EV",
+                     "DEFMIN",
+                     "FP",
+                     "DEFICIT",
+                     "OUTRO",
+                     "TOTAL"]
+        opcoes = [
+            {"label": p, "value": p}
+            for p in variaveis
+        ]
+        return opcoes
+
     def __inicializa(self):
         cfg = Configuracoes()
         self.__app.layout = html.Div([
@@ -126,7 +145,8 @@ class App:
                                         className="dropdown-container"
                                     ),
                                     html.Button("CSV",
-                                                id="decomp-btn"),
+                                                id="decomp-btn",
+                                                className="download-button"),
                                     ],
                                     className="dropdown-button-container"
                                 ),
@@ -152,7 +172,8 @@ class App:
                                         className="dropdown-container"
                                     ),
                                     html.Button("CSV",
-                                                 id="newave-btn"),
+                                                 id="newave-btn",
+                                                 className="download-button"),
                                     ],
                                     className="dropdown-button-container"
                                 ),
@@ -162,7 +183,34 @@ class App:
                             dcc.Graph(id="grafico-newaves")
                         ],
                         className="twelve column graph-with-dropdown-container second"
-                    )
+                    ),
+                    html.Div(
+                        children=[
+                            html.Div([
+                                html.H3("INVIABILIDADES",
+                                        className="app-frame-title"),
+                                html.Div(children=[
+                                    html.Div(children=[
+                                        dcc.Dropdown(id="escolhe-variavel-inviab",
+                                                     options=App.__opcoes_dropdown_inviab(),
+                                                     value=App.__opcoes_dropdown_inviab()[-1]["value"],
+                                                     className="variable-dropdown")
+                                        ],
+                                        className="dropdown-container"
+                                    ),
+                                    html.Button("CSV",
+                                                id="inviab-btn",
+                                                className="download-button"),
+                                    ],
+                                    className="dropdown-button-container"
+                                ),
+                                ],
+                                className="graph-header"
+                            ),
+                            dcc.Graph(id="grafico-inviabs")
+                        ],
+                        className="twelve column graph-with-dropdown-container first"
+                    ),
                 ],
                 className="app-content"
             ),
@@ -176,8 +224,10 @@ class App:
             dcc.Store(id="dados-estudo-encadeado"),
             dcc.Store(id="dados-grafico-decomps"),
             dcc.Store(id="dados-grafico-newaves"),
+            dcc.Store(id="dados-grafico-inviabs"),
             dcc.Download(id="download-decomp"),
             dcc.Download(id="download-newave"),
+            dcc.Download(id="download-inviabs"),
         ],
         className="app-container"
         )
@@ -209,6 +259,13 @@ class App:
         )
         def atualiza_dados_caso(interval):
             return DB.le_informacoes_proximo_caso()
+
+        @self.__app.callback(
+            Output("dados-grafico-inviabs", "data"),
+            Input("atualiza-dados-graficos", "n_intervals")
+        )
+        def atualiza_dados_grafico_inviabs(interval):
+            return DB.le_inviabilidades_decomps()
 
         @self.__app.callback(
             Output("informacao-caso-atual", "children"),
@@ -250,6 +307,27 @@ class App:
                           x="Caso",
                           y=variavel,
                           color="Estudo")
+            return fig
+
+        @self.__app.callback(
+            Output("grafico-inviabs", "figure"),
+            Input("dados-grafico-inviabs", "data"),
+            Input("escolhe-variavel-inviab", "value")
+        )
+        def gera_grafico_inviab(dados: str, variavel: str):
+            dados_locais: pd.DataFrame = pd.read_json(dados,
+                                                      orient="split")
+            if variavel != "TOTAL":
+                dados_inv = dados_locais["Tipo"] == variavel
+                dados_locais = dados_locais.loc[dados_inv, :]
+            
+            dados_locais = dados_locais.groupby(["Estudo", "Caso", "Tipo"]).count().reset_index()
+            dados_locais = dados_locais.rename(columns={"Violacao": "Num. Violacoes"})
+            fig = px.bar(dados_locais,
+                         x="Caso",
+                         y="Num. Violacoes",
+                         color="Estudo",
+                         hover_data=["Tipo"])
             return fig
 
         @self.__app.callback(

@@ -191,4 +191,28 @@ class DB:
             else:
                 df_resumos = pd.concat([df_resumos, df],
                                        ignore_index=True)
+
+        def f(x: str):
+            if "RESTRICAO ELETRICA" in x:
+                return "RE"
+            elif "RHQ" in x:
+                return "RHQ"
+            elif "IRRIGACAO" in x:
+                return "TI"
+            elif "RHV" in x:
+                return "RHV"
+            elif "RHE" in x:
+                return "RHE"
+            elif "EVAPORACAO" in x:
+                return "EV"
+            elif "DEF. MINIMA" in x:
+                return "DEFMIN"
+            elif "FUNCAO DE PRODUCAO" in x:
+                return "FP"
+            elif "DEFICIT" in x:
+                return "DEFICIT"
+            else:
+                return "OUTRO"
+    
+        df_resumos["Tipo"] = df_resumos["Restricao"].apply(f)
         return df_resumos.to_json(orient="split")
