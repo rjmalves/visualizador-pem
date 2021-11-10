@@ -16,11 +16,32 @@ ARQUIVO_CONVERGENCIA_NEWAVES = "convergencia_newaves.csv"
 ARQUIVO_CONVERGENCIA_DECOMPS = "convergencia_decomps.csv"
 ARQUIVO_INVIABS_DECOMPS = "inviabilidades_decomps.csv"
 
+MAX_RETRY = 3
+INTERVALO_RETRY = 0.1
+
 
 class DB:
 
     def __init__(self) -> None:
         pass
+
+    @staticmethod
+    def le_com_retry(arq: str) -> pd.DataFrame:
+        num_retry = 0
+        while num_retry < MAX_RETRY:
+            try:
+                df = pd.read_csv(arq,
+                                 index_col = 0)
+                return df
+            except OSError:
+                num_retry += 1
+                time.sleep(INTERVALO_RETRY)
+                continue
+            except BlockingIOError:
+                num_retry += 1
+                time.sleep(INTERVALO_RETRY)
+                continue
+        raise RuntimeError(f"Erro na leitura do arquivo: {arq}")
 
     @staticmethod
     def le_informacoes_proximo_caso() -> pd.DataFrame:
@@ -65,9 +86,9 @@ class DB:
             num_flex = df.shape[0] - 1
             dfr["Numero Flexibilizacoes"] = num_flex
             dfr["Tempo Fila"] = pd.to_timedelta(dfr["Tempo Fila"],
-                                                      unit="sec")
+                                                unit="sec")
             dfr["Tempo Execucao"] = pd.to_timedelta(dfr["Tempo Execucao"],
-                                                      unit="sec")
+                                                    unit="sec")
             dfr["Tempo Fila"] = dfr["Tempo Fila"].apply(f)
             dfr["Tempo Execucao"] = dfr["Tempo Execucao"].apply(f)
             return dfr
@@ -82,10 +103,10 @@ class DB:
         log.info("Lendo informações dos casos atuais")
         for a in arqs_proximos:
             # Lê o caminho
-            df = pd.read_csv(a, index_col=0)
+            df = DB.le_com_retry(a)
             caminho = df["Caminho"].tolist()[0]
             # Lê o resumo do caso
-            df_caso = pd.read_csv(caminho, index_col=0)
+            df_caso = DB.le_com_retry(caminho)
             # Gera um identificador para o caso
             identificador_caso = normpath(a).split(sep)[-2]
             colunas_atuais = list(df_caso.columns)
@@ -110,7 +131,7 @@ class DB:
         log.info("Lendo informações do estudo encadeado")
         for a in arqs_resumo:
             # Lê o resumo do estudo
-            df = pd.read_csv(a, index_col=0)
+            df = DB.le_com_retry(a)
             identificador_caso = normpath(a).split(sep)[-2]
             colunas_atuais = list(df.columns)
             df["Estudo"] = identificador_caso
@@ -133,7 +154,7 @@ class DB:
         log.info("Lendo informações dos NEWAVEs")
         for a in arqs_resumo:
             # Lê o resumo do estudo
-            df = pd.read_csv(a, index_col=0)
+            df = DB.le_com_retry(a)
             identificador_caso = normpath(a).split(sep)[-2]
             colunas_atuais = list(df.columns)
             df["Estudo"] = identificador_caso
@@ -158,7 +179,7 @@ class DB:
         log.info("Lendo informações dos DECOMPs")
         for a in arqs_resumo:
             # Lê o resumo do estudo
-            df = pd.read_csv(a, index_col=0)
+            df = DB.le_com_retry(a)
             identificador_caso = normpath(a).split(sep)[-2]
             colunas_atuais = list(df.columns)
             df["Estudo"] = identificador_caso
@@ -181,7 +202,7 @@ class DB:
         log.info("Lendo informações de inviabilidades do DECOMP")
         for a in arqs_resumo:
             # Lê o resumo do estudo
-            df = pd.read_csv(a, index_col=0)
+            df = DB.le_com_retry(a)
             identificador_caso = normpath(a).split(sep)[-2]
             colunas_atuais = list(df.columns)
             df["Estudo"] = identificador_caso
