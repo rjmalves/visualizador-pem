@@ -258,6 +258,9 @@ class App:
             dcc.Interval(id="atualiza-dados-caso",
                          interval=int(cfg.periodo_atualizacao_caso_atual),
                          n_intervals=0),
+            dcc.Interval(id="resume-inviabilidades-decomp",
+                         interval=int(cfg.periodo_atualizacao_graficos),
+                         n_intervals=0),
             dcc.Store(id="dados-caso-atual"),
             dcc.Store(id="dados-grafico-estudo-encadeado"),
             dcc.Store(id="dados-grafico-decomps"),
@@ -267,6 +270,7 @@ class App:
             dcc.Download(id="download-newave"),
             dcc.Download(id="download-inviabs"),
             dcc.Download(id="download-tempo"),
+            html.Div(id="hidden-div", style={"display":"none"}, )
         ],
         className="app-container"
         )
@@ -305,6 +309,13 @@ class App:
         )
         def atualiza_dados_grafico_inviabs(interval):
             return DB.le_inviabilidades_decomps()
+
+        @self.__app.callback(
+            Output("hidden-div", "n_clicks"),
+            Input("atualiza-dados-graficos", "n_intervals")
+        )
+        def resume_dados_inviabs_decomp(n_clicks):
+            return DB.resume_inviabilidades_decomps()
 
         @self.__app.callback(
             Output("informacao-caso-atual", "children"),
@@ -360,8 +371,7 @@ class App:
                 dados_inv = dados_locais["Tipo"] == variavel
                 dados_locais = dados_locais.loc[dados_inv, :]
 
-            dados_locais = dados_locais.groupby(["Estudo", "Caso", "Tipo"]).count().reset_index()
-            dados_locais = dados_locais.rename(columns={"Violacao": "Num. Violacoes"})
+            print(dados_locais)
             fig = px.bar(dados_locais,
                          x="Caso",
                          y="Num. Violacoes",

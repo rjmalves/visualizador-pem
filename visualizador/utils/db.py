@@ -15,6 +15,7 @@ ARQUIVO_RESUMO_DECOMPS = "decomps_encadeados.csv"
 ARQUIVO_CONVERGENCIA_NEWAVES = "convergencia_newaves.csv"
 ARQUIVO_CONVERGENCIA_DECOMPS = "convergencia_decomps.csv"
 ARQUIVO_INVIABS_DECOMPS = "inviabilidades_decomps.csv"
+ARQUIVO_INVIABS_DECOMPS_RESUMIDAS = "inviabilidades_decomps_resumidas.csv"
 
 MAX_RETRY = 5
 INTERVALO_RETRY = 0.1
@@ -41,12 +42,30 @@ class DB:
                 num_retry += 1
                 time.sleep(INTERVALO_RETRY)
                 continue
-        raise RuntimeError(f"Erro na leitura do arquivo: {arq}")
+        return pd.DataFrame()
+
+    @staticmethod
+    def escreve_com_retry(df: pd.DataFrame, arq: str):
+        num_retry = 0
+        while num_retry < MAX_RETRY:
+            try:
+                df = df.to_csv(arq)
+                return
+            except OSError:
+                num_retry += 1
+                time.sleep(INTERVALO_RETRY)
+                continue
+            except BlockingIOError:
+                num_retry += 1
+                time.sleep(INTERVALO_RETRY)
+                continue
 
     @staticmethod
     def le_informacoes_proximo_caso() -> pd.DataFrame:
 
         def f(x: timedelta):
+            if not isinstance(x, timedelta):
+                return ""
             ts = x.total_seconds()
             days, remainder = divmod(ts, 24 * 3600)
             hours, remainder = divmod(remainder, 3600)
@@ -233,24 +252,25 @@ class DB:
         cfg = Configuracoes()
         log = Log().log()
         # Descobre o caminho dos arquivos de estudo
-        arqs_resumo = [join(c, ARQUIVO_INVIABS_DECOMPS)
+        arqs_resumo = [join(c, ARQUIVO_INVIABS_DECOMPS_RESUMIDAS)
                        for c in cfg.caminhos_casos]
         df_resumos = pd.DataFrame()
         log.info("Lendo informações de inviabilidades do DECOMP")
         for a in arqs_resumo:
             # Lê o resumo do estudo
             df = DB.le_com_retry(a)
-            identificador_caso = normpath(a).split(sep)[-2]
-            colunas_atuais = list(df.columns)
-            df["Estudo"] = identificador_caso
-            df = df[["Estudo"] + colunas_atuais]
             if df_resumos.empty:
                 df_resumos = df
             else:
                 df_resumos = pd.concat([df_resumos, df],
                                        ignore_index=True)
 
-        def f(x: str):
+        return df_resumos.to_json(orient="split")
+
+    @staticmethod
+    def resume_inviabilidades_decomps() -> pd.DataFrame:
+
+        def f(x: str) -> str:
             if "RESTRICAO ELETRICA" in x:
                 return "RE"
             elif "RHQ" in x:
@@ -272,6 +292,24 @@ class DB:
             else:
                 return "OUTRO"
 
-        log.info("Formatando informações de inviabilidades do DECOMP")
-        df_resumos["Tipo"] = df_resumos["Restricao"].apply(f)
-        return df_resumos.to_json(orient="split")
+        cfg = Configuracoes()
+        log = Log().log()
+        # Descobre o caminho dos arquivos de estudo
+        arqs_resumo = [join(c, ARQUIVO_INVIABS_DECOMPS)
+                       for c in cfg.caminhos_casos]
+        arqs_inviabs_resumidas = [join(c, ARQUIVO_INVIABS_DECOMPS_RESUMIDAS)
+                       for c in cfg.caminhos_casos]
+        log.info("Resumindo informações de inviabilidades do DECOMP")
+        for a, ar in zip(arqs_resumo, arqs_inviabs_resumidas):
+            log.info(f"Resumindo inviabilidades do caso em {a}")
+            # Lê o resumo do estudo
+            df = DB.le_com_retry(a)
+            identificador_caso = normpath(a).split(sep)[-2]
+            colunas_atuais = list(df.columns)
+            df["Estudo"] = identificador_caso
+            df = df[["Estudo"] + colunas_atuais]
+            df["Tipo"] = df["Restricao"].apply(f)
+            df = df.groupby(["Estudo", "Caso", "Tipo"]).count().reset_index()
+            df = df.rename(columns={"Violacao": "Num. Violacoes"})
+            DB.escreve_com_retry(df, ar)
+        log.info("Fim do resumo das inviabilidades do DECOMP")
