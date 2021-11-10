@@ -410,6 +410,28 @@ class App:
                               orient="split")
             return dcc.send_data_frame(df.to_csv, "newaves.csv")
 
+        @self.__app.callback(
+            Output("download-inviabs", "data"),
+            Input("inviab-btn", "n_clicks")
+        )
+        def gera_csv_inviabs(n_clicks):
+            if n_clicks is None:
+                return
+            df = pd.read_json(DB.le_inviabilidades_decomps(),
+                              orient="split")
+            return dcc.send_data_frame(df.to_csv, "inviabilidades.csv")
+
+        @self.__app.callback(
+            Output("download-tempo", "data"),
+            Input("tempo-btn", "n_clicks")
+        )
+        def gera_csv_tempo(n_clicks):
+            if n_clicks is None:
+                return
+            df = pd.read_json(DB.le_resumo_estudo_encadeado(),
+                              orient="split")
+            return dcc.send_data_frame(df.to_csv, "tempo_execucao.csv")
+
     @staticmethod
     def gera_tabela(df: pd.DataFrame):
         return html.Table([
@@ -437,4 +459,3 @@ class App:
             serve(self.__app.server,
                   host="0.0.0.0",
                   port=str(cfg.porta_servidor))
-

@@ -158,12 +158,21 @@ class DB:
         for a in arqs_resumo:
             # Lê o resumo do estudo
             df = DB.le_com_retry(a)
-            df["Caso"] = df["Caminho"].apply(f_caso)
             df = formata_tempos(df)
             identificador_caso = normpath(a).split(sep)[-2]
+            casos = df["Caminho"].apply(f_caso)
+            colunas_a_remover = ["Caminho",
+                                 "Nome",
+                                 "Tentativas",
+                                 "Processadores",
+                                 "Entrada Fila",
+                                 "Inicio Execucao",
+                                 "Fim Execucao"]
+            df = df.drop(columns=colunas_a_remover)
             colunas_atuais = list(df.columns)
+            df["Caso"] = casos
             df["Estudo"] = identificador_caso
-            df = df[["Estudo"] + colunas_atuais]
+            df = df[["Estudo", "Caso"] + colunas_atuais]
             if df_resumos.empty:
                 df_resumos = df
             else:
