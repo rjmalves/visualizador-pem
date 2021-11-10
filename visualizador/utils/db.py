@@ -16,7 +16,7 @@ ARQUIVO_CONVERGENCIA_NEWAVES = "convergencia_newaves.csv"
 ARQUIVO_CONVERGENCIA_DECOMPS = "convergencia_decomps.csv"
 ARQUIVO_INVIABS_DECOMPS = "inviabilidades_decomps.csv"
 
-MAX_RETRY = 3
+MAX_RETRY = 5
 INTERVALO_RETRY = 0.1
 
 
@@ -271,6 +271,7 @@ class DB:
                 return "DEFICIT"
             else:
                 return "OUTRO"
-    
+
+        log.info("Formatando informações de inviabilidades do DECOMP")
         df_resumos["Tipo"] = df_resumos["Restricao"].apply(f)
         return df_resumos.to_json(orient="split")
