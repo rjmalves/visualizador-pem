@@ -21,17 +21,6 @@ class App:
                                update_title="Carregando...")
         self.__inicializa()
 
-    # @staticmethod
-    # def __opcoes_dropdown() -> List[dict]:
-    #     cfg = Configuracoes()
-    #     pastas_casos = [normpath(c).split(sep)[-1]
-    #                     for c in cfg.caminhos_casos]
-    #     opcoes = [
-    #         {"label": p, "value": p}
-    #         for p in pastas_casos
-    #     ]
-    #     return opcoes
-
     @staticmethod
     def __opcoes_dropdown_decomp() -> List[dict]:
         variaveis = ["CMO SE",
@@ -128,12 +117,18 @@ class App:
                                 html.H3("DECOMP",
                                         className="app-frame-title"),
                                 html.Div(children=[
-                                    dcc.Dropdown(id="escolhe-variavel-decomps",
-                                                    options=App.__opcoes_dropdown_decomp(),
-                                                    value=App.__opcoes_dropdown_decomp()[0]["value"],
-                                                    className="variable-dropdown")
+                                    html.Div(children=[
+                                        dcc.Dropdown(id="escolhe-variavel-decomps",
+                                                     options=App.__opcoes_dropdown_decomp(),
+                                                     value=App.__opcoes_dropdown_decomp()[0]["value"],
+                                                     className="variable-dropdown")
+                                        ],
+                                        className="dropdown-container"
+                                    ),
+                                    html.Button("CSV",
+                                                id="decomp-btn"),
                                     ],
-                                    className="dropdown-container"
+                                    className="dropdown-button-container"
                                 ),
                                 ],
                                 className="graph-header"
@@ -148,12 +143,18 @@ class App:
                                 html.H4("NEWAVE",
                                         className="app-frame-title"),
                                 html.Div(children=[
-                                    dcc.Dropdown(id="escolhe-variavel-newaves",
-                                                 options=App.__opcoes_dropdown_newave(),
-                                                 value=App.__opcoes_dropdown_newave()[-1]["value"],
-                                                 className="variable-dropdown")
+                                    html.Div(children=[
+                                        dcc.Dropdown(id="escolhe-variavel-newaves",
+                                                     options=App.__opcoes_dropdown_newave(),
+                                                     value=App.__opcoes_dropdown_newave()[-1]["value"],
+                                                     className="variable-dropdown")
+                                        ],
+                                        className="dropdown-container"
+                                    ),
+                                    html.Button("CSV",
+                                                 id="newave-btn"),
                                     ],
-                                    className="dropdown-container"
+                                    className="dropdown-button-container"
                                 ),
                                 ],
                                 className="graph-header"
@@ -174,7 +175,9 @@ class App:
             dcc.Store(id="dados-caso-atual"),
             dcc.Store(id="dados-estudo-encadeado"),
             dcc.Store(id="dados-grafico-decomps"),
-            dcc.Store(id="dados-grafico-newaves")
+            dcc.Store(id="dados-grafico-newaves"),
+            dcc.Download(id="download-decomp"),
+            dcc.Download(id="download-newave"),
         ],
         className="app-container"
         )
@@ -248,6 +251,30 @@ class App:
                           y=variavel,
                           color="Estudo")
             return fig
+
+        @self.__app.callback(
+            Output("download-decomp", "data"),
+            Input("decomp-btn", "n_clicks")
+        )
+        def gera_csv_decomp(n_clicks):
+            if n_clicks is None:
+                return
+            df = pd.read_json(DB.le_resumo_decomps(),
+                              orient="split")
+            print(f"DECOMP = {n_clicks}")
+            return dcc.send_data_frame(df.to_csv, "decomps.csv")
+
+        @self.__app.callback(
+            Output("download-newave", "data"),
+            Input("newave-btn", "n_clicks")
+        )
+        def gera_csv_newave(n_clicks):
+            if n_clicks is None:
+                return
+            df = pd.read_json(DB.le_resumo_newaves(),
+                              orient="split")
+            print(f"NEWAVE = {n_clicks}")
+            return dcc.send_data_frame(df.to_csv, "newaves.csv")
 
     @staticmethod
     def gera_tabela(df: pd.DataFrame):

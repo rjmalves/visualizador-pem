@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
-from os import sep
+import time
+from os import sep, stat
 from os.path import join, normpath
 from datetime import timedelta
 
@@ -24,16 +25,35 @@ class DB:
     @staticmethod
     def le_informacoes_proximo_caso() -> pd.DataFrame:
 
+        def f(x: timedelta):
+            ts = x.total_seconds()
+            days, remainder = divmod(ts, 24 * 3600)
+            hours, remainder = divmod(remainder, 3600)
+            minutes, seconds = divmod(remainder, 60)
+            return f'{int(hours)}:{int(minutes):02d}:{int(seconds):02d}'
+
         def resume_flexibilizacoes(df: pd.DataFrame) -> pd.DataFrame:
             tempos_fila = df["Inicio Execucao"] - df["Entrada Fila"]
-            tempo_total_fila = str(timedelta(seconds=np.sum(tempos_fila.to_numpy())))
-            tempos_execucao = df["Fim Execucao"] - df["Inicio Execucao"]
-            tempos_execucao = np.clip(tempos_execucao, 0, 1e12)
-            tempo_total_exec = str(timedelta(seconds=np.sum(tempos_execucao)))
-            num_flex = df.shape[0] - 1
+            esp = df["Estado"] == "ESPERANDO"
+            exe = df["Estado"] == "EXECUTANDO"
+            err = df["Estado"] == "ERRO"
+            con = df["Estado"] == "CONCLUIDO"
+            df.loc[esp, "Tempo Total Fila"] = (time.time() -
+                                               df.loc[esp, "Entrada Fila"])
+            df.loc[exe, "Tempo Total Fila"] = (df.loc[exe, "Inicio Execucao"] -
+                                               df.loc[exe, "Entrada Fila"])
+            df.loc[con, "Tempo Total Fila"] = (df.loc[con, "Inicio Execucao"] -
+                                               df.loc[con, "Entrada Fila"])
+            df.loc[err, "Tempo Total Fila"] = np.nan
+            df.loc[esp, "Tempo Total Execucao"] = np.nan
+            df.loc[exe, "Tempo Total Execucao"] = (time.time() -
+                                                   df.loc[exe, "Inicio Execucao"])
+            df.loc[con, "Tempo Total Execucao"] = (df.loc[con, "Fim Execucao"] -
+                                                   df.loc[con, "Inicio Execucao"])
+            df.loc[err, "Tempo Total Execucao"] = np.nan
             indices = list(df.index)
             indices.pop()
-            df_resumido = df.drop(index=indices)
+            dfr = df.drop(index=indices)
             colunas_a_remover = ["Caminho",
                                  "Nome",
                                  "Tentativas",
@@ -41,11 +61,16 @@ class DB:
                                  "Entrada Fila",
                                  "Inicio Execucao",
                                  "Fim Execucao"]
-            df_resumido = df_resumido.drop(columns=colunas_a_remover)
-            df_resumido["Tempo Total Fila"] = tempo_total_fila
-            df_resumido["Tempo Total Execucao"] = tempo_total_exec
-            df_resumido["Numero Flexibilizacoes"] = num_flex
-            return df_resumido
+            dfr = dfr.drop(columns=colunas_a_remover)
+            num_flex = df.shape[0] - 1
+            dfr["Numero Flexibilizacoes"] = num_flex
+            dfr["Tempo Total Fila"] = pd.to_timedelta(dfr["Tempo Total Fila"],
+                                                      unit="sec")
+            dfr["Tempo Total Execucao"] = pd.to_timedelta(dfr["Tempo Total Execucao"],
+                                                      unit="sec")
+            dfr["Tempo Total Fila"] = dfr["Tempo Total Fila"].apply(f)
+            dfr["Tempo Total Execucao"] = dfr["Tempo Total Execucao"].apply(f)
+            return dfr
 
 
         cfg = Configuracoes()
@@ -131,6 +156,29 @@ class DB:
                        for c in cfg.caminhos_casos]
         df_resumos = pd.DataFrame()
         log.info("Lendo informações dos DECOMPs")
+        for a in arqs_resumo:
+            # Lê o resumo do estudo
+            df = pd.read_csv(a, index_col=0)
+            identificador_caso = normpath(a).split(sep)[-2]
+            colunas_atuais = list(df.columns)
+            df["Estudo"] = identificador_caso
+            df = df[["Estudo"] + colunas_atuais]
+            if df_resumos.empty:
+                df_resumos = df
+            else:
+                df_resumos = pd.concat([df_resumos, df],
+                                       ignore_index=True)
+        return df_resumos.to_json(orient="split")
+
+    @staticmethod
+    def le_inviabilidades_decomps() -> pd.DataFrame:
+        cfg = Configuracoes()
+        log = Log().log()
+        # Descobre o caminho dos arquivos de estudo
+        arqs_resumo = [join(c, ARQUIVO_INVIABS_DECOMPS)
+                       for c in cfg.caminhos_casos]
+        df_resumos = pd.DataFrame()
+        log.info("Lendo informações de inviabilidades do DECOMP")
         for a in arqs_resumo:
             # Lê o resumo do estudo
             df = pd.read_csv(a, index_col=0)
