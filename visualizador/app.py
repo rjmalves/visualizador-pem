@@ -371,7 +371,6 @@ class App:
                 dados_inv = dados_locais["Tipo"] == variavel
                 dados_locais = dados_locais.loc[dados_inv, :]
 
-            print(dados_locais)
             fig = px.bar(dados_locais,
                          x="Caso",
                          y="Num. Violacoes",
