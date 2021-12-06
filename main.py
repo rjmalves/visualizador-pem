@@ -11,7 +11,7 @@ load_dotenv(override=True)
 
 DIR_BASE = pathlib.Path().resolve()
 
-# load_dotenv(join(DIR_BASE, "visualiza.cfg"), override=True)
+load_dotenv(join(DIR_BASE, "visualiza.cfg"), override=True)
 
 if __name__ == "__main__":
     Log.configura_logging(DIR_BASE)
