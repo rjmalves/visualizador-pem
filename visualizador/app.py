@@ -37,6 +37,16 @@ class App:
                      "GT S",
                      "GT NE",
                      "GT N",
+                     "GT SIN (% MAX)",
+                     "GT SE (% MAX)",
+                     "GT S (% MAX)",
+                     "GT NE (% MAX)",
+                     "GT N (% MAX)",
+                     "GT SIN (% FLEX)",
+                     "GT SE (% FLEX)",
+                     "GT S (% FLEX)",
+                     "GT NE (% FLEX)",
+                     "GT N (% FLEX)",
                      "GH SIN",
                      "GH SE",
                      "GH S",
@@ -46,7 +56,12 @@ class App:
                      "Mercado SE",
                      "Mercado S",
                      "Mercado NE",
-                     "Mercado N",]
+                     "Mercado N",
+                     "Déficit SIN",
+                     "Déficit SE",
+                     "Déficit S",
+                     "Déficit NE",
+                     "Déficit N"]
         opcoes = [
             {"label": p, "value": p}
             for p in variaveis
@@ -64,7 +79,7 @@ class App:
                      "VIOL. OUTROS USOS",
                      "VIOLACAO VZMIN",
                      "INTERCAMBIO",
-                     "VERT. FIO N. TURB",
+                     "VERT. FIO N. TURB.",
                      "VIOLACAO GHMIN",
                      "TOTAL"]
         opcoes = [
