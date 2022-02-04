@@ -572,7 +572,6 @@ class App:
                             line=dict(color=px.colors.qualitative.Plotly[i]),
                         )
                     )
-            print(dados_locais["Data"])
             return fig
 
         @self.__app.callback(
