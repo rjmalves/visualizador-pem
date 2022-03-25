@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import time
+import json
 from datetime import datetime, timedelta
 import calendar as cal
 from os import sep, stat
@@ -9,8 +10,8 @@ from os.path import join, normpath
 from visualizador.modelos.configuracoes import Configuracoes
 from visualizador.modelos.log import Log
 
-ARQUIVO_RESUMO_PROXIMO_CASO = "proximo_caso.csv"
-ARQUIVO_RESUMO_ESTUDO_ENCADEADO = "estudo_encadeado.csv"
+ARQUIVO_RESUMO_PROXIMO_CASO = "proximo_caso.json"
+ARQUIVO_RESUMO_ESTUDO_ENCADEADO = "estudo_encadeado.json"
 ARQUIVO_RESUMO_NEWAVES = "newaves_encadeados.csv"
 ARQUIVO_RESUMO_DECOMPS = "decomps_encadeados.csv"
 ARQUIVO_RESUMO_RESERVATORIOS = "reservatorios_encadeados.csv"
@@ -26,6 +27,24 @@ INTERVALO_RETRY = 0.1
 class DB:
     def __init__(self) -> None:
         pass
+
+    @staticmethod
+    def le_json_com_retry(arq: str) -> dict:
+        num_retry = 0
+        while num_retry < MAX_RETRY:
+            try:
+                with open(arq, "r") as f:
+                    dados = json.load(f)
+                return dados
+            except OSError:
+                num_retry += 1
+                time.sleep(INTERVALO_RETRY)
+                continue
+            except BlockingIOError:
+                num_retry += 1
+                time.sleep(INTERVALO_RETRY)
+                continue
+        return {}
 
     @staticmethod
     def le_com_retry(arq: str) -> pd.DataFrame:
@@ -127,10 +146,38 @@ class DB:
         log.info("Lendo informações dos casos atuais")
         for a in arqs_proximos:
             # Lê o caminho
-            df = DB.le_com_retry(a)
-            caminho = df["Caminho"].tolist()[0]
+            caminho = DB.le_json_com_retry(a)["Caminho"]
             # Lê o resumo do caso
-            df_caso = DB.le_com_retry(caminho)
+            dados_caso = DB.le_json_com_retry(caminho)
+            n_jobs = len(dados_caso["_jobs"])
+            df_caso = pd.DataFrame(
+                data={
+                    "Programa": [dados_caso["_dados"]["_programa"]] * n_jobs,
+                    "Caminho": [dados_caso["_dados"]["_caminho"]] * n_jobs,
+                    "Nome": [dados_caso["_dados"]["_nome"]] * n_jobs,
+                    "Ano": [dados_caso["_dados"]["_ano"]] * n_jobs,
+                    "Mes": [dados_caso["_dados"]["_mes"]] * n_jobs,
+                    "Revisao": [dados_caso["_dados"]["_revisao"]] * n_jobs,
+                    "Estado": [d["_estado"] for d in dados_caso["_jobs"]],
+                    "Tentativas": list(range(n_jobs)),
+                    "Processadores": [
+                        d["_dados"]["_numero_processadores"]
+                        for d in dados_caso["_jobs"]
+                    ],
+                    "Entrada Fila": [
+                        d["_dados"]["_instante_entrada_fila"]
+                        for d in dados_caso["_jobs"]
+                    ],
+                    "Inicio Execucao": [
+                        d["_dados"]["_instante_inicio_execucao"]
+                        for d in dados_caso["_jobs"]
+                    ],
+                    "Fim Execucao": [
+                        d["_dados"]["_instante_saida_fila"]
+                        for d in dados_caso["_jobs"]
+                    ],
+                }
+            )
             # Gera um identificador para o caso
             identificador_caso = normpath(a).split(sep)[-2]
             colunas_atuais = list(df_caso.columns)
@@ -146,31 +193,9 @@ class DB:
     @staticmethod
     def le_resumo_estudo_encadeado() -> pd.DataFrame:
         def f_caso(caminho: str):
-            return caminho.split("/")[-2]
+            return caminho.split(sep)[-2]
 
         def formata_tempos(df: pd.DataFrame) -> pd.DataFrame:
-            esp = df["Estado"] == "ESPERANDO"
-            exe = df["Estado"] == "EXECUTANDO"
-            err = df["Estado"] == "ERRO"
-            con = df["Estado"] == "CONCLUIDO"
-            df.loc[esp, "Tempo Fila (min)"] = (
-                time.time() - df.loc[esp, "Entrada Fila"]
-            )
-            df.loc[exe, "Tempo Fila (min)"] = (
-                df.loc[exe, "Inicio Execucao"] - df.loc[exe, "Entrada Fila"]
-            )
-            df.loc[con, "Tempo Fila (min)"] = (
-                df.loc[con, "Inicio Execucao"] - df.loc[con, "Entrada Fila"]
-            )
-            df.loc[err, "Tempo Fila (min)"] = np.nan
-            df.loc[esp, "Tempo Execucao (min)"] = np.nan
-            df.loc[exe, "Tempo Execucao (min)"] = (
-                time.time() - df.loc[exe, "Inicio Execucao"]
-            )
-            df.loc[con, "Tempo Execucao (min)"] = (
-                df.loc[con, "Fim Execucao"] - df.loc[con, "Inicio Execucao"]
-            )
-            df.loc[err, "Tempo Execucao (min)"] = np.nan
             # Converte para minutos
             df["Tempo Fila (min)"] = df["Tempo Fila (min)"] / 60
             df["Tempo Execucao (min)"] = df["Tempo Execucao (min)"] / 60
@@ -180,25 +205,47 @@ class DB:
         log = Log().log()
         # Descobre o caminho dos arquivos de estudo
         arqs_resumo = [
-            join(c, ARQUIVO_RESUMO_ESTUDO_ENCADEADO) for c in cfg.caminhos_casos
+            join(c, ARQUIVO_RESUMO_ESTUDO_ENCADEADO)
+            for c in cfg.caminhos_casos
         ]
         df_resumos = pd.DataFrame()
         log.info("Lendo informações do estudo encadeado")
         for a in arqs_resumo:
             # Lê o resumo do estudo
-            df = DB.le_com_retry(a)
+            dados_estudo = DB.le_json_com_retry(a)
+            diretorios_casos = [
+                normpath(p)
+                for p in dados_estudo["_dados"]["_diretorios_casos"]
+            ]
+            pastas_casos = [f_caso(c) for c in diretorios_casos]
+            df = pd.DataFrame(
+                data={
+                    "Programa": [
+                        d.split(sep)[-1].upper() for d in diretorios_casos
+                    ],
+                    "Caminho": diretorios_casos,
+                    "Nome": dados_estudo["_dados"]["_nomes_casos"],
+                    "Ano": [int(p.split("_")[0]) for p in pastas_casos],
+                    "Mes": [int(p.split("_")[1]) for p in pastas_casos],
+                    "Revisao": [
+                        int(p.split("_")[2].split("rv")[1])
+                        for p in pastas_casos
+                    ],
+                    "Sucesso": [
+                        e == "CONCLUIDO"
+                        for e in dados_estudo["_dados"]["_estados_casos"]
+                    ],
+                    "Estado": dados_estudo["_dados"]["_estados_casos"],
+                    "Tempo Fila (min)": dados_estudo["_dados"]["_tempos_fila_casos"],
+                    "Tempo Execucao (min)": dados_estudo["_dados"][
+                        "_tempos_execucao_casos"
+                    ],
+                }
+            )
             df = formata_tempos(df)
             identificador_caso = normpath(a).split(sep)[-2]
             casos = df["Caminho"].apply(f_caso)
-            colunas_a_remover = [
-                "Caminho",
-                "Nome",
-                "Tentativas",
-                "Processadores",
-                "Entrada Fila",
-                "Inicio Execucao",
-                "Fim Execucao",
-            ]
+            colunas_a_remover = ["Caminho", "Nome"]
             df = df.drop(columns=colunas_a_remover)
             colunas_atuais = list(df.columns)
             df["Caso"] = casos
