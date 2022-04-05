@@ -431,7 +431,7 @@ class DB:
 
         # Descobre o caminho dos arquivos de estudo
         arqs_resumo = [
-            join(c, ARQUIVO_RESUMO_RESERVATORIOS) for c in cfg.caminhos_casos
+            join(c, ARQUIVO_RESUMO_DEFLUENCIAS) for c in cfg.caminhos_casos
         ]
         df_resumos = pd.DataFrame()
         log.info("Lendo informações das Defluências")
