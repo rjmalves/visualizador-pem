@@ -140,6 +140,173 @@ class App:
             "TUCURUI",
             "BALBINA",
         ]
+        variaveis.sort()
+        opcoes = [{"label": p, "value": p} for p in variaveis]
+        return opcoes
+
+    @staticmethod
+    def __opcoes_dropdown_defluencias() -> List[dict]:
+        variaveis = [
+            "CAMARGOS",
+            "ITUTINGA",
+            "FUNIL-GRANDE",
+            "FURNAS",
+            "M. DE MORAES",
+            "ESTREITO",
+            "JAGUARA",
+            "IGARAPAVA",
+            "VOLTA GRANDE",
+            "P. COLOMBIA",
+            "CACONDE",
+            "E. DA CUNHA",
+            "A.S.OLIVEIRA",
+            "MARIMBONDO",
+            "A. VERMELHA",
+            "BATALHA",
+            "SERRA FACAO",
+            "EMBORCACAO",
+            "NOVA PONTE",
+            "MIRANDA",
+            "CAPIM BRANC1",
+            "CAPIM BRANC2",
+            "CORUMBA IV",
+            "CORUMBA III",
+            "CORUMBA I",
+            "ITUMBIARA",
+            "CACH.DOURADA",
+            "SAO SIMAO",
+            "SALTO",
+            "SLT VERDINHO",
+            "ESPORA",
+            "CACU",
+            "B. COQUEIROS",
+            "FOZ R. CLARO",
+            "I. SOLTEIRA",
+            "BILLINGS",
+            "HENRY BORDEN",
+            "GUARAPIRANGA",
+            "EDGARD SOUZA",
+            "BARRA BONITA",
+            "A.S. LIMA",
+            "IBITINGA",
+            "PROMISSAO",
+            "NAVANHANDAVA",
+            "TRES IRMAOS",
+            "JUPIA",
+            "SAO DOMINGOS",
+            "P. PRIMAVERA",
+            "A.A. LAYDNER",
+            "PIRAJU",
+            "CHAVANTES",
+            "OURINHOS",
+            "L.N. GARCEZ",
+            "CANOAS II",
+            "CANOAS I",
+            "MAUA",
+            "CAPIVARA",
+            "TAQUARUCU",
+            "ROSANA",
+            "ITAIPU",
+            "JAGUARI",
+            "PARAIBUNA",
+            "SANTA BRANCA",
+            "FUNIL",
+            "PICADA",
+            "SOBRAGI",
+            "TOCOS",
+            "SANTANA",
+            "SIMPLICIO",
+            "ILHA POMBOS",
+            "NILO PECANHA",
+            "LAJES",
+            "FONTES A",
+            "FONTES BC",
+            "P. PASSOS",
+            "SALTO GRANDE",
+            "P. ESTRELA",
+            "CANDONGA",
+            "GUILMAN-AMOR",
+            "SA CARVALHO",
+            "BAGUARI",
+            "AIMORES",
+            "MASCARENHAS",
+            "JAURU",
+            "ROSAL",
+            "MANSO",
+            "PONTE PEDRA",
+            "STA CLARA MG",
+            "ITIQUIRA I",
+            "ITIQUIRA II",
+            "GUAPORE",
+            "JIRAU",
+            "STO ANTONIO",
+            "RONDON II",
+            "SAMUEL",
+            "DARDANELOS",
+            "SINOP",
+            "COLIDER",
+            "TELES PIRES",
+            "SAO MANOEL",
+            "STA CLARA PR",
+            "FUNDAO",
+            "JORDAO",
+            "G.B. MUNHOZ",
+            "SEGREDO",
+            "SLT.SANTIAGO",
+            "SALTO OSORIO",
+            "SALTO CAXIAS",
+            "BAIXO IGUACU",
+            "BARRA GRANDE",
+            "GARIBALDI",
+            "CAMPOS NOVOS",
+            "MACHADINHO",
+            "ITA",
+            "PASSO FUNDO",
+            "MONJOLINHO",
+            "QUEBRA QUEIX",
+            "CASTRO ALVES",
+            "MONTE CLARO",
+            "14 DE JULHO",
+            "SAO JOSE",
+            "PASSO S JOAO",
+            "FOZ CHAPECO",
+            "ERNESTINA",
+            "PASSO REAL",
+            "JACUI",
+            "ITAUBA",
+            "D. FRANCISCA",
+            "G.P. SOUZA",
+            "IRAPE",
+            "ITAPEBI",
+            "RETIRO BAIXO",
+            "TRES MARIAS",
+            "QUEIMADO",
+            "SOBRADINHO",
+            "ITAPARICA",
+            "MOXOTO",
+            "P.AFONSO 123",
+            "P.AFONSO 4",
+            "XINGO",
+            "P. CAVALO",
+            "B. ESPERANCA",
+            "CACH.CALDEIR",
+            "SALTO PILAO",
+            "SERRA MESA",
+            "CANA BRAVA",
+            "SAO SALVADOR",
+            "PEIXE ANGIC",
+            "LAJEADO",
+            "ESTREITO TOC",
+            "CURUA-UNA",
+            "TUCURUI",
+            "BALBINA",
+            "COARACY NUNE",
+            "FERREIRA GOM",
+            "STO ANT JARI",
+            "BELO MONTE",
+            "PIMENTAL",
+        ]
+        variaveis.sort()
         opcoes = [{"label": p, "value": p} for p in variaveis]
         return opcoes
 
@@ -313,6 +480,46 @@ class App:
                             children=[
                                 html.Div(
                                     [
+                                        html.H3(
+                                            "DEFLUENCIAS",
+                                            className="app-frame-title",
+                                        ),
+                                        html.Div(
+                                            children=[
+                                                html.Div(
+                                                    children=[
+                                                        dcc.Dropdown(
+                                                            id="escolhe-variavel-defluencias",
+                                                            options=App.__opcoes_dropdown_defluencias(),
+                                                            value=App.__opcoes_dropdown_defluencias()[
+                                                                0
+                                                            ][
+                                                                "value"
+                                                            ],
+                                                            className="variable-dropdown",
+                                                        )
+                                                    ],
+                                                    className="dropdown-container",
+                                                ),
+                                                html.Button(
+                                                    "CSV",
+                                                    id="defluencias-btn",
+                                                    className="download-button",
+                                                ),
+                                            ],
+                                            className="dropdown-button-container",
+                                        ),
+                                    ],
+                                    className="graph-header",
+                                ),
+                                dcc.Graph(id="grafico-defluencias"),
+                            ],
+                            className="twelve column graph-with-dropdown-container first",
+                        ),
+                        html.Div(
+                            children=[
+                                html.Div(
+                                    [
                                         html.H4(
                                             "NEWAVE",
                                             className="app-frame-title",
@@ -451,10 +658,12 @@ class App:
                 dcc.Store(id="dados-grafico-estudo-encadeado"),
                 dcc.Store(id="dados-grafico-decomps"),
                 dcc.Store(id="dados-grafico-reservatorios"),
+                dcc.Store(id="dados-grafico-defluencias"),
                 dcc.Store(id="dados-grafico-newaves"),
                 dcc.Store(id="dados-grafico-inviabs"),
                 dcc.Download(id="download-decomp"),
                 dcc.Download(id="download-reservatorios"),
+                dcc.Download(id="download-defluencias"),
                 dcc.Download(id="download-newave"),
                 dcc.Download(id="download-inviabs"),
                 dcc.Download(id="download-tempo"),
@@ -479,6 +688,13 @@ class App:
         )
         def atualiza_dados_grafico_reservatorios(interval):
             return DB.le_resumo_reservatorios()
+
+        @self.__app.callback(
+            Output("dados-grafico-defluencias", "data"),
+            Input("atualiza-dados-graficos", "n_intervals"),
+        )
+        def atualiza_dados_grafico_defluencias(interval):
+            return DB.le_resumo_defluencias()
 
         @self.__app.callback(
             Output("dados-grafico-newaves", "data"),
@@ -545,33 +761,24 @@ class App:
         )
         def gera_grafico_reservatorios(dados: str, variavel: str):
             dados_locais: pd.DataFrame = pd.read_json(dados, orient="split")
-            dados_locais["Data"] = pd.to_datetime(
-                dados_locais["Data"], format="%Y-%m-%d"
-            )
-            fig = go.Figure()
-            estudos = list(dados_locais["Estudo"].unique())
-            casos = list(dados_locais["Caso"].unique())
+            dados_locais = dados_locais.loc[
+                dados_locais["Estagio"] == "Estágio 1", :
+            ]
+            fig = px.line(dados_locais, x="Caso", y=variavel, color="Estudo")
+            return fig
 
-            for i, e in enumerate(estudos):
-                for j, caso in enumerate(casos):
-                    filtro = (dados_locais["Estudo"] == e) & (
-                        dados_locais["Caso"] == caso
-                    )
-                    x = dados_locais.loc[filtro, "Data"].tolist()
-                    y = dados_locais.loc[filtro, variavel].tolist()
-                    d = dados_locais.loc[filtro, "Caso"].tolist()
-                    fig.add_trace(
-                        go.Scatter(
-                            x=x,
-                            y=y,
-                            hovertext=d,
-                            name=e,
-                            showlegend=(j == 0),
-                            legendgroup=e,
-                            mode="lines",
-                            line=dict(color=px.colors.qualitative.Plotly[i]),
-                        )
-                    )
+        @self.__app.callback(
+            Output("grafico-defluencias", "figure"),
+            Input("dados-grafico-defluencias", "data"),
+            Input("escolhe-variavel-defluencias", "value"),
+        )
+        def gera_grafico_defluencias(dados: str, variavel: str):
+            dados_locais: pd.DataFrame = pd.read_json(dados, orient="split")
+            print(dados_locais.columns)
+            dados_locais = dados_locais.loc[
+                dados_locais["Estagio"] == "Estágio 1", :
+            ]
+            fig = px.line(dados_locais, x="Caso", y=variavel, color="Estudo")
             return fig
 
         @self.__app.callback(
@@ -619,7 +826,10 @@ class App:
                 dados_locais.groupby(["Estudo", "Caso"]).sum().reset_index()
             )
             fig = px.bar(
-                dados_locais, x="Caso", y="Tempo Execucao (min)", color="Estudo"
+                dados_locais,
+                x="Caso",
+                y="Tempo Execucao (min)",
+                color="Estudo",
             )
             return fig
 

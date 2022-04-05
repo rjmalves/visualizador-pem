@@ -15,6 +15,7 @@ ARQUIVO_RESUMO_ESTUDO_ENCADEADO = "estudo_encadeado.json"
 ARQUIVO_RESUMO_NEWAVES = "newaves_encadeados.csv"
 ARQUIVO_RESUMO_DECOMPS = "decomps_encadeados.csv"
 ARQUIVO_RESUMO_RESERVATORIOS = "reservatorios_encadeados.csv"
+ARQUIVO_RESUMO_DEFLUENCIAS = "defluencias_encadeadas.csv"
 ARQUIVO_CONVERGENCIA_NEWAVES = "convergencia_newaves.csv"
 ARQUIVO_CONVERGENCIA_DECOMPS = "convergencia_decomps.csv"
 ARQUIVO_INVIABS_DECOMPS = "inviabilidades_decomps.csv"
@@ -236,7 +237,9 @@ class DB:
                         for e in dados_estudo["_dados"]["_estados_casos"]
                     ],
                     "Estado": dados_estudo["_dados"]["_estados_casos"],
-                    "Tempo Fila (min)": dados_estudo["_dados"]["_tempos_fila_casos"],
+                    "Tempo Fila (min)": dados_estudo["_dados"][
+                        "_tempos_fila_casos"
+                    ],
                     "Tempo Execucao (min)": dados_estudo["_dados"][
                         "_tempos_execucao_casos"
                     ],
@@ -360,6 +363,82 @@ class DB:
         for a in arqs_resumo:
             # Lê o resumo do estudo
             df = DB.le_com_retry(a)
+            print(df)
+            colunas_atuais = [c for c in list(df.columns) if c != "Caso"]
+            df[["Ano", "Mes", "Revisao"]] = df["Caso"].str.split(
+                "_", expand=True
+            )
+            df["Data"] = df.apply(extrai_semana_operativa, axis=1)
+            identificador_caso = normpath(a).split(sep)[-2]
+            df["Estudo"] = identificador_caso
+            df = df[
+                ["Estudo", "Caso", "Ano", "Mes", "Revisao", "Data"]
+                + colunas_atuais
+            ]
+            if df_resumos.empty:
+                df_resumos = df
+            else:
+                df_resumos = pd.concat([df_resumos, df], ignore_index=True)
+        df_resumos["Data"] = df_resumos["Data"].dt.strftime("%Y-%m-%d")
+        return df_resumos.to_json(orient="split")
+
+    @staticmethod
+    def le_resumo_defluencias() -> pd.DataFrame:
+        cfg = Configuracoes()
+        log = Log().log()
+
+        def extrai_semana_operativa(linha):
+            ano = int(linha["Ano"])
+            mes = int(linha["Mes"])
+            rv = linha["Revisao"]
+            estagio = linha["Estagio"]
+            if estagio == "Inicial":
+                delta_estagio = 0
+            else:
+                delta_estagio = int(estagio.split(" ")[1])
+            n_rv = int(rv.split("rv")[1])
+            mes_anterior = 12 if mes == 1 else mes - 1
+            ano_anterior = ano - 1 if mes_anterior == 12 else ano
+            cal_mes_anterior = cal.monthcalendar(ano_anterior, mes_anterior)
+            ultimo_sabado_mes_anterior = 0
+            for i in range(len(cal_mes_anterior) - 1, -1, -1):
+                sabado = cal_mes_anterior[i][5]
+                if sabado != 0:
+                    ultimo_sabado_mes_anterior = sabado
+                    break
+            inic_ult_semana_operativa_mes_anterior = datetime(
+                year=ano_anterior,
+                month=mes_anterior,
+                day=ultimo_sabado_mes_anterior,
+            )
+            fim_ult_semana_operativa_mes_anterior = (
+                inic_ult_semana_operativa_mes_anterior + timedelta(days=6)
+            )
+            defasagem = timedelta(days=0)
+            if fim_ult_semana_operativa_mes_anterior.month == mes:
+                defasagem = timedelta(weeks=1)
+            # Se, no mês passado, a última semana operativa tinha
+            # dias do mês vigente, aplica uma defasagem de 1 semana,
+            # pois a rv0 começa a contar a partir da "última semana civil"
+            # do mês anterior.
+            data = (
+                fim_ult_semana_operativa_mes_anterior
+                + timedelta(days=1)
+                + timedelta(weeks=n_rv)
+                - defasagem
+            )
+            return data + timedelta(weeks=delta_estagio)
+
+        # Descobre o caminho dos arquivos de estudo
+        arqs_resumo = [
+            join(c, ARQUIVO_RESUMO_RESERVATORIOS) for c in cfg.caminhos_casos
+        ]
+        df_resumos = pd.DataFrame()
+        log.info("Lendo informações das Defluências")
+        for a in arqs_resumo:
+            # Lê o resumo do estudo
+            df = DB.le_com_retry(a)
+            print(df)
             colunas_atuais = [c for c in list(df.columns) if c != "Caso"]
             df[["Ano", "Mes", "Revisao"]] = df["Caso"].str.split(
                 "_", expand=True
