@@ -853,6 +853,16 @@ class App:
             return dcc.send_data_frame(df.to_csv, "reservatorios.csv")
 
         @self.__app.callback(
+            Output("download-defluencias", "data"),
+            Input("defluencias-btn", "n_clicks"),
+        )
+        def gera_csv_defluencias(n_clicks):
+            if n_clicks is None:
+                return
+            df = pd.read_json(DB.le_resumo_defluencias(), orient="split")
+            return dcc.send_data_frame(df.to_csv, "defluencias.csv")
+
+        @self.__app.callback(
             Output("download-newave", "data"), Input("newave-btn", "n_clicks")
         )
         def gera_csv_newave(n_clicks):
