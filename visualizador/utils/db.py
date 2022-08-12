@@ -383,7 +383,6 @@ class DB:
             for a in arqs_resumo:
                 # Lê o resumo do estudo
                 df = DB.le_com_retry(a)
-                print(df)
                 colunas_atuais = [c for c in list(df.columns) if c != "Caso"]
                 df[["Ano", "Mes", "Revisao"]] = df["Caso"].str.split(
                     "_", expand=True
@@ -462,7 +461,6 @@ class DB:
             for a in arqs_resumo:
                 # Lê o resumo do estudo
                 df = DB.le_com_retry(a)
-                print(df)
                 colunas_atuais = [c for c in list(df.columns) if c != "Caso"]
                 df[["Ano", "Mes", "Revisao"]] = df["Caso"].str.split(
                     "_", expand=True
