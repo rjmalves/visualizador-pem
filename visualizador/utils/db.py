@@ -94,7 +94,7 @@ class DB:
         def resume_flexibilizacoes(df: pd.DataFrame) -> pd.DataFrame:
             esp = df["Estado"] == "ESPERANDO"
             exe = df["Estado"] == "EXECUTANDO"
-            err = df["Estado"] == "ERRO"
+            err = df["Estado"].str.contains("ERRO")
             con = df["Estado"] == "CONCLUIDO"
             df.loc[esp, "Tempo Fila"] = (
                 time.time() - df.loc[esp, "Entrada Fila"]
@@ -161,7 +161,7 @@ class DB:
                         "Ano": [dados_caso["_dados"]["_ano"]] * n_jobs,
                         "Mes": [dados_caso["_dados"]["_mes"]] * n_jobs,
                         "Revisao": [dados_caso["_dados"]["_revisao"]] * n_jobs,
-                        "Estado": [d["_estado"] for d in dados_caso["_jobs"]],
+                        "Estado": dados_caso["_estado"],
                         "Tentativas": list(range(n_jobs)),
                         "Processadores": [
                             d["_dados"]["_numero_processadores"]
