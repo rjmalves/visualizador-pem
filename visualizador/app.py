@@ -831,7 +831,7 @@ class App:
             )
             dados_locais.sort_values(["Estudo", "Caso"], inplace=True)
             fig = px.bar(
-                dados_locais,
+                dados_locais.loc[dados_locais["Estado"] != "NAO_INICIADO", :],
                 x="Caso",
                 y="Tempo Execucao (min)",
                 color="Estudo",
