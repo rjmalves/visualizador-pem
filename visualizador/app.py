@@ -737,6 +737,7 @@ class App:
         )
         def gera_tabela(dados: pd.DataFrame):
             dados_locais: pd.DataFrame = pd.read_json(dados, orient="split")
+            dados_locais.sort_values("Estudo", inplace=True)
             return App.gera_tabela(dados_locais)
 
         @self.__app.callback(
@@ -751,6 +752,7 @@ class App:
                 casos_sem_inicial = casos_sem_inicial[1:]
                 filtro = dados_locais["Caso"].isin(casos_sem_inicial)
                 dados_locais = dados_locais.loc[filtro, :]
+            dados_locais.sort_values("Estudo", inplace=True)
             fig = px.line(dados_locais, x="Caso", y=variavel, color="Estudo")
             return fig
 
@@ -764,6 +766,7 @@ class App:
             dados_locais = dados_locais.loc[
                 dados_locais["Estagio"] == "Estágio 1", :
             ]
+            dados_locais.sort_values("Estudo", inplace=True)
             fig = px.line(dados_locais, x="Caso", y=variavel, color="Estudo")
             return fig
 
@@ -774,10 +777,10 @@ class App:
         )
         def gera_grafico_defluencias(dados: str, variavel: str):
             dados_locais: pd.DataFrame = pd.read_json(dados, orient="split")
-            print(dados_locais.columns)
             dados_locais = dados_locais.loc[
                 dados_locais["Estagio"] == "Estágio 1", :
             ]
+            dados_locais.sort_values("Estudo", inplace=True)
             fig = px.line(dados_locais, x="Caso", y=variavel, color="Estudo")
             return fig
 
@@ -788,6 +791,7 @@ class App:
         )
         def gera_grafico_newaves(dados: str, variavel: str):
             dados_locais: pd.DataFrame = pd.read_json(dados, orient="split")
+            dados_locais.sort_values("Estudo", inplace=True)
             fig = px.line(dados_locais, x="Caso", y=variavel, color="Estudo")
             return fig
 
@@ -801,7 +805,7 @@ class App:
             if variavel != "TOTAL":
                 dados_inv = dados_locais["Tipo"] == variavel
                 dados_locais = dados_locais.loc[dados_inv, :]
-
+            dados_locais.sort_values("Estudo", inplace=True)
             fig = px.bar(
                 dados_locais,
                 x="Caso",
@@ -825,6 +829,7 @@ class App:
             dados_locais = (
                 dados_locais.groupby(["Estudo", "Caso"]).sum().reset_index()
             )
+            dados_locais.sort_values("Estudo", inplace=True)
             fig = px.bar(
                 dados_locais,
                 x="Caso",
