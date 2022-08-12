@@ -145,50 +145,57 @@ class DB:
         ]
         df_casos = pd.DataFrame()
         log.info("Lendo informações dos casos atuais")
-        for a in arqs_proximos:
-            # Lê o caminho
-            caminho = DB.le_json_com_retry(a)["Caminho"]
-            # Lê o resumo do caso
-            dados_caso = DB.le_json_com_retry(caminho)
-            n_jobs = len(dados_caso["_jobs"])
-            df_caso = pd.DataFrame(
-                data={
-                    "Programa": [dados_caso["_dados"]["_programa"]] * n_jobs,
-                    "Caminho": [dados_caso["_dados"]["_caminho"]] * n_jobs,
-                    "Nome": [dados_caso["_dados"]["_nome"]] * n_jobs,
-                    "Ano": [dados_caso["_dados"]["_ano"]] * n_jobs,
-                    "Mes": [dados_caso["_dados"]["_mes"]] * n_jobs,
-                    "Revisao": [dados_caso["_dados"]["_revisao"]] * n_jobs,
-                    "Estado": [d["_estado"] for d in dados_caso["_jobs"]],
-                    "Tentativas": list(range(n_jobs)),
-                    "Processadores": [
-                        d["_dados"]["_numero_processadores"]
-                        for d in dados_caso["_jobs"]
-                    ],
-                    "Entrada Fila": [
-                        d["_dados"]["_instante_entrada_fila"]
-                        for d in dados_caso["_jobs"]
-                    ],
-                    "Inicio Execucao": [
-                        d["_dados"]["_instante_inicio_execucao"]
-                        for d in dados_caso["_jobs"]
-                    ],
-                    "Fim Execucao": [
-                        d["_dados"]["_instante_saida_fila"]
-                        for d in dados_caso["_jobs"]
-                    ],
-                }
-            )
-            # Gera um identificador para o caso
-            identificador_caso = normpath(a).split(sep)[-2]
-            colunas_atuais = list(df_caso.columns)
-            df_caso["Estudo"] = identificador_caso
-            df_caso = df_caso[["Estudo"] + colunas_atuais]
-            df_caso = resume_flexibilizacoes(df_caso)
-            if df_casos.empty:
-                df_casos = df_caso
-            else:
-                df_casos = pd.concat([df_casos, df_caso], ignore_index=True)
+        try:
+            for a in arqs_proximos:
+                # Lê o caminho
+                caminho = DB.le_json_com_retry(a)["Caminho"]
+                # Lê o resumo do caso
+                dados_caso = DB.le_json_com_retry(caminho)
+                n_jobs = len(dados_caso["_jobs"])
+                df_caso = pd.DataFrame(
+                    data={
+                        "Programa": [dados_caso["_dados"]["_programa"]]
+                        * n_jobs,
+                        "Caminho": [dados_caso["_dados"]["_caminho"]] * n_jobs,
+                        "Nome": [dados_caso["_dados"]["_nome"]] * n_jobs,
+                        "Ano": [dados_caso["_dados"]["_ano"]] * n_jobs,
+                        "Mes": [dados_caso["_dados"]["_mes"]] * n_jobs,
+                        "Revisao": [dados_caso["_dados"]["_revisao"]] * n_jobs,
+                        "Estado": [d["_estado"] for d in dados_caso["_jobs"]],
+                        "Tentativas": list(range(n_jobs)),
+                        "Processadores": [
+                            d["_dados"]["_numero_processadores"]
+                            for d in dados_caso["_jobs"]
+                        ],
+                        "Entrada Fila": [
+                            d["_dados"]["_instante_entrada_fila"]
+                            for d in dados_caso["_jobs"]
+                        ],
+                        "Inicio Execucao": [
+                            d["_dados"]["_instante_inicio_execucao"]
+                            for d in dados_caso["_jobs"]
+                        ],
+                        "Fim Execucao": [
+                            d["_dados"]["_instante_saida_fila"]
+                            for d in dados_caso["_jobs"]
+                        ],
+                    }
+                )
+                # Gera um identificador para o caso
+                identificador_caso = normpath(a).split(sep)[-2]
+                colunas_atuais = list(df_caso.columns)
+                df_caso["Estudo"] = identificador_caso
+                df_caso = df_caso[["Estudo"] + colunas_atuais]
+                df_caso = resume_flexibilizacoes(df_caso)
+                if df_casos.empty:
+                    df_casos = df_caso
+                else:
+                    df_casos = pd.concat(
+                        [df_casos, df_caso], ignore_index=True
+                    )
+        except Exception as e:
+            Log().log().error(f"Erro lendo arquivo do caso {a}")
+            Log().log().exception(e)
         return df_casos.to_json(orient="split")
 
     @staticmethod
@@ -211,53 +218,57 @@ class DB:
         ]
         df_resumos = pd.DataFrame()
         log.info("Lendo informações do estudo encadeado")
-        for a in arqs_resumo:
-            # Lê o resumo do estudo
-            dados_estudo = DB.le_json_com_retry(a)
-            diretorios_casos = [
-                normpath(p)
-                for p in dados_estudo["_dados"]["_diretorios_casos"]
-            ]
-            pastas_casos = [f_caso(c) for c in diretorios_casos]
-            df = pd.DataFrame(
-                data={
-                    "Programa": [
-                        d.split(sep)[-1].upper() for d in diretorios_casos
-                    ],
-                    "Caminho": diretorios_casos,
-                    "Nome": dados_estudo["_dados"]["_nomes_casos"],
-                    "Ano": [int(p.split("_")[0]) for p in pastas_casos],
-                    "Mes": [int(p.split("_")[1]) for p in pastas_casos],
-                    "Revisao": [
-                        int(p.split("_")[2].split("rv")[1])
-                        for p in pastas_casos
-                    ],
-                    "Sucesso": [
-                        e == "CONCLUIDO"
-                        for e in dados_estudo["_dados"]["_estados_casos"]
-                    ],
-                    "Estado": dados_estudo["_dados"]["_estados_casos"],
-                    "Tempo Fila (min)": dados_estudo["_dados"][
-                        "_tempos_fila_casos"
-                    ],
-                    "Tempo Execucao (min)": dados_estudo["_dados"][
-                        "_tempos_execucao_casos"
-                    ],
-                }
-            )
-            df = formata_tempos(df)
-            identificador_caso = normpath(a).split(sep)[-2]
-            casos = df["Caminho"].apply(f_caso)
-            colunas_a_remover = ["Caminho", "Nome"]
-            df = df.drop(columns=colunas_a_remover)
-            colunas_atuais = list(df.columns)
-            df["Caso"] = casos
-            df["Estudo"] = identificador_caso
-            df = df[["Estudo", "Caso"] + colunas_atuais]
-            if df_resumos.empty:
-                df_resumos = df
-            else:
-                df_resumos = pd.concat([df_resumos, df], ignore_index=True)
+        try:
+            for a in arqs_resumo:
+                # Lê o resumo do estudo
+                dados_estudo = DB.le_json_com_retry(a)
+                diretorios_casos = [
+                    normpath(p)
+                    for p in dados_estudo["_dados"]["_diretorios_casos"]
+                ]
+                pastas_casos = [f_caso(c) for c in diretorios_casos]
+                df = pd.DataFrame(
+                    data={
+                        "Programa": [
+                            d.split(sep)[-1].upper() for d in diretorios_casos
+                        ],
+                        "Caminho": diretorios_casos,
+                        "Nome": dados_estudo["_dados"]["_nomes_casos"],
+                        "Ano": [int(p.split("_")[0]) for p in pastas_casos],
+                        "Mes": [int(p.split("_")[1]) for p in pastas_casos],
+                        "Revisao": [
+                            int(p.split("_")[2].split("rv")[1])
+                            for p in pastas_casos
+                        ],
+                        "Sucesso": [
+                            e == "CONCLUIDO"
+                            for e in dados_estudo["_dados"]["_estados_casos"]
+                        ],
+                        "Estado": dados_estudo["_dados"]["_estados_casos"],
+                        "Tempo Fila (min)": dados_estudo["_dados"][
+                            "_tempos_fila_casos"
+                        ],
+                        "Tempo Execucao (min)": dados_estudo["_dados"][
+                            "_tempos_execucao_casos"
+                        ],
+                    }
+                )
+                df = formata_tempos(df)
+                identificador_caso = normpath(a).split(sep)[-2]
+                casos = df["Caminho"].apply(f_caso)
+                colunas_a_remover = ["Caminho", "Nome"]
+                df = df.drop(columns=colunas_a_remover)
+                colunas_atuais = list(df.columns)
+                df["Caso"] = casos
+                df["Estudo"] = identificador_caso
+                df = df[["Estudo", "Caso"] + colunas_atuais]
+                if df_resumos.empty:
+                    df_resumos = df
+                else:
+                    df_resumos = pd.concat([df_resumos, df], ignore_index=True)
+        except Exception as e:
+            Log().log().error(f"Erro lendo arquivo do caso {a}")
+            Log().log().exception(e)
         return df_resumos.to_json(orient="split")
 
     @staticmethod
@@ -270,18 +281,22 @@ class DB:
         ]
         df_resumos = pd.DataFrame()
         log.info("Lendo informações dos NEWAVEs")
-        for a in arqs_resumo:
-            # Lê o resumo do estudo
-            df = DB.le_com_retry(a)
-            identificador_caso = normpath(a).split(sep)[-2]
-            colunas_atuais = list(df.columns)
-            df["Estudo"] = identificador_caso
-            df = df[["Estudo"] + colunas_atuais]
-            if df_resumos.empty:
-                df_resumos = df
-            else:
-                df_resumos = pd.concat([df_resumos, df], ignore_index=True)
-        df_resumos["TOTAL"] = df_resumos.sum(axis=1, numeric_only=True)
+        try:
+            for a in arqs_resumo:
+                # Lê o resumo do estudo
+                df = DB.le_com_retry(a)
+                identificador_caso = normpath(a).split(sep)[-2]
+                colunas_atuais = list(df.columns)
+                df["Estudo"] = identificador_caso
+                df = df[["Estudo"] + colunas_atuais]
+                if df_resumos.empty:
+                    df_resumos = df
+                else:
+                    df_resumos = pd.concat([df_resumos, df], ignore_index=True)
+            df_resumos["TOTAL"] = df_resumos.sum(axis=1, numeric_only=True)
+        except Exception as e:
+            Log().log().error(f"Erro lendo arquivo do caso {a}")
+            Log().log().exception(e)
         return df_resumos.to_json(orient="split")
 
     @staticmethod
@@ -294,17 +309,21 @@ class DB:
         ]
         df_resumos = pd.DataFrame()
         log.info("Lendo informações dos DECOMPs")
-        for a in arqs_resumo:
-            # Lê o resumo do estudo
-            df = DB.le_com_retry(a)
-            identificador_caso = normpath(a).split(sep)[-2]
-            colunas_atuais = list(df.columns)
-            df["Estudo"] = identificador_caso
-            df = df[["Estudo"] + colunas_atuais]
-            if df_resumos.empty:
-                df_resumos = df
-            else:
-                df_resumos = pd.concat([df_resumos, df], ignore_index=True)
+        try:
+            for a in arqs_resumo:
+                # Lê o resumo do estudo
+                df = DB.le_com_retry(a)
+                identificador_caso = normpath(a).split(sep)[-2]
+                colunas_atuais = list(df.columns)
+                df["Estudo"] = identificador_caso
+                df = df[["Estudo"] + colunas_atuais]
+                if df_resumos.empty:
+                    df_resumos = df
+                else:
+                    df_resumos = pd.concat([df_resumos, df], ignore_index=True)
+        except Exception as e:
+            Log().log().error(f"Erro lendo arquivo do caso {a}")
+            Log().log().exception(e)
         return df_resumos.to_json(orient="split")
 
     @staticmethod
@@ -360,26 +379,30 @@ class DB:
         ]
         df_resumos = pd.DataFrame()
         log.info("Lendo informações dos Reservatórios")
-        for a in arqs_resumo:
-            # Lê o resumo do estudo
-            df = DB.le_com_retry(a)
-            print(df)
-            colunas_atuais = [c for c in list(df.columns) if c != "Caso"]
-            df[["Ano", "Mes", "Revisao"]] = df["Caso"].str.split(
-                "_", expand=True
-            )
-            df["Data"] = df.apply(extrai_semana_operativa, axis=1)
-            identificador_caso = normpath(a).split(sep)[-2]
-            df["Estudo"] = identificador_caso
-            df = df[
-                ["Estudo", "Caso", "Ano", "Mes", "Revisao", "Data"]
-                + colunas_atuais
-            ]
-            if df_resumos.empty:
-                df_resumos = df
-            else:
-                df_resumos = pd.concat([df_resumos, df], ignore_index=True)
-        df_resumos["Data"] = df_resumos["Data"].dt.strftime("%Y-%m-%d")
+        try:
+            for a in arqs_resumo:
+                # Lê o resumo do estudo
+                df = DB.le_com_retry(a)
+                print(df)
+                colunas_atuais = [c for c in list(df.columns) if c != "Caso"]
+                df[["Ano", "Mes", "Revisao"]] = df["Caso"].str.split(
+                    "_", expand=True
+                )
+                df["Data"] = df.apply(extrai_semana_operativa, axis=1)
+                identificador_caso = normpath(a).split(sep)[-2]
+                df["Estudo"] = identificador_caso
+                df = df[
+                    ["Estudo", "Caso", "Ano", "Mes", "Revisao", "Data"]
+                    + colunas_atuais
+                ]
+                if df_resumos.empty:
+                    df_resumos = df
+                else:
+                    df_resumos = pd.concat([df_resumos, df], ignore_index=True)
+            df_resumos["Data"] = df_resumos["Data"].dt.strftime("%Y-%m-%d")
+        except Exception as e:
+            Log().log().error(f"Erro lendo arquivo do caso {a}")
+            Log().log().exception(e)
         return df_resumos.to_json(orient="split")
 
     @staticmethod
@@ -435,26 +458,30 @@ class DB:
         ]
         df_resumos = pd.DataFrame()
         log.info("Lendo informações das Defluências")
-        for a in arqs_resumo:
-            # Lê o resumo do estudo
-            df = DB.le_com_retry(a)
-            print(df)
-            colunas_atuais = [c for c in list(df.columns) if c != "Caso"]
-            df[["Ano", "Mes", "Revisao"]] = df["Caso"].str.split(
-                "_", expand=True
-            )
-            df["Data"] = df.apply(extrai_semana_operativa, axis=1)
-            identificador_caso = normpath(a).split(sep)[-2]
-            df["Estudo"] = identificador_caso
-            df = df[
-                ["Estudo", "Caso", "Ano", "Mes", "Revisao", "Data"]
-                + colunas_atuais
-            ]
-            if df_resumos.empty:
-                df_resumos = df
-            else:
-                df_resumos = pd.concat([df_resumos, df], ignore_index=True)
-        df_resumos["Data"] = df_resumos["Data"].dt.strftime("%Y-%m-%d")
+        try:
+            for a in arqs_resumo:
+                # Lê o resumo do estudo
+                df = DB.le_com_retry(a)
+                print(df)
+                colunas_atuais = [c for c in list(df.columns) if c != "Caso"]
+                df[["Ano", "Mes", "Revisao"]] = df["Caso"].str.split(
+                    "_", expand=True
+                )
+                df["Data"] = df.apply(extrai_semana_operativa, axis=1)
+                identificador_caso = normpath(a).split(sep)[-2]
+                df["Estudo"] = identificador_caso
+                df = df[
+                    ["Estudo", "Caso", "Ano", "Mes", "Revisao", "Data"]
+                    + colunas_atuais
+                ]
+                if df_resumos.empty:
+                    df_resumos = df
+                else:
+                    df_resumos = pd.concat([df_resumos, df], ignore_index=True)
+            df_resumos["Data"] = df_resumos["Data"].dt.strftime("%Y-%m-%d")
+        except Exception as e:
+            Log().log().error(f"Erro lendo arquivo do caso {a}")
+            Log().log().exception(e)
         return df_resumos.to_json(orient="split")
 
     @staticmethod
@@ -468,14 +495,17 @@ class DB:
         ]
         df_resumos = pd.DataFrame()
         log.info("Lendo informações de inviabilidades do DECOMP")
-        for a in arqs_resumo:
-            # Lê o resumo do estudo
-            df = DB.le_com_retry(a)
-            if df_resumos.empty:
-                df_resumos = df
-            else:
-                df_resumos = pd.concat([df_resumos, df], ignore_index=True)
-
+        try:
+            for a in arqs_resumo:
+                # Lê o resumo do estudo
+                df = DB.le_com_retry(a)
+                if df_resumos.empty:
+                    df_resumos = df
+                else:
+                    df_resumos = pd.concat([df_resumos, df], ignore_index=True)
+        except Exception as e:
+            Log().log().error(f"Erro lendo arquivo do caso {a}")
+            Log().log().exception(e)
         return df_resumos.to_json(orient="split")
 
     @staticmethod
@@ -513,16 +543,24 @@ class DB:
             for c in cfg.caminhos_casos
         ]
         log.info("Resumindo informações de inviabilidades do DECOMP")
-        for a, ar in zip(arqs_resumo, arqs_inviabs_resumidas):
-            log.info(f"Resumindo inviabilidades do caso em {a}")
-            # Lê o resumo do estudo
-            df = DB.le_com_retry(a)
-            identificador_caso = normpath(a).split(sep)[-2]
-            colunas_atuais = list(df.columns)
-            df["Estudo"] = identificador_caso
-            df = df[["Estudo"] + colunas_atuais]
-            df["Tipo"] = df["Restricao"].apply(f)
-            df = df.groupby(["Estudo", "Caso", "Tipo"]).count().reset_index()
-            df = df.rename(columns={"Violacao": "Num. Violacoes"})
-            DB.escreve_com_retry(df, ar)
+        try:
+            for a, ar in zip(arqs_resumo, arqs_inviabs_resumidas):
+                log.info(f"Resumindo inviabilidades do caso em {a}")
+                # Lê o resumo do estudo
+                df = DB.le_com_retry(a)
+                identificador_caso = normpath(a).split(sep)[-2]
+                colunas_atuais = list(df.columns)
+                df["Estudo"] = identificador_caso
+                df = df[["Estudo"] + colunas_atuais]
+                df["Tipo"] = df["Restricao"].apply(f)
+                df = (
+                    df.groupby(["Estudo", "Caso", "Tipo"])
+                    .count()
+                    .reset_index()
+                )
+                df = df.rename(columns={"Violacao": "Num. Violacoes"})
+                DB.escreve_com_retry(df, ar)
+        except Exception as e:
+            Log().log().error(f"Erro lendo arquivo do caso {a}")
+            Log().log().exception(e)
         log.info("Fim do resumo das inviabilidades do DECOMP")
