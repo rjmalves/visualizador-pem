@@ -752,7 +752,10 @@ class App:
                 casos_sem_inicial = casos_sem_inicial[1:]
                 filtro = dados_locais["Caso"].isin(casos_sem_inicial)
                 dados_locais = dados_locais.loc[filtro, :]
-            dados_locais.sort_values(["Estudo", "Caso"], inplace=True)
+            def sortfun(col: pd.Series):
+                col.loc[col == "Inicial"] = ""
+                return col
+            dados_locais.sort_values(["Estudo", "Caso"], inplace=True, key=sortfun)
             fig = px.line(dados_locais, x="Caso", y=variavel, color="Estudo")
             return fig
 
