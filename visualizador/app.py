@@ -5,21 +5,28 @@ from dash import html
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly import tools
+from os.path import join, isfile
 import pandas as pd
 import socket
 from dash.dependencies import Input, Output
 from typing import List
 from waitress import serve
+import base62
 
 from visualizador.modelos.log import Log
 from visualizador.modelos.configuracoes import Configuracoes
 from visualizador.utils.db import DB
 
+CFG_FILENAME = "visualiza.cfg"
+
 
 class App:
     def __init__(self) -> None:
         self.__app = dash.Dash(
-            __name__, title="Encadeador", update_title="Carregando..."
+            __name__,
+            title="Encadeador",
+            update_title="Carregando...",
+            url_base_pathname=Configuracoes().prefixo_url,
         )
         self.__inicializa()
 
@@ -355,6 +362,7 @@ class App:
 
     def __inicializa(self):
         cfg = Configuracoes()
+        self.__db = DB()
         self.__app.layout = html.Div(
             [
                 html.Div(
@@ -671,6 +679,8 @@ class App:
                     id="hidden-div",
                     style={"display": "none"},
                 ),
+                dcc.Store(id="dados-caminhos-casos"),
+                dcc.Location(id="url"),
             ],
             className="app-container",
         )
@@ -678,66 +688,81 @@ class App:
         @self.__app.callback(
             Output("dados-grafico-decomps", "data"),
             Input("atualiza-dados-graficos", "n_intervals"),
+            Input("dados-caminhos-casos", "data"),
         )
-        def atualiza_dados_grafico_decomps(interval):
-            return DB.le_resumo_decomps()
+        def atualiza_dados_grafico_decomps(interval, data):
+            return self.__db.le_resumo_decomps(data)
 
         @self.__app.callback(
             Output("dados-grafico-reservatorios", "data"),
             Input("atualiza-dados-graficos", "n_intervals"),
+            Input("dados-caminhos-casos", "data"),
         )
-        def atualiza_dados_grafico_reservatorios(interval):
-            return DB.le_resumo_reservatorios()
+        def atualiza_dados_grafico_reservatorios(interval, data):
+            return self.__db.le_resumo_reservatorios(data)
 
         @self.__app.callback(
             Output("dados-grafico-defluencias", "data"),
             Input("atualiza-dados-graficos", "n_intervals"),
+            Input("dados-caminhos-casos", "data"),
         )
-        def atualiza_dados_grafico_defluencias(interval):
-            return DB.le_resumo_defluencias()
+        def atualiza_dados_grafico_defluencias(interval, data):
+            return self.__db.le_resumo_defluencias(data)
 
         @self.__app.callback(
             Output("dados-grafico-newaves", "data"),
             Input("atualiza-dados-graficos", "n_intervals"),
+            Input("dados-caminhos-casos", "data"),
         )
-        def atualiza_dados_grafico_newaves(interval):
-            return DB.le_resumo_newaves()
+        def atualiza_dados_grafico_newaves(interval, data):
+            return self.__db.le_resumo_newaves(data)
 
         @self.__app.callback(
             Output("dados-grafico-estudo-encadeado", "data"),
             Input("atualiza-dados-graficos", "n_intervals"),
+            Input("dados-caminhos-casos", "data"),
         )
-        def atualiza_dados_estudo(interval):
-            return DB.le_resumo_estudo_encadeado()
+        def atualiza_dados_estudo(interval, data):
+            return self.__db.le_resumo_estudo_encadeado(data)
 
         @self.__app.callback(
             Output("dados-caso-atual", "data"),
             Input("atualiza-dados-caso", "n_intervals"),
+            Input("dados-caminhos-casos", "data"),
         )
-        def atualiza_dados_caso(interval):
-            return DB.le_informacoes_proximo_caso()
+        def atualiza_dados_caso(interval, data):
+            return self.__db.le_informacoes_proximo_caso(data)
 
         @self.__app.callback(
             Output("dados-grafico-inviabs", "data"),
             Input("atualiza-dados-graficos", "n_intervals"),
+            Input("dados-caminhos-casos", "data"),
         )
-        def atualiza_dados_grafico_inviabs(interval):
-            return DB.le_inviabilidades_decomps()
+        def atualiza_dados_grafico_inviabs(interval, data):
+            return self.__db.le_inviabilidades_decomps(data)
 
         @self.__app.callback(
             Output("hidden-div", "n_clicks"),
             Input("atualiza-dados-graficos", "n_intervals"),
+            Input("dados-caminhos-casos", "data"),
         )
-        def resume_dados_inviabs_decomp(n_clicks):
-            return DB.resume_inviabilidades_decomps()
+        def resume_dados_inviabs_decomp(n_clicks, data):
+            return self.__db.resume_inviabilidades_decomps(data)
 
         @self.__app.callback(
             Output("informacao-caso-atual", "children"),
             Input("dados-caso-atual", "data"),
         )
         def gera_tabela(dados: pd.DataFrame):
+            if dados is None:
+                Log.log().warning("Sem dados de ESTUDO")
+                return html.Table([])
             dados_locais: pd.DataFrame = pd.read_json(dados, orient="split")
-            dados_locais.sort_values("Estudo", inplace=True)
+            if dados_locais.empty:
+                Log.log().warning("Sem dados de ESTUDO")
+                return html.Table([])
+            if not dados_locais.empty:
+                dados_locais.sort_values("Estudo", inplace=True)
             return App.gera_tabela(dados_locais)
 
         @self.__app.callback(
@@ -746,16 +771,27 @@ class App:
             Input("escolhe-variavel-decomps", "value"),
         )
         def gera_grafico_decomps(dados: str, variavel: str):
+            if dados is None:
+                Log.log().warning("Sem dados de DECOMP")
+                return go.Figure()
             dados_locais: pd.DataFrame = pd.read_json(dados, orient="split")
+            if dados_locais.empty:
+                Log.log().warning("Sem dados de DECOMP")
+                return go.Figure()
+
             if "EARM" not in variavel:
                 casos_sem_inicial = list(dados_locais["Caso"].unique())
                 casos_sem_inicial = casos_sem_inicial[1:]
                 filtro = dados_locais["Caso"].isin(casos_sem_inicial)
                 dados_locais = dados_locais.loc[filtro, :]
+
             def sortfun(col: pd.Series):
                 col.loc[col == "Inicial"] = ""
                 return col
-            dados_locais.sort_values(["Estudo", "Caso"], inplace=True, key=sortfun)
+
+            dados_locais.sort_values(
+                ["Estudo", "Caso"], inplace=True, key=sortfun
+            )
             fig = px.line(dados_locais, x="Caso", y=variavel, color="Estudo")
             return fig
 
@@ -765,7 +801,13 @@ class App:
             Input("escolhe-variavel-reservatorios", "value"),
         )
         def gera_grafico_reservatorios(dados: str, variavel: str):
+            if dados is None:
+                Log.log().warning("Sem dados de reservatórios")
+                return go.Figure()
             dados_locais: pd.DataFrame = pd.read_json(dados, orient="split")
+            if dados_locais.empty:
+                Log.log().warning("Sem dados de reservatórios")
+                return go.Figure()
             dados_locais = dados_locais.loc[
                 dados_locais["Estagio"] == "Estágio 1", :
             ]
@@ -779,7 +821,13 @@ class App:
             Input("escolhe-variavel-defluencias", "value"),
         )
         def gera_grafico_defluencias(dados: str, variavel: str):
+            if dados is None:
+                Log.log().warning("Sem dados de defluências")
+                return go.Figure()
             dados_locais: pd.DataFrame = pd.read_json(dados, orient="split")
+            if dados_locais.empty:
+                Log.log().warning("Sem dados de defluências")
+                return go.Figure()
             dados_locais = dados_locais.loc[
                 dados_locais["Estagio"] == "Estágio 1", :
             ]
@@ -793,7 +841,13 @@ class App:
             Input("escolhe-variavel-newaves", "value"),
         )
         def gera_grafico_newaves(dados: str, variavel: str):
+            if dados is None:
+                Log.log().warning("Sem dados de NEWAVE")
+                return go.Figure()
             dados_locais: pd.DataFrame = pd.read_json(dados, orient="split")
+            if dados_locais.empty:
+                Log.log().warning("Sem dados de NEWAVE")
+                return go.Figure()
             dados_locais.sort_values(["Estudo", "Caso"], inplace=True)
             fig = px.line(dados_locais, x="Caso", y=variavel, color="Estudo")
             return fig
@@ -804,7 +858,13 @@ class App:
             Input("escolhe-variavel-inviab", "value"),
         )
         def gera_grafico_inviab(dados: str, variavel: str):
+            if dados is None:
+                Log.log().warning("Sem dados de inviabilidades")
+                return go.Figure()
             dados_locais: pd.DataFrame = pd.read_json(dados, orient="split")
+            if dados_locais.empty:
+                Log.log().warning("Sem dados de inviabilidades")
+                return go.Figure()
             if variavel != "TOTAL":
                 dados_inv = dados_locais["Tipo"] == variavel
                 dados_locais = dados_locais.loc[dados_inv, :]
@@ -824,7 +884,13 @@ class App:
             Input("escolhe-variavel-tempo", "value"),
         )
         def gera_grafico_tempo(dados: str, variavel: str):
+            if dados is None:
+                Log.log().warning("Sem dados de TEMPO")
+                return go.Figure()
             dados_locais: pd.DataFrame = pd.read_json(dados, orient="split")
+            if dados_locais.empty:
+                Log.log().warning("Sem dados de TEMPO")
+                return go.Figure()
             if variavel != "TOTAL":
                 dados_prog = dados_locais["Programa"] == variavel
                 dados_locais = dados_locais.loc[dados_prog, :]
@@ -842,60 +908,108 @@ class App:
             return fig
 
         @self.__app.callback(
-            Output("download-decomp", "data"), Input("decomp-btn", "n_clicks")
+            Output("download-decomp", "data"),
+            Input("decomp-btn", "n_clicks"),
+            Input("dados-caminhos-casos", "data"),
         )
-        def gera_csv_decomp(n_clicks):
+        def gera_csv_decomp(n_clicks, data):
             if n_clicks is None:
                 return
-            df = pd.read_json(DB.le_resumo_decomps(), orient="split")
+            df = pd.read_json(
+                self.__db.le_resumo_decomps(data), orient="split"
+            )
             return dcc.send_data_frame(df.to_csv, "decomps.csv")
 
         @self.__app.callback(
             Output("download-reservatorios", "data"),
             Input("reservatorios-btn", "n_clicks"),
+            Input("dados-caminhos-casos", "data"),
         )
-        def gera_csv_reservatorios(n_clicks):
+        def gera_csv_reservatorios(n_clicks, data):
             if n_clicks is None:
                 return
-            df = pd.read_json(DB.le_resumo_reservatorios(), orient="split")
+            df = pd.read_json(
+                self.__db.le_resumo_reservatorios(data), orient="split"
+            )
             return dcc.send_data_frame(df.to_csv, "reservatorios.csv")
 
         @self.__app.callback(
             Output("download-defluencias", "data"),
             Input("defluencias-btn", "n_clicks"),
+            Input("dados-caminhos-casos", "data"),
         )
-        def gera_csv_defluencias(n_clicks):
+        def gera_csv_defluencias(n_clicks, data):
             if n_clicks is None:
                 return
-            df = pd.read_json(DB.le_resumo_defluencias(), orient="split")
+            df = pd.read_json(
+                self.__db.le_resumo_defluencias(data), orient="split"
+            )
             return dcc.send_data_frame(df.to_csv, "defluencias.csv")
 
         @self.__app.callback(
-            Output("download-newave", "data"), Input("newave-btn", "n_clicks")
+            Output("download-newave", "data"),
+            Input("newave-btn", "n_clicks"),
+            Input("dados-caminhos-casos", "data"),
         )
-        def gera_csv_newave(n_clicks):
+        def gera_csv_newave(n_clicks, data):
             if n_clicks is None:
                 return
-            df = pd.read_json(DB.le_resumo_newaves(), orient="split")
+            df = pd.read_json(
+                self.__db.le_resumo_newaves(data), orient="split"
+            )
             return dcc.send_data_frame(df.to_csv, "newaves.csv")
 
         @self.__app.callback(
-            Output("download-inviabs", "data"), Input("inviab-btn", "n_clicks")
+            Output("download-inviabs", "data"),
+            Input("inviab-btn", "n_clicks"),
+            Input("dados-caminhos-casos", "data"),
         )
-        def gera_csv_inviabs(n_clicks):
+        def gera_csv_inviabs(n_clicks, data):
             if n_clicks is None:
                 return
-            df = pd.read_json(DB.le_inviabilidades_decomps(), orient="split")
+            df = pd.read_json(
+                self.__db.le_inviabilidades_decomps(data), orient="split"
+            )
             return dcc.send_data_frame(df.to_csv, "inviabilidades.csv")
 
         @self.__app.callback(
-            Output("download-tempo", "data"), Input("tempo-btn", "n_clicks")
+            Output("download-tempo", "data"),
+            Input("tempo-btn", "n_clicks"),
+            Input("dados-caminhos-casos", "data"),
         )
-        def gera_csv_tempo(n_clicks):
+        def gera_csv_tempo(n_clicks, data):
             if n_clicks is None:
                 return
-            df = pd.read_json(DB.le_resumo_estudo_encadeado(), orient="split")
+            df = pd.read_json(
+                self.__db.le_resumo_estudo_encadeado(data), orient="split"
+            )
             return dcc.send_data_frame(df.to_csv, "tempo_execucao.csv")
+
+        @self.__app.callback(
+            Output("dados-caminhos-casos", "data"),
+            Input("url", "pathname"),
+        )
+        def le_url(pathname):
+            # Processa o pathname
+            PATTERN = Configuracoes().prefixo_url
+            Log.log().info(f"URL: {pathname}")
+            if PATTERN not in pathname:
+                Log.log().error("Caminho não indica um caso encadeado")
+                return []
+            # Decodifica o base62
+            try:
+                caminho = base62.decodebytes(
+                    pathname.split(PATTERN)[1]
+                ).decode("utf-8")
+                caminho = join(caminho, CFG_FILENAME)
+                Log.log().info(f"Caminho: {caminho}")
+                # Confere se existe um arquivo encadeia.cfg e lê
+                if isfile(caminho):
+                    with open(caminho, "r") as arq:
+                        return [p.strip() for p in arq.readlines()]
+            except Exception as e:
+                Log.log().exception(f"Erro no processamento da URL: {e}")
+            return []
 
     @staticmethod
     def gera_tabela(df: pd.DataFrame):
@@ -919,7 +1033,7 @@ class App:
         ip_servidor = socket.gethostbyname(socket.gethostname())
         log.info(f"Visualizador: {ip_servidor}:{cfg.porta_servidor}")
         if cfg.modo == "DEV":
-            self.__app.run_server(
+            self.__app.run(
                 host="0.0.0.0", port=str(cfg.porta_servidor), debug=True
             )
         elif cfg.modo == "PROD":

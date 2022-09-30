@@ -5,9 +5,9 @@ import json
 from datetime import datetime, timedelta
 import calendar as cal
 from os import sep, stat
+from typing import List
 from os.path import join, normpath
 
-from visualizador.modelos.configuracoes import Configuracoes
 from visualizador.modelos.log import Log
 
 ARQUIVO_RESUMO_PROXIMO_CASO = "proximo_caso.json"
@@ -29,8 +29,7 @@ class DB:
     def __init__(self) -> None:
         pass
 
-    @staticmethod
-    def le_json_com_retry(arq: str) -> dict:
+    def le_json_com_retry(self, arq: str) -> dict:
         num_retry = 0
         while num_retry < MAX_RETRY:
             try:
@@ -47,8 +46,7 @@ class DB:
                 continue
         return {}
 
-    @staticmethod
-    def le_com_retry(arq: str) -> pd.DataFrame:
+    def le_com_retry(self, arq: str) -> pd.DataFrame:
         num_retry = 0
         while num_retry < MAX_RETRY:
             try:
@@ -64,8 +62,7 @@ class DB:
                 continue
         return pd.DataFrame()
 
-    @staticmethod
-    def escreve_com_retry(df: pd.DataFrame, arq: str):
+    def escreve_com_retry(self, df: pd.DataFrame, arq: str):
         num_retry = 0
         while num_retry < MAX_RETRY:
             try:
@@ -80,8 +77,7 @@ class DB:
                 time.sleep(INTERVALO_RETRY)
                 continue
 
-    @staticmethod
-    def le_informacoes_proximo_caso() -> pd.DataFrame:
+    def le_informacoes_proximo_caso(self, casos: List[str]) -> pd.DataFrame:
         def f(x: timedelta):
             if not isinstance(x, timedelta):
                 return ""
@@ -137,20 +133,17 @@ class DB:
             dfr["Tempo Execucao"] = dfr["Tempo Execucao"].apply(f)
             return dfr
 
-        cfg = Configuracoes()
         log = Log().log()
         # Descobre o caminho dos próximos casos
-        arqs_proximos = [
-            join(c, ARQUIVO_RESUMO_PROXIMO_CASO) for c in cfg.caminhos_casos
-        ]
+        arqs_proximos = [join(c, ARQUIVO_RESUMO_PROXIMO_CASO) for c in casos]
         df_casos = pd.DataFrame()
         log.info("Lendo informações dos casos atuais")
         try:
             for a in arqs_proximos:
                 # Lê o caminho
-                caminho = DB.le_json_com_retry(a)["Caminho"]
+                caminho = self.le_json_com_retry(a)["Caminho"]
                 # Lê o resumo do caso
-                dados_caso = DB.le_json_com_retry(caminho)
+                dados_caso = self.le_json_com_retry(caminho)
                 n_jobs = len(dados_caso["_jobs"])
                 df_caso = pd.DataFrame(
                     data={
@@ -198,8 +191,7 @@ class DB:
             Log().log().exception(e)
         return df_casos.to_json(orient="split")
 
-    @staticmethod
-    def le_resumo_estudo_encadeado() -> pd.DataFrame:
+    def le_resumo_estudo_encadeado(self, casos: List[str]) -> pd.DataFrame:
         def f_caso(caminho: str):
             return caminho.split(sep)[-2]
 
@@ -209,204 +201,128 @@ class DB:
             df["Tempo Execucao (min)"] = df["Tempo Execucao (min)"] / 60
             return df
 
-        cfg = Configuracoes()
         log = Log().log()
         # Descobre o caminho dos arquivos de estudo
-        arqs_resumo = [
-            join(c, ARQUIVO_RESUMO_ESTUDO_ENCADEADO)
-            for c in cfg.caminhos_casos
-        ]
+        arqs_resumo = [join(c, ARQUIVO_RESUMO_ESTUDO_ENCADEADO) for c in casos]
         df_resumos = pd.DataFrame()
-        log.info("Lendo informações do estudo encadeado")
-        try:
-            for a in arqs_resumo:
-                # Lê o resumo do estudo
-                dados_estudo = DB.le_json_com_retry(a)
-                diretorios_casos = [
-                    normpath(p)
-                    for p in dados_estudo["_dados"]["_diretorios_casos"]
-                ]
-                pastas_casos = [f_caso(c) for c in diretorios_casos]
-                df = pd.DataFrame(
-                    data={
-                        "Programa": [
-                            d.split(sep)[-1].upper() for d in diretorios_casos
-                        ],
-                        "Caminho": diretorios_casos,
-                        "Nome": dados_estudo["_dados"]["_nomes_casos"],
-                        "Ano": [int(p.split("_")[0]) for p in pastas_casos],
-                        "Mes": [int(p.split("_")[1]) for p in pastas_casos],
-                        "Revisao": [
-                            int(p.split("_")[2].split("rv")[1])
-                            for p in pastas_casos
-                        ],
-                        "Sucesso": [
-                            e == "CONCLUIDO"
-                            for e in dados_estudo["_dados"]["_estados_casos"]
-                        ],
-                        "Estado": dados_estudo["_dados"]["_estados_casos"],
-                        "Tempo Fila (min)": dados_estudo["_dados"][
-                            "_tempos_fila_casos"
-                        ],
-                        "Tempo Execucao (min)": dados_estudo["_dados"][
-                            "_tempos_execucao_casos"
-                        ],
-                    }
-                )
-                df = formata_tempos(df)
-                identificador_caso = normpath(a).split(sep)[-2]
-                casos = df["Caminho"].apply(f_caso)
-                colunas_a_remover = ["Caminho", "Nome"]
-                df = df.drop(columns=colunas_a_remover)
-                colunas_atuais = list(df.columns)
-                df["Caso"] = casos
-                df["Estudo"] = identificador_caso
-                df = df[["Estudo", "Caso"] + colunas_atuais]
-                if df_resumos.empty:
-                    df_resumos = df
-                else:
-                    df_resumos = pd.concat([df_resumos, df], ignore_index=True)
-        except Exception as e:
-            Log().log().error(f"Erro lendo arquivo do caso {a}")
-            Log().log().exception(e)
+        if len(arqs_resumo) > 0:
+            log.info("Lendo informações do estudo encadeado")
+            try:
+                for a in arqs_resumo:
+                    # Lê o resumo do estudo
+                    dados_estudo = self.le_json_com_retry(a)
+                    diretorios_casos = [
+                        normpath(p)
+                        for p in dados_estudo["_dados"]["_diretorios_casos"]
+                    ]
+                    pastas_casos = [f_caso(c) for c in diretorios_casos]
+                    df = pd.DataFrame(
+                        data={
+                            "Programa": [
+                                d.split(sep)[-1].upper()
+                                for d in diretorios_casos
+                            ],
+                            "Caminho": diretorios_casos,
+                            "Nome": dados_estudo["_dados"]["_nomes_casos"],
+                            "Ano": [
+                                int(p.split("_")[0]) for p in pastas_casos
+                            ],
+                            "Mes": [
+                                int(p.split("_")[1]) for p in pastas_casos
+                            ],
+                            "Revisao": [
+                                int(p.split("_")[2].split("rv")[1])
+                                for p in pastas_casos
+                            ],
+                            "Sucesso": [
+                                e == "CONCLUIDO"
+                                for e in dados_estudo["_dados"][
+                                    "_estados_casos"
+                                ]
+                            ],
+                            "Estado": dados_estudo["_dados"]["_estados_casos"],
+                            "Tempo Fila (min)": dados_estudo["_dados"][
+                                "_tempos_fila_casos"
+                            ],
+                            "Tempo Execucao (min)": dados_estudo["_dados"][
+                                "_tempos_execucao_casos"
+                            ],
+                        }
+                    )
+                    df = formata_tempos(df)
+                    identificador_caso = normpath(a).split(sep)[-2]
+                    casos = df["Caminho"].apply(f_caso)
+                    colunas_a_remover = ["Caminho", "Nome"]
+                    df = df.drop(columns=colunas_a_remover)
+                    colunas_atuais = list(df.columns)
+                    df["Caso"] = casos
+                    df["Estudo"] = identificador_caso
+                    df = df[["Estudo", "Caso"] + colunas_atuais]
+                    if df_resumos.empty:
+                        df_resumos = df
+                    else:
+                        df_resumos = pd.concat(
+                            [df_resumos, df], ignore_index=True
+                        )
+            except Exception as e:
+                Log().log().error(f"Erro lendo arquivo do caso {a}")
+                Log().log().exception(e)
         return df_resumos.to_json(orient="split")
 
-    @staticmethod
-    def le_resumo_newaves() -> pd.DataFrame:
-        cfg = Configuracoes()
+    def le_resumo_newaves(self, casos: List[str]) -> pd.DataFrame:
         log = Log().log()
         # Descobre o caminho dos arquivos de estudo
-        arqs_resumo = [
-            join(c, ARQUIVO_RESUMO_NEWAVES) for c in cfg.caminhos_casos
-        ]
+        arqs_resumo = [join(c, ARQUIVO_RESUMO_NEWAVES) for c in casos]
         df_resumos = pd.DataFrame()
-        log.info("Lendo informações dos NEWAVEs")
-        try:
-            for a in arqs_resumo:
-                # Lê o resumo do estudo
-                df = DB.le_com_retry(a)
-                identificador_caso = normpath(a).split(sep)[-2]
-                colunas_atuais = list(df.columns)
-                df["Estudo"] = identificador_caso
-                df = df[["Estudo"] + colunas_atuais]
-                if df_resumos.empty:
-                    df_resumos = df
-                else:
-                    df_resumos = pd.concat([df_resumos, df], ignore_index=True)
-            df_resumos["TOTAL"] = df_resumos.sum(axis=1, numeric_only=True)
-        except Exception as e:
-            Log().log().error(f"Erro lendo arquivo do caso {a}")
-            Log().log().exception(e)
+        if len(arqs_resumo) > 0:
+            log.info("Lendo informações dos NEWAVEs")
+            try:
+                for a in arqs_resumo:
+                    # Lê o resumo do estudo
+                    df = self.le_com_retry(a)
+                    identificador_caso = normpath(a).split(sep)[-2]
+                    colunas_atuais = list(df.columns)
+                    df["Estudo"] = identificador_caso
+                    df = df[["Estudo"] + colunas_atuais]
+                    if df_resumos.empty:
+                        df_resumos = df
+                    else:
+                        df_resumos = pd.concat(
+                            [df_resumos, df], ignore_index=True
+                        )
+                df_resumos["TOTAL"] = df_resumos.sum(axis=1, numeric_only=True)
+            except Exception as e:
+                Log().log().error(f"Erro lendo arquivo do caso {a}")
+                Log().log().exception(e)
         return df_resumos.to_json(orient="split")
 
-    @staticmethod
-    def le_resumo_decomps() -> pd.DataFrame:
-        cfg = Configuracoes()
+    def le_resumo_decomps(self, casos: List[str]) -> pd.DataFrame:
         log = Log().log()
         # Descobre o caminho dos arquivos de estudo
-        arqs_resumo = [
-            join(c, ARQUIVO_RESUMO_DECOMPS) for c in cfg.caminhos_casos
-        ]
+        arqs_resumo = [join(c, ARQUIVO_RESUMO_DECOMPS) for c in casos]
         df_resumos = pd.DataFrame()
-        log.info("Lendo informações dos DECOMPs")
-        try:
-            for a in arqs_resumo:
-                # Lê o resumo do estudo
-                df = DB.le_com_retry(a)
-                identificador_caso = normpath(a).split(sep)[-2]
-                colunas_atuais = list(df.columns)
-                df["Estudo"] = identificador_caso
-                df = df[["Estudo"] + colunas_atuais]
-                if df_resumos.empty:
-                    df_resumos = df
-                else:
-                    df_resumos = pd.concat([df_resumos, df], ignore_index=True)
-        except Exception as e:
-            Log().log().error(f"Erro lendo arquivo do caso {a}")
-            Log().log().exception(e)
+        if len(arqs_resumo) > 0:
+            log.info("Lendo informações dos DECOMPs")
+            try:
+                for a in arqs_resumo:
+                    # Lê o resumo do estudo
+                    df = self.le_com_retry(a)
+                    identificador_caso = normpath(a).split(sep)[-2]
+                    colunas_atuais = list(df.columns)
+                    df["Estudo"] = identificador_caso
+                    df = df[["Estudo"] + colunas_atuais]
+                    if df_resumos.empty:
+                        df_resumos = df
+                    else:
+                        df_resumos = pd.concat(
+                            [df_resumos, df], ignore_index=True
+                        )
+            except Exception as e:
+                Log().log().error(f"Erro lendo arquivo do caso {a}")
+                Log().log().exception(e)
         return df_resumos.to_json(orient="split")
 
-    @staticmethod
-    def le_resumo_reservatorios() -> pd.DataFrame:
-        cfg = Configuracoes()
-        log = Log().log()
-
-        def extrai_semana_operativa(linha):
-            ano = int(linha["Ano"])
-            mes = int(linha["Mes"])
-            rv = linha["Revisao"]
-            estagio = linha["Estagio"]
-            if estagio == "Inicial":
-                delta_estagio = 0
-            else:
-                delta_estagio = int(estagio.split(" ")[1])
-            n_rv = int(rv.split("rv")[1])
-            mes_anterior = 12 if mes == 1 else mes - 1
-            ano_anterior = ano - 1 if mes_anterior == 12 else ano
-            cal_mes_anterior = cal.monthcalendar(ano_anterior, mes_anterior)
-            ultimo_sabado_mes_anterior = 0
-            for i in range(len(cal_mes_anterior) - 1, -1, -1):
-                sabado = cal_mes_anterior[i][5]
-                if sabado != 0:
-                    ultimo_sabado_mes_anterior = sabado
-                    break
-            inic_ult_semana_operativa_mes_anterior = datetime(
-                year=ano_anterior,
-                month=mes_anterior,
-                day=ultimo_sabado_mes_anterior,
-            )
-            fim_ult_semana_operativa_mes_anterior = (
-                inic_ult_semana_operativa_mes_anterior + timedelta(days=6)
-            )
-            defasagem = timedelta(days=0)
-            if fim_ult_semana_operativa_mes_anterior.month == mes:
-                defasagem = timedelta(weeks=1)
-            # Se, no mês passado, a última semana operativa tinha
-            # dias do mês vigente, aplica uma defasagem de 1 semana,
-            # pois a rv0 começa a contar a partir da "última semana civil"
-            # do mês anterior.
-            data = (
-                fim_ult_semana_operativa_mes_anterior
-                + timedelta(days=1)
-                + timedelta(weeks=n_rv)
-                - defasagem
-            )
-            return data + timedelta(weeks=delta_estagio)
-
-        # Descobre o caminho dos arquivos de estudo
-        arqs_resumo = [
-            join(c, ARQUIVO_RESUMO_RESERVATORIOS) for c in cfg.caminhos_casos
-        ]
-        df_resumos = pd.DataFrame()
-        log.info("Lendo informações dos Reservatórios")
-        try:
-            for a in arqs_resumo:
-                # Lê o resumo do estudo
-                df = DB.le_com_retry(a)
-                colunas_atuais = [c for c in list(df.columns) if c != "Caso"]
-                df[["Ano", "Mes", "Revisao"]] = df["Caso"].str.split(
-                    "_", expand=True
-                )
-                df["Data"] = df.apply(extrai_semana_operativa, axis=1)
-                identificador_caso = normpath(a).split(sep)[-2]
-                df["Estudo"] = identificador_caso
-                df = df[
-                    ["Estudo", "Caso", "Ano", "Mes", "Revisao", "Data"]
-                    + colunas_atuais
-                ]
-                if df_resumos.empty:
-                    df_resumos = df
-                else:
-                    df_resumos = pd.concat([df_resumos, df], ignore_index=True)
-            df_resumos["Data"] = df_resumos["Data"].dt.strftime("%Y-%m-%d")
-        except Exception as e:
-            Log().log().error(f"Erro lendo arquivo do caso {a}")
-            Log().log().exception(e)
-        return df_resumos.to_json(orient="split")
-
-    @staticmethod
-    def le_resumo_defluencias() -> pd.DataFrame:
-        cfg = Configuracoes()
+    def le_resumo_reservatorios(self, casos: List[str]) -> pd.DataFrame:
         log = Log().log()
 
         def extrai_semana_operativa(linha):
@@ -452,62 +368,143 @@ class DB:
             return data + timedelta(weeks=delta_estagio)
 
         # Descobre o caminho dos arquivos de estudo
-        arqs_resumo = [
-            join(c, ARQUIVO_RESUMO_DEFLUENCIAS) for c in cfg.caminhos_casos
-        ]
+        arqs_resumo = [join(c, ARQUIVO_RESUMO_RESERVATORIOS) for c in casos]
         df_resumos = pd.DataFrame()
-        log.info("Lendo informações das Defluências")
-        try:
-            for a in arqs_resumo:
-                # Lê o resumo do estudo
-                df = DB.le_com_retry(a)
-                colunas_atuais = [c for c in list(df.columns) if c != "Caso"]
-                df[["Ano", "Mes", "Revisao"]] = df["Caso"].str.split(
-                    "_", expand=True
-                )
-                df["Data"] = df.apply(extrai_semana_operativa, axis=1)
-                identificador_caso = normpath(a).split(sep)[-2]
-                df["Estudo"] = identificador_caso
-                df = df[
-                    ["Estudo", "Caso", "Ano", "Mes", "Revisao", "Data"]
-                    + colunas_atuais
-                ]
-                if df_resumos.empty:
-                    df_resumos = df
-                else:
-                    df_resumos = pd.concat([df_resumos, df], ignore_index=True)
-            df_resumos["Data"] = df_resumos["Data"].dt.strftime("%Y-%m-%d")
-        except Exception as e:
-            Log().log().error(f"Erro lendo arquivo do caso {a}")
-            Log().log().exception(e)
+        if len(arqs_resumo) > 0:
+            log.info(f"Lendo informações dos Reservatórios: {arqs_resumo}")
+            try:
+                for a in arqs_resumo:
+                    # Lê o resumo do estudo
+                    df = self.le_com_retry(a)
+                    colunas_atuais = [
+                        c for c in list(df.columns) if c != "Caso"
+                    ]
+                    df[["Ano", "Mes", "Revisao"]] = df["Caso"].str.split(
+                        "_", expand=True
+                    )
+                    df["Data"] = df.apply(extrai_semana_operativa, axis=1)
+                    identificador_caso = normpath(a).split(sep)[-2]
+                    df["Estudo"] = identificador_caso
+                    df = df[
+                        ["Estudo", "Caso", "Ano", "Mes", "Revisao", "Data"]
+                        + colunas_atuais
+                    ]
+                    if df_resumos.empty:
+                        df_resumos = df
+                    else:
+                        df_resumos = pd.concat(
+                            [df_resumos, df], ignore_index=True
+                        )
+                df_resumos["Data"] = df_resumos["Data"].dt.strftime("%Y-%m-%d")
+            except Exception as e:
+                Log().log().error(f"Erro lendo arquivo do caso {a}")
+                Log().log().exception(e)
         return df_resumos.to_json(orient="split")
 
-    @staticmethod
-    def le_inviabilidades_decomps() -> pd.DataFrame:
-        cfg = Configuracoes()
+    def le_resumo_defluencias(self, casos: List[str]) -> pd.DataFrame:
+        log = Log().log()
+
+        def extrai_semana_operativa(linha):
+            ano = int(linha["Ano"])
+            mes = int(linha["Mes"])
+            rv = linha["Revisao"]
+            estagio = linha["Estagio"]
+            if estagio == "Inicial":
+                delta_estagio = 0
+            else:
+                delta_estagio = int(estagio.split(" ")[1])
+            n_rv = int(rv.split("rv")[1])
+            mes_anterior = 12 if mes == 1 else mes - 1
+            ano_anterior = ano - 1 if mes_anterior == 12 else ano
+            cal_mes_anterior = cal.monthcalendar(ano_anterior, mes_anterior)
+            ultimo_sabado_mes_anterior = 0
+            for i in range(len(cal_mes_anterior) - 1, -1, -1):
+                sabado = cal_mes_anterior[i][5]
+                if sabado != 0:
+                    ultimo_sabado_mes_anterior = sabado
+                    break
+            inic_ult_semana_operativa_mes_anterior = datetime(
+                year=ano_anterior,
+                month=mes_anterior,
+                day=ultimo_sabado_mes_anterior,
+            )
+            fim_ult_semana_operativa_mes_anterior = (
+                inic_ult_semana_operativa_mes_anterior + timedelta(days=6)
+            )
+            defasagem = timedelta(days=0)
+            if fim_ult_semana_operativa_mes_anterior.month == mes:
+                defasagem = timedelta(weeks=1)
+            # Se, no mês passado, a última semana operativa tinha
+            # dias do mês vigente, aplica uma defasagem de 1 semana,
+            # pois a rv0 começa a contar a partir da "última semana civil"
+            # do mês anterior.
+            data = (
+                fim_ult_semana_operativa_mes_anterior
+                + timedelta(days=1)
+                + timedelta(weeks=n_rv)
+                - defasagem
+            )
+            return data + timedelta(weeks=delta_estagio)
+
+        # Descobre o caminho dos arquivos de estudo
+        arqs_resumo = [join(c, ARQUIVO_RESUMO_DEFLUENCIAS) for c in casos]
+        df_resumos = pd.DataFrame()
+        if len(arqs_resumo) > 0:
+            log.info("Lendo informações das Defluências")
+            try:
+                for a in arqs_resumo:
+                    # Lê o resumo do estudo
+                    df = self.le_com_retry(a)
+                    colunas_atuais = [
+                        c for c in list(df.columns) if c != "Caso"
+                    ]
+                    df[["Ano", "Mes", "Revisao"]] = df["Caso"].str.split(
+                        "_", expand=True
+                    )
+                    df["Data"] = df.apply(extrai_semana_operativa, axis=1)
+                    identificador_caso = normpath(a).split(sep)[-2]
+                    df["Estudo"] = identificador_caso
+                    df = df[
+                        ["Estudo", "Caso", "Ano", "Mes", "Revisao", "Data"]
+                        + colunas_atuais
+                    ]
+                    if df_resumos.empty:
+                        df_resumos = df
+                    else:
+                        df_resumos = pd.concat(
+                            [df_resumos, df], ignore_index=True
+                        )
+                df_resumos["Data"] = df_resumos["Data"].dt.strftime("%Y-%m-%d")
+            except Exception as e:
+                Log().log().error(f"Erro lendo arquivo do caso {a}")
+                Log().log().exception(e)
+        return df_resumos.to_json(orient="split")
+
+    def le_inviabilidades_decomps(self, casos: List[str]) -> pd.DataFrame:
         log = Log().log()
         # Descobre o caminho dos arquivos de estudo
         arqs_resumo = [
-            join(c, ARQUIVO_INVIABS_DECOMPS_RESUMIDAS)
-            for c in cfg.caminhos_casos
+            join(c, ARQUIVO_INVIABS_DECOMPS_RESUMIDAS) for c in casos
         ]
         df_resumos = pd.DataFrame()
-        log.info("Lendo informações de inviabilidades do DECOMP")
-        try:
-            for a in arqs_resumo:
-                # Lê o resumo do estudo
-                df = DB.le_com_retry(a)
-                if df_resumos.empty:
-                    df_resumos = df
-                else:
-                    df_resumos = pd.concat([df_resumos, df], ignore_index=True)
-        except Exception as e:
-            Log().log().error(f"Erro lendo arquivo do caso {a}")
-            Log().log().exception(e)
+        if len(arqs_resumo) > 0:
+            log.info("Lendo informações de inviabilidades do DECOMP")
+            try:
+                for a in arqs_resumo:
+                    # Lê o resumo do estudo
+                    df = self.le_com_retry(a)
+                    if df_resumos.empty:
+                        df_resumos = df
+                    else:
+                        df_resumos = pd.concat(
+                            [df_resumos, df], ignore_index=True
+                        )
+            except Exception as e:
+                Log().log().error(f"Erro lendo arquivo do caso {a}")
+                Log().log().exception(e)
         return df_resumos.to_json(orient="split")
 
-    @staticmethod
-    def resume_inviabilidades_decomps() -> pd.DataFrame:
+    def resume_inviabilidades_decomps(self, casos: List[str]) -> pd.DataFrame:
         def f(x: str) -> str:
             if "RESTRICAO ELETRICA" in x:
                 return "RE"
@@ -530,22 +527,18 @@ class DB:
             else:
                 return "OUTRO"
 
-        cfg = Configuracoes()
         log = Log().log()
         # Descobre o caminho dos arquivos de estudo
-        arqs_resumo = [
-            join(c, ARQUIVO_INVIABS_DECOMPS) for c in cfg.caminhos_casos
-        ]
+        arqs_resumo = [join(c, ARQUIVO_INVIABS_DECOMPS) for c in casos]
         arqs_inviabs_resumidas = [
-            join(c, ARQUIVO_INVIABS_DECOMPS_RESUMIDAS)
-            for c in cfg.caminhos_casos
+            join(c, ARQUIVO_INVIABS_DECOMPS_RESUMIDAS) for c in casos
         ]
         log.info("Resumindo informações de inviabilidades do DECOMP")
         try:
             for a, ar in zip(arqs_resumo, arqs_inviabs_resumidas):
                 log.info(f"Resumindo inviabilidades do caso em {a}")
                 # Lê o resumo do estudo
-                df = DB.le_com_retry(a)
+                df = self.le_com_retry(a)
                 identificador_caso = normpath(a).split(sep)[-2]
                 colunas_atuais = list(df.columns)
                 df["Estudo"] = identificador_caso
@@ -557,7 +550,7 @@ class DB:
                     .reset_index()
                 )
                 df = df.rename(columns={"Violacao": "Num. Violacoes"})
-                DB.escreve_com_retry(df, ar)
+                self.escreve_com_retry(df, ar)
         except Exception as e:
             Log().log().error(f"Erro lendo arquivo do caso {a}")
             Log().log().exception(e)

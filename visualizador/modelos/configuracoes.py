@@ -12,12 +12,13 @@ class Configuracoes(metaclass=Singleton):
     """
     Configurações para o visualizador de estudos encadeados.
     """
+
     def __init__(self) -> None:
         self._porta_servidor = None
         self._modo = None
         self._periodo_atualizacao_graficos = None
         self._periodo_atualizacao_caso_atual = None
-        self._caminhos_casos = None
+        self._prefixo_url = None
 
     @property
     def porta_servidor(self) -> int:
@@ -62,27 +63,28 @@ class Configuracoes(metaclass=Singleton):
         return self._periodo_atualizacao_caso_atual
 
     @property
-    def caminhos_casos(self) -> List[str]:
+    def prefixo_url(self) -> str:
         """
-        Caminhos absolutos até os diretórios raiz onde estão os
-        casos encadeados a serem observados
+        Prefixo da URL através do qual o visualizador é servido.
 
-        :return: Caminhos absolutos em unix-style
-        :rtype: List[str]
+        :return: Texto que compõe a URL
+        :rtype: str
         """
-        return self._caminhos_casos
+        return self._prefixo_url
 
     @classmethod
     def le_variaveis_ambiente(cls) -> "Configuracoes":
         cb = BuilderConfiguracoesENV()
         var_periodo_graficos = "PERIODO_ATUALIZACAO_GRAFICOS"
         var_periodo_caso = "PERIODO_ATUALIZACAO_CASO_ATUAL"
-        c = cb.porta_servidor("PORTA_SERVIDOR")\
-            .modo("MODO")\
-            .periodo_atualizacao_graficos(var_periodo_graficos)\
-            .periodo_atualizacao_caso_atual(var_periodo_caso)\
-            .caminhos_casos("CAMINHOS_CASOS")\
+        c = (
+            cb.porta_servidor("PORTA_SERVIDOR")
+            .modo("MODO")
+            .periodo_atualizacao_graficos(var_periodo_graficos)
+            .periodo_atualizacao_caso_atual(var_periodo_caso)
+            .prefixo_url("PREFIXO_URL")
             .build()
+        )
         return c
 
 
@@ -91,8 +93,8 @@ class BuilderConfiguracoes:
     Interface genérica para implementação do padrão Builder
     para a classe de Configurações.
     """
-    def __init__(self,
-                 configuracoes: Configuracoes):
+
+    def __init__(self, configuracoes: Configuracoes):
         self._configuracoes = configuracoes
         self._log = Log.log()
 
@@ -116,7 +118,7 @@ class BuilderConfiguracoes:
         pass
 
     @abstractmethod
-    def caminhos_casos(self, variavel: str):
+    def prefixo_url(self, variavel: str):
         pass
 
 
@@ -125,8 +127,8 @@ class BuilderConfiguracoesENV(BuilderConfiguracoes):
     Implementação do padrão builder para as configurações,
     no caso da construção a partir de variáveis de ambiente.
     """
-    def __init__(self,
-                 configuracoes: Configuracoes=Configuracoes()):
+
+    def __init__(self, configuracoes: Configuracoes = Configuracoes()):
         super().__init__(configuracoes=configuracoes)
 
     @staticmethod
@@ -161,8 +163,9 @@ class BuilderConfiguracoesENV(BuilderConfiguracoes):
         valor = BuilderConfiguracoesENV.__le_e_confere_variavel(variavel)
         valor = BuilderConfiguracoesENV.__valida_int(valor)
         if not (1024 <= valor <= 65535):
-            raise ValueError("A porta fornecida deve estar no intervalo" +
-                             " [1024, 65535].")
+            raise ValueError(
+                "A porta fornecida deve estar no intervalo" + " [1024, 65535]."
+            )
         self._configuracoes._porta_servidor = valor
         # Fluent method
         self._log.info(f"Porta do servidor: {valor}")
@@ -171,8 +174,10 @@ class BuilderConfiguracoesENV(BuilderConfiguracoes):
     def modo(self, variavel: str):
         valor = BuilderConfiguracoesENV.__le_e_confere_variavel(variavel)
         if valor not in ["DEV", "PROD"]:
-            raise ValueError("O modo de operação deve ser DEV ou PROD. " +
-                             f"Foi fornecido {valor}")
+            raise ValueError(
+                "O modo de operação deve ser DEV ou PROD. "
+                + f"Foi fornecido {valor}"
+            )
         self._configuracoes._modo = valor
         # Fluent method
         self._log.info(f"Porta do servidor: {valor}")
@@ -182,8 +187,10 @@ class BuilderConfiguracoesENV(BuilderConfiguracoes):
         valor = BuilderConfiguracoesENV.__le_e_confere_variavel(variavel)
         valor = BuilderConfiguracoesENV.__valida_float(valor)
         if valor <= 0:
-            raise ValueError("O período de atualização deve ser > 0. " +
-                             f"Fornecido: {valor}")
+            raise ValueError(
+                "O período de atualização deve ser > 0. "
+                + f"Fornecido: {valor}"
+            )
         self._configuracoes._periodo_atualizacao_graficos = valor
         # Fluent method
         self._log.info(f"Período de atualização de gráficos: {valor}")
@@ -193,24 +200,20 @@ class BuilderConfiguracoesENV(BuilderConfiguracoes):
         valor = BuilderConfiguracoesENV.__le_e_confere_variavel(variavel)
         valor = BuilderConfiguracoesENV.__valida_float(valor)
         if valor <= 0:
-            raise ValueError("O período de atualização deve ser > 0. " +
-                             f"Fornecido: {valor}")
+            raise ValueError(
+                "O período de atualização deve ser > 0. "
+                + f"Fornecido: {valor}"
+            )
         self._configuracoes._periodo_atualizacao_caso_atual = valor
         # Fluent method
         self._log.info(f"Período de atualização do caso atual: {valor}")
         return self
 
-    def caminhos_casos(self, variavel: str):
+    def prefixo_url(self, variavel: str):
         valor = BuilderConfiguracoesENV.__le_e_confere_variavel(variavel)
-        # Confere se os caminhos são válidos
-        valor = valor.split(',')
-        if not all([len(c) > 0 for c in valor]):
-            raise ValueError(f"Os caminhos informados {valor} são" +
-                             f" inválidos. Não podem ser vazios.")
-        for c in valor:
-            if not isdir(c):
-                raise ValueError(f"O caminho {c} não é um diretório.")
-        self._configuracoes._caminhos_casos = valor
+        if not valor.startswith("/"):
+            raise ValueError("O prefixo da URL sempre deve começar com /")
+        self._configuracoes._prefixo_url = valor
         # Fluent method
-        self._log.info(f"Caminhos dos casos: {valor}")
+        self._log.info(f"Prefixo da URL: {valor}")
         return self

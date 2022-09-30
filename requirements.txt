@@ -3,3 +3,4 @@ plotly
 dash
 python-dotenv
 waitress
+base62
