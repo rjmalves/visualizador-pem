@@ -563,7 +563,6 @@ class DB:
         log.info("Fim do resumo das inviabilidades do DECOMP")
 
     def le_sinteses_disponiveis_newave(self, casos: List[str]) -> List[str]:
-        log = Log().log()
         diretorios_sinteses_newave = [
             join(
                 c,
@@ -576,11 +575,9 @@ class DB:
         for d in diretorios_sinteses_newave:
             arquivos += [a.strip(EXTENSAO_SINTESE) for a in os.listdir(d)]
         arquivos = list(set(arquivos).difference(set(VARIAVEIS_GERAIS_NEWAVE)))
-        log.info(f"Dados operativos do NEWAVE: {arquivos}")
-        return sorted(arquivos)
+        return arquivos
 
     def le_sinteses_disponiveis_decomp(self, casos: List[str]) -> List[str]:
-        log = Log().log()
         diretorios_sinteses_decomp = [
             join(
                 c,
@@ -594,13 +591,13 @@ class DB:
             arquivos += [a.strip(EXTENSAO_SINTESE) for a in os.listdir(d)]
         arquivos = list(set(arquivos).difference(set(VARIAVEIS_GERAIS_DECOMP)))
         arquivos = [a for a in arquivos if "INVIABILIDADES" not in a]
-        log.info(f"Dados operativos do DECOMP: {arquivos}")
-        return sorted(arquivos)
+        return arquivos
 
     def le_dados_sintese_newave(
-        self, casos: List[str], variavel: str
+        self, casos: List[str], variavel: str, estagio=None
     ) -> pd.DataFrame:
-        log = Log().log()
+        if len(casos) == 0 or variavel is None:
+            return None
         diretorios_sinteses_newave = [
             join(
                 c,
@@ -610,22 +607,24 @@ class DB:
             for c in casos
         ]
         dfs = [
-            self.le_com_retry(d + variavel) for d in diretorios_sinteses_newave
+            self.le_com_retry(join(d, variavel))
+            for d in diretorios_sinteses_newave
         ]
         df_completo = pd.DataFrame()
         for c, df in zip(casos, dfs):
-            df["Caso"] = c
-            df_completo = pd.concat(
-                [df_completo, df.loc[df["Estagio"] == 1]], ignore_index=True
-            )
-        return df_completo
+            if df.empty:
+                continue
+            df["Estudo"] = c.split(os.sep)[-1]
+            df_caso = df.loc[df["Estagio"] == estagio] if estagio else df
+            df_completo = pd.concat([df_completo, df_caso], ignore_index=True)
+
+        return None if df_completo.empty else df_completo
 
     def le_dados_sintese_decomp(
-        self, casos: List[str], variavel: str
+        self, casos: List[str], variavel: str, estagio=None
     ) -> pd.DataFrame:
-        if variavel is None:
+        if len(casos) == 0 or variavel is None:
             return None
-        log = Log().log()
         diretorios_sinteses_decomp = [
             join(
                 c,
@@ -634,17 +633,15 @@ class DB:
             )
             for c in casos
         ]
-        log.info("CASOS: " + str(casos))
-        log.info("VARIAVEL: " + variavel)
         dfs = [
             self.le_com_retry(join(d, variavel))
             for d in diretorios_sinteses_decomp
         ]
-        log.info(dfs[0])
         df_completo = pd.DataFrame()
         for c, df in zip(casos, dfs):
+            if df.empty:
+                continue
             df["Estudo"] = c.split(os.sep)[-1]
-            df_completo = pd.concat(
-                [df_completo, df.loc[df["Estagio"] == 1]], ignore_index=True
-            )
-        return df_completo
+            df_caso = df.loc[df["Estagio"] == estagio] if estagio else df
+            df_completo = pd.concat([df_completo, df_caso], ignore_index=True)
+        return None if df_completo.empty else df_completo

@@ -1,4 +1,5 @@
 from email.utils import parsedate_to_datetime
+import os
 import dash
 from dash import dcc
 from dash import html
@@ -8,7 +9,7 @@ from plotly import tools
 from os.path import join, isfile
 import pandas as pd
 import socket
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 from typing import List
 from waitress import serve
 import base62
@@ -20,17 +21,55 @@ from visualizador.utils.db import DB
 CFG_FILENAME = "visualiza.cfg"
 
 DISCRETE_COLOR_PALLETE = [
-    "#f94144",
-    "#277da1",
-    "#90be6d",
-    "#f3722c",
-    "#577590",
-    "#f9c74f",
-    "#f8961e",
-    "#4d908e",
-    "#f9844a",
-    "#43aa8b",
+    "rgba(249, 65, 68, 1)",
+    "rgba(39, 125, 161, 1)",
+    "rgba(144, 190, 109, 1)",
+    "rgba(243, 114, 44, 1)",
+    "rgba(87, 117, 144, 1)",
+    "rgba(249, 199, 79, 1)",
+    "rgba(248, 150, 30, 1)",
+    "rgba(77, 144, 142, 1)",
+    "rgba(249, 132, 74, 1)",
+    "rgba(67, 170, 139, 1)",
 ]
+
+DISCRETE_COLOR_PALLETE_BACKGROUND = [
+    "rgba(249, 65, 68, 0.1)",
+    "rgba(39, 125, 161, 0.1)",
+    "rgba(144, 190, 109, 0.1)",
+    "rgba(243, 114, 44, 0.1)",
+    "rgba(87, 117, 144, 0.1)",
+    "rgba(249, 199, 79, 0.1)",
+    "rgba(248, 150, 30, 0.1)",
+    "rgba(77, 144, 142, 0.1)",
+    "rgba(249, 132, 74, 0.1)",
+    "rgba(67, 170, 139, 0.1)",
+]
+
+VARIABLE_LEGENDS = {
+    "COP": "R$",
+    "CFU": "R$",
+    "CMO": "R$ / MWh",
+    "CTER": "R$",
+    "DEF": "MWmed",
+    "EARMI": "%",
+    "EARPI": "%",
+    "EARMF": "%",
+    "EARPF": "%",
+    "ENAA": "MWmed",
+    "ENAM": "%",
+    "EVERNT": "MWmed",
+    "EVERT": "MWmed",
+    "GHID": "MWmed",
+    "GTER": "MWmed",
+    "INT": "MWmed",
+    "MER": "MWmed",
+    "QAFL": "m3/s",
+    "QDEF": "m3/s",
+    "VAGUA": "R$ / hm3",
+    "VARPI": "hm3",
+    "VARPF": "hm3",
+}
 
 
 class App:
@@ -427,7 +466,7 @@ class App:
                                 html.Div(
                                     [
                                         html.H3(
-                                            "DECOMP",
+                                            "VARIÁVEIS DA OPERAÇÂO",
                                             className="app-frame-title",
                                         ),
                                         html.Div(
@@ -435,7 +474,7 @@ class App:
                                                 html.Div(
                                                     children=[
                                                         dcc.Dropdown(
-                                                            id="escolhe-variavel-decomp",
+                                                            id="escolhe-variavel-operacao",
                                                             options=[],
                                                             value=None,
                                                             className="variable-dropdown",
@@ -445,7 +484,7 @@ class App:
                                                 ),
                                                 html.Button(
                                                     "CSV",
-                                                    id="decomp-btn",
+                                                    id="operacao-btn",
                                                     className="download-button",
                                                 ),
                                             ],
@@ -454,45 +493,9 @@ class App:
                                     ],
                                     className="graph-header",
                                 ),
-                                html.Div(dcc.Graph(id="grafico-decomp")),
+                                html.Div(dcc.Graph(id="grafico-operacao")),
                             ],
                             className="twelve column graph-with-dropdown-container first",
-                        ),
-                        html.Div(
-                            children=[
-                                html.Div(
-                                    [
-                                        html.H4(
-                                            "NEWAVE",
-                                            className="app-frame-title",
-                                        ),
-                                        html.Div(
-                                            children=[
-                                                html.Div(
-                                                    children=[
-                                                        dcc.Dropdown(
-                                                            id="escolhe-variavel-newave",
-                                                            options=[],
-                                                            value=None,
-                                                            className="variable-dropdown",
-                                                        )
-                                                    ],
-                                                    className="dropdown-container",
-                                                ),
-                                                html.Button(
-                                                    "CSV",
-                                                    id="newave-btn",
-                                                    className="download-button",
-                                                ),
-                                            ],
-                                            className="dropdown-button-container",
-                                        ),
-                                    ],
-                                    className="graph-header",
-                                ),
-                                dcc.Graph(id="grafico-newave"),
-                            ],
-                            className="twelve column graph-with-dropdown-container second",
                         ),
                         html.Div(
                             children=[
@@ -593,16 +596,10 @@ class App:
                     n_intervals=0,
                 ),
                 dcc.Store(id="dados-caso-atual"),
+                dcc.Store(id="dados-variaveis-operacao"),
                 dcc.Store(id="dados-grafico-estudo-encadeado"),
-                dcc.Store(id="dados-grafico-decomp"),
-                dcc.Store(id="dados-grafico-reservatorios"),
-                dcc.Store(id="dados-grafico-defluencias"),
-                dcc.Store(id="dados-grafico-newave"),
                 dcc.Store(id="dados-grafico-inviabs"),
-                dcc.Download(id="download-decomp"),
-                dcc.Download(id="download-reservatorios"),
-                dcc.Download(id="download-defluencias"),
-                dcc.Download(id="download-newave"),
+                dcc.Download(id="download-operacao"),
                 dcc.Download(id="download-inviabs"),
                 dcc.Download(id="download-tempo"),
                 html.Div(
@@ -614,38 +611,6 @@ class App:
             ],
             className="app-container",
         )
-
-        @self.__app.callback(
-            Output("dados-grafico-decomp", "data"),
-            Input("atualiza-dados-graficos", "n_intervals"),
-            Input("dados-caminhos-casos", "data"),
-        )
-        def atualiza_dados_grafico_decomps(interval, data):
-            return self.__db.le_resumo_decomps(data)
-
-        @self.__app.callback(
-            Output("dados-grafico-reservatorios", "data"),
-            Input("atualiza-dados-graficos", "n_intervals"),
-            Input("dados-caminhos-casos", "data"),
-        )
-        def atualiza_dados_grafico_reservatorios(interval, data):
-            return self.__db.le_resumo_reservatorios(data)
-
-        @self.__app.callback(
-            Output("dados-grafico-defluencias", "data"),
-            Input("atualiza-dados-graficos", "n_intervals"),
-            Input("dados-caminhos-casos", "data"),
-        )
-        def atualiza_dados_grafico_defluencias(interval, data):
-            return self.__db.le_resumo_defluencias(data)
-
-        @self.__app.callback(
-            Output("dados-grafico-newave", "data"),
-            Input("atualiza-dados-graficos", "n_intervals"),
-            Input("dados-caminhos-casos", "data"),
-        )
-        def atualiza_dados_grafico_newaves(interval, data):
-            return self.__db.le_resumo_newaves(data)
 
         @self.__app.callback(
             Output("dados-grafico-estudo-encadeado", "data"),
@@ -680,20 +645,17 @@ class App:
             return self.__db.resume_inviabilidades_decomps(data)
 
         @self.__app.callback(
-            Output("escolhe-variavel-newave", "options"),
+            Output("escolhe-variavel-operacao", "options"),
             Input("atualiza-dados-graficos", "n_intervals"),
             Input("dados-caminhos-casos", "data"),
         )
-        def atualiza_dados_dropdown_operacao_newave(interval, data):
-            return self.__db.le_sinteses_disponiveis_newave(data)
-
-        @self.__app.callback(
-            Output("escolhe-variavel-decomp", "options"),
-            Input("atualiza-dados-graficos", "n_intervals"),
-            Input("dados-caminhos-casos", "data"),
-        )
-        def atualiza_dados_dropdown_operacao_decomp(interval, data):
-            return self.__db.le_sinteses_disponiveis_decomp(data)
+        def atualiza_dados_dropdown_operacao(interval, data):
+            variaveis_newave = self.__db.le_sinteses_disponiveis_newave(data)
+            variaveis_decomp = self.__db.le_sinteses_disponiveis_decomp(data)
+            variaveis_unicas = list(
+                set(variaveis_newave).union(set(variaveis_decomp))
+            )
+            return sorted(variaveis_unicas)
 
         @self.__app.callback(
             Output("informacao-caso-atual", "children"),
@@ -712,100 +674,138 @@ class App:
             return App.gera_tabela(dados_locais)
 
         @self.__app.callback(
-            Output("grafico-decomp", "figure"),
-            Input("dados-caminhos-casos", "data"),
-            Input("escolhe-variavel-decomp", "value"),
+            Output("grafico-operacao", "figure"),
+            Input("dados-variaveis-operacao", "data"),
+            Input("escolhe-variavel-operacao", "value"),
         )
-        def gera_grafico_decomps(casos, variavel):
-            dados = self.__db.le_dados_sintese_decomp(casos, variavel)
-            if dados is None:
-                Log.log().warning("Sem dados de DECOMP")
+        def gera_grafico_operacao(dados_operacao, variavel):
+            if dados_operacao is None:
                 return self.__default_fig
-
-            fig = px.line(
-                dados,
-                x="Data Inicio",
-                y="mean",
-                color="Estudo",
-                color_discrete_sequence=DISCRETE_COLOR_PALLETE,
+            dados = pd.read_json(dados_operacao, orient="split")
+            dados["Data Inicio"] = pd.to_datetime(
+                dados["Data Inicio"], unit="ms"
             )
+            dados["Data Fim"] = pd.to_datetime(dados["Data Fim"], unit="ms")
+            estudos = dados["Estudo"].unique().tolist()
+            estagio = 1
+            filtro_newave = (dados["Programa"] == "NEWAVE") & (
+                dados["Estagio"] == estagio
+            )
+            filtro_decomp = (dados["Programa"] == "DECOMP") & (
+                dados["Estagio"] == estagio
+            )
+            df_newave = dados.loc[filtro_newave]
+            df_decomp = dados.loc[filtro_decomp]
+
+            fig = go.Figure()
+            for i, estudo in enumerate(estudos):
+                if df_newave is not None:
+                    estudo_newave = df_newave.loc[
+                        df_newave["Estudo"] == estudo
+                    ]
+                    if not estudo_newave.empty:
+                        fig.add_trace(
+                            go.Scatter(
+                                x=estudo_newave["Data Inicio"],
+                                y=estudo_newave["mean"],
+                                line={
+                                    "color": DISCRETE_COLOR_PALLETE[i],
+                                    "dash": "dot",
+                                    "width": 2,
+                                },
+                                name=estudo,
+                                legendgroup="NEWAVE",
+                                legendgrouptitle_text="NEWAVE",
+                            )
+                        )
+                        fig.add_trace(
+                            go.Scatter(
+                                x=estudo_newave["Data Inicio"],
+                                y=estudo_newave["p10"],
+                                line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[
+                                    i
+                                ],
+                                legendgroup="NEWAVE",
+                                name="p10",
+                                showlegend=False,
+                            )
+                        )
+                        fig.add_trace(
+                            go.Scatter(
+                                x=estudo_newave["Data Inicio"],
+                                y=estudo_newave["p90"],
+                                line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[
+                                    i
+                                ],
+                                fill="tonexty",
+                                legendgroup="NEWAVE",
+                                name="p90",
+                                showlegend=False,
+                            )
+                        )
+                if df_decomp is not None:
+                    estudo_decomp = df_decomp.loc[
+                        df_decomp["Estudo"] == estudo
+                    ]
+                    if not estudo_decomp.empty:
+                        fig.add_trace(
+                            go.Scatter(
+                                x=estudo_decomp["Data Inicio"],
+                                y=estudo_decomp["mean"],
+                                line={
+                                    "color": DISCRETE_COLOR_PALLETE[i],
+                                    "width": 3,
+                                },
+                                name=estudo,
+                                legendgroup="DECOMP",
+                                legendgrouptitle_text="DECOMP",
+                            )
+                        )
+
             fig.update_layout(self.__graph_layout)
+            if variavel is not None:
+                fig.update_layout(
+                    xaxis_title="Data Inicio",
+                    yaxis_title=VARIABLE_LEGENDS.get(
+                        variavel.split("_")[0], ""
+                    ),
+                    hovermode="x unified",
+                )
             return fig
 
         @self.__app.callback(
-            Output("grafico-reservatorios", "figure"),
-            Input("dados-grafico-reservatorios", "data"),
-            Input("escolhe-variavel-reservatorios", "value"),
+            Output("dados-variaveis-operacao", "data"),
+            Input("atualiza-dados-graficos", "n_intervals"),
+            Input("dados-caminhos-casos", "data"),
+            Input("escolhe-variavel-operacao", "value"),
         )
-        def gera_grafico_reservatorios(dados: str, variavel: str):
-            if dados is None:
-                Log.log().warning("Sem dados de reservatórios")
-                return self.__default_fig
-            dados_locais: pd.DataFrame = pd.read_json(dados, orient="split")
-            if dados_locais.empty:
-                Log.log().warning("Sem dados de reservatórios")
-                return self.__default_fig
-            dados_locais = dados_locais.loc[
-                dados_locais["Estagio"] == "Estágio 1", :
-            ]
-            dados_locais.sort_values(["Estudo", "Caso"], inplace=True)
-            fig = px.line(
-                dados_locais,
-                x="Caso",
-                y=variavel,
-                color="Estudo",
-                layout=self.__graph_layout,
-            )
-            return fig
-
-        @self.__app.callback(
-            Output("grafico-defluencias", "figure"),
-            Input("dados-grafico-defluencias", "data"),
-            Input("escolhe-variavel-defluencias", "value"),
-        )
-        def gera_grafico_defluencias(dados: str, variavel: str):
-            if dados is None:
-                Log.log().warning("Sem dados de defluências")
-                return self.__default_fig
-            dados_locais: pd.DataFrame = pd.read_json(dados, orient="split")
-            if dados_locais.empty:
-                Log.log().warning("Sem dados de defluências")
-                return self.__default_fig
-            dados_locais = dados_locais.loc[
-                dados_locais["Estagio"] == "Estágio 1", :
-            ]
-            dados_locais.sort_values(["Estudo", "Caso"], inplace=True)
-            fig = px.line(
-                dados_locais,
-                x="Caso",
-                y=variavel,
-                color="Estudo",
-                layout=self.__graph_layout,
-            )
-            return fig
-
-        @self.__app.callback(
-            Output("grafico-newave", "figure"),
-            Input("dados-grafico-newave", "data"),
-            Input("escolhe-variavel-newave", "value"),
-        )
-        def gera_grafico_newaves(dados: str, variavel: str):
-            if dados is None:
-                Log.log().warning("Sem dados de NEWAVE")
-                return self.__default_fig
-            dados_locais: pd.DataFrame = pd.read_json(dados, orient="split")
-            if dados_locais.empty:
-                Log.log().warning("Sem dados de NEWAVE")
-                return self.__default_fig
-            dados_locais.sort_values(["Estudo", "Caso"], inplace=True)
-            fig = px.line(
-                dados_locais,
-                x="Caso",
-                y=variavel,
-                color="Estudo",
-                layout=self.__graph_layout,
-            )
-            return fig
+        def atualiza_dados_variaveis_operacao(
+            interval, casos: str, variavel: str
+        ):
+            df_newave = self.__db.le_dados_sintese_newave(casos, variavel)
+            df_completo = pd.DataFrame()
+            if df_newave is not None:
+                cols_newave = df_newave.columns.to_list()
+                df_newave["Programa"] = "NEWAVE"
+                df_completo = pd.concat(
+                    [df_completo, df_newave[["Programa"] + cols_newave]],
+                    ignore_index=True,
+                )
+            df_decomp = self.__db.le_dados_sintese_decomp(casos, variavel)
+            if df_decomp is not None:
+                cols_decomp = df_decomp.columns.to_list()
+                df_decomp["Programa"] = "DECOMP"
+                df_completo = pd.concat(
+                    [
+                        df_completo,
+                        df_decomp[["Programa"] + cols_decomp],
+                    ],
+                    ignore_index=True,
+                )
+            if df_completo.empty:
+                return None
+            else:
+                return df_completo.to_json(orient="split")
 
         @self.__app.callback(
             Output("grafico-inviabs", "figure"),
@@ -863,74 +863,27 @@ class App:
             return fig
 
         @self.__app.callback(
-            Output("download-decomp", "data"),
-            Input("decomp-btn", "n_clicks"),
-            Input("dados-caminhos-casos", "data"),
+            Output("download-operacao", "data"),
+            Input("operacao-btn", "n_clicks"),
+            State("dados-variaveis-operacao", "data"),
         )
-        def gera_csv_decomp(n_clicks, data):
+        def gera_csv_operacao(n_clicks, dados_operacao):
             if n_clicks is None:
                 return
-            df = pd.read_json(
-                self.__db.le_resumo_decomps(data), orient="split"
-            )
-            return dcc.send_data_frame(df.to_csv, "decomps.csv")
-
-        @self.__app.callback(
-            Output("download-reservatorios", "data"),
-            Input("reservatorios-btn", "n_clicks"),
-            Input("dados-caminhos-casos", "data"),
-        )
-        def gera_csv_reservatorios(n_clicks, data):
-            if n_clicks is None:
-                return
-            df = pd.read_json(
-                self.__db.le_resumo_reservatorios(data), orient="split"
-            )
-            return dcc.send_data_frame(df.to_csv, "reservatorios.csv")
-
-        @self.__app.callback(
-            Output("download-defluencias", "data"),
-            Input("defluencias-btn", "n_clicks"),
-            Input("dados-caminhos-casos", "data"),
-        )
-        def gera_csv_defluencias(n_clicks, data):
-            if n_clicks is None:
-                return
-            df = pd.read_json(
-                self.__db.le_resumo_defluencias(data), orient="split"
-            )
-            return dcc.send_data_frame(df.to_csv, "defluencias.csv")
-
-        @self.__app.callback(
-            Output("download-newave", "data"),
-            Input("newave-btn", "n_clicks"),
-            Input("dados-caminhos-casos", "data"),
-        )
-        def gera_csv_newave(n_clicks, data):
-            if n_clicks is None:
-                return
-            df = pd.read_json(
-                self.__db.le_resumo_newaves(data), orient="split"
-            )
-            return dcc.send_data_frame(df.to_csv, "newaves.csv")
-
-        @self.__app.callback(
-            Output("download-inviabs", "data"),
-            Input("inviab-btn", "n_clicks"),
-            Input("dados-caminhos-casos", "data"),
-        )
-        def gera_csv_inviabs(n_clicks, data):
-            if n_clicks is None:
-                return
-            df = pd.read_json(
-                self.__db.le_inviabilidades_decomps(data), orient="split"
-            )
-            return dcc.send_data_frame(df.to_csv, "inviabilidades.csv")
+            if dados_operacao is not None:
+                dados = pd.read_json(dados_operacao, orient="split")
+                dados["Data Inicio"] = pd.to_datetime(
+                    dados["Data Inicio"], unit="ms"
+                )
+                dados["Data Fim"] = pd.to_datetime(
+                    dados["Data Fim"], unit="ms"
+                )
+                return dcc.send_data_frame(dados.to_csv, "operacao.csv")
 
         @self.__app.callback(
             Output("download-tempo", "data"),
             Input("tempo-btn", "n_clicks"),
-            Input("dados-caminhos-casos", "data"),
+            State("dados-caminhos-casos", "data"),
         )
         def gera_csv_tempo(n_clicks, data):
             if n_clicks is None:
