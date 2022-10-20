@@ -19,6 +19,9 @@ class Configuracoes(metaclass=Singleton):
         self._periodo_atualizacao_graficos = None
         self._periodo_atualizacao_caso_atual = None
         self._prefixo_url = None
+        self._diretorio_sintese = None
+        self._diretorio_newave = None
+        self._diretorio_decomp = None
 
     @property
     def porta_servidor(self) -> int:
@@ -72,6 +75,36 @@ class Configuracoes(metaclass=Singleton):
         """
         return self._prefixo_url
 
+    @property
+    def diretorio_sintese(self) -> str:
+        """
+        Diretório no qual se encontram as sínteses.
+
+        :return: Nome da pasta.
+        :rtype: str
+        """
+        return self._diretorio_sintese
+
+    @property
+    def diretorio_newave(self) -> str:
+        """
+        Diretório no qual se encontram informações do NEWAVE.
+
+        :return: Nome da pasta.
+        :rtype: str
+        """
+        return self._diretorio_newave
+
+    @property
+    def diretorio_decomp(self) -> str:
+        """
+        Diretório no qual se encontram informações do DECOMP.
+
+        :return: Nome da pasta.
+        :rtype: str
+        """
+        return self._diretorio_decomp
+
     @classmethod
     def le_variaveis_ambiente(cls) -> "Configuracoes":
         cb = BuilderConfiguracoesENV()
@@ -83,6 +116,9 @@ class Configuracoes(metaclass=Singleton):
             .periodo_atualizacao_graficos(var_periodo_graficos)
             .periodo_atualizacao_caso_atual(var_periodo_caso)
             .prefixo_url("PREFIXO_URL")
+            .diretorio_sintese("DIRETORIO_SINTESE")
+            .diretorio_newave("DIRETORIO_NEWAVE")
+            .diretorio_decomp("DIRETORIO_DECOMP")
             .build()
         )
         return c
@@ -119,6 +155,18 @@ class BuilderConfiguracoes:
 
     @abstractmethod
     def prefixo_url(self, variavel: str):
+        pass
+
+    @abstractmethod
+    def diretorio_sintese(self, variavel: str):
+        pass
+
+    @abstractmethod
+    def diretorio_newave(self, variavel: str):
+        pass
+
+    @abstractmethod
+    def diretorio_decomp(self, variavel: str):
         pass
 
 
@@ -216,4 +264,25 @@ class BuilderConfiguracoesENV(BuilderConfiguracoes):
         self._configuracoes._prefixo_url = valor
         # Fluent method
         self._log.info(f"Prefixo da URL: {valor}")
+        return self
+
+    def diretorio_sintese(self, variavel: str):
+        valor = BuilderConfiguracoesENV.__le_e_confere_variavel(variavel)
+        self._configuracoes._diretorio_sintese = valor
+        # Fluent method
+        self._log.info(f"Diretório das sínteses: {valor}")
+        return self
+
+    def diretorio_newave(self, variavel: str):
+        valor = BuilderConfiguracoesENV.__le_e_confere_variavel(variavel)
+        self._configuracoes._diretorio_newave = valor
+        # Fluent method
+        self._log.info(f"Diretório do NEWAVE: {valor}")
+        return self
+
+    def diretorio_decomp(self, variavel: str):
+        valor = BuilderConfiguracoesENV.__le_e_confere_variavel(variavel)
+        self._configuracoes._diretorio_decomp = valor
+        # Fluent method
+        self._log.info(f"Diretório do DECOMP: {valor}")
         return self

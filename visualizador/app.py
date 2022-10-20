@@ -19,6 +19,19 @@ from visualizador.utils.db import DB
 
 CFG_FILENAME = "visualiza.cfg"
 
+DISCRETE_COLOR_PALLETE = [
+    "#f94144",
+    "#277da1",
+    "#90be6d",
+    "#f3722c",
+    "#577590",
+    "#f9c74f",
+    "#f8961e",
+    "#4d908e",
+    "#f9844a",
+    "#43aa8b",
+]
+
 
 class App:
     def __init__(self) -> None:
@@ -363,6 +376,11 @@ class App:
     def __inicializa(self):
         cfg = Configuracoes()
         self.__db = DB()
+        self.__graph_layout = go.Layout(
+            plot_bgcolor="rgba(158, 149, 128, 0.2)",
+            paper_bgcolor="rgba(255,255,255,1)",
+        )
+        self.__default_fig = go.Figure(layout=self.__graph_layout)
         self.__app.layout = html.Div(
             [
                 html.Div(
@@ -370,11 +388,11 @@ class App:
                         html.Div(
                             children=[
                                 html.H1(
-                                    "Visualizador de Estudos Encadeados",
+                                    "VISUALIZADOR DE ESTUDOS ENCADEADOS",
                                     className="app-header-title",
                                 ),
                                 html.H2(
-                                    "Gerência de Metodologias e Modelos Energéticos - PEM",
+                                    "GERÊNCIA DE METODOLOGIAS E MODELOS ENERGÉTICOS - PEM",
                                     className="app-header-subtitle",
                                 ),
                             ],
@@ -417,13 +435,9 @@ class App:
                                                 html.Div(
                                                     children=[
                                                         dcc.Dropdown(
-                                                            id="escolhe-variavel-decomps",
-                                                            options=App.__opcoes_dropdown_decomp(),
-                                                            value=App.__opcoes_dropdown_decomp()[
-                                                                0
-                                                            ][
-                                                                "value"
-                                                            ],
+                                                            id="escolhe-variavel-decomp",
+                                                            options=[],
+                                                            value=None,
                                                             className="variable-dropdown",
                                                         )
                                                     ],
@@ -440,87 +454,7 @@ class App:
                                     ],
                                     className="graph-header",
                                 ),
-                                dcc.Graph(id="grafico-decomps"),
-                            ],
-                            className="twelve column graph-with-dropdown-container first",
-                        ),
-                        html.Div(
-                            children=[
-                                html.Div(
-                                    [
-                                        html.H3(
-                                            "RESERVATORIOS",
-                                            className="app-frame-title",
-                                        ),
-                                        html.Div(
-                                            children=[
-                                                html.Div(
-                                                    children=[
-                                                        dcc.Dropdown(
-                                                            id="escolhe-variavel-reservatorios",
-                                                            options=App.__opcoes_dropdown_reservatorios(),
-                                                            value=App.__opcoes_dropdown_reservatorios()[
-                                                                0
-                                                            ][
-                                                                "value"
-                                                            ],
-                                                            className="variable-dropdown",
-                                                        )
-                                                    ],
-                                                    className="dropdown-container",
-                                                ),
-                                                html.Button(
-                                                    "CSV",
-                                                    id="reservatorios-btn",
-                                                    className="download-button",
-                                                ),
-                                            ],
-                                            className="dropdown-button-container",
-                                        ),
-                                    ],
-                                    className="graph-header",
-                                ),
-                                dcc.Graph(id="grafico-reservatorios"),
-                            ],
-                            className="twelve column graph-with-dropdown-container first",
-                        ),
-                        html.Div(
-                            children=[
-                                html.Div(
-                                    [
-                                        html.H3(
-                                            "DEFLUENCIAS",
-                                            className="app-frame-title",
-                                        ),
-                                        html.Div(
-                                            children=[
-                                                html.Div(
-                                                    children=[
-                                                        dcc.Dropdown(
-                                                            id="escolhe-variavel-defluencias",
-                                                            options=App.__opcoes_dropdown_defluencias(),
-                                                            value=App.__opcoes_dropdown_defluencias()[
-                                                                0
-                                                            ][
-                                                                "value"
-                                                            ],
-                                                            className="variable-dropdown",
-                                                        )
-                                                    ],
-                                                    className="dropdown-container",
-                                                ),
-                                                html.Button(
-                                                    "CSV",
-                                                    id="defluencias-btn",
-                                                    className="download-button",
-                                                ),
-                                            ],
-                                            className="dropdown-button-container",
-                                        ),
-                                    ],
-                                    className="graph-header",
-                                ),
-                                dcc.Graph(id="grafico-defluencias"),
+                                html.Div(dcc.Graph(id="grafico-decomp")),
                             ],
                             className="twelve column graph-with-dropdown-container first",
                         ),
@@ -537,13 +471,9 @@ class App:
                                                 html.Div(
                                                     children=[
                                                         dcc.Dropdown(
-                                                            id="escolhe-variavel-newaves",
-                                                            options=App.__opcoes_dropdown_newave(),
-                                                            value=App.__opcoes_dropdown_newave()[
-                                                                -1
-                                                            ][
-                                                                "value"
-                                                            ],
+                                                            id="escolhe-variavel-newave",
+                                                            options=[],
+                                                            value=None,
                                                             className="variable-dropdown",
                                                         )
                                                     ],
@@ -560,7 +490,7 @@ class App:
                                     ],
                                     className="graph-header",
                                 ),
-                                dcc.Graph(id="grafico-newaves"),
+                                dcc.Graph(id="grafico-newave"),
                             ],
                             className="twelve column graph-with-dropdown-container second",
                         ),
@@ -664,10 +594,10 @@ class App:
                 ),
                 dcc.Store(id="dados-caso-atual"),
                 dcc.Store(id="dados-grafico-estudo-encadeado"),
-                dcc.Store(id="dados-grafico-decomps"),
+                dcc.Store(id="dados-grafico-decomp"),
                 dcc.Store(id="dados-grafico-reservatorios"),
                 dcc.Store(id="dados-grafico-defluencias"),
-                dcc.Store(id="dados-grafico-newaves"),
+                dcc.Store(id="dados-grafico-newave"),
                 dcc.Store(id="dados-grafico-inviabs"),
                 dcc.Download(id="download-decomp"),
                 dcc.Download(id="download-reservatorios"),
@@ -686,7 +616,7 @@ class App:
         )
 
         @self.__app.callback(
-            Output("dados-grafico-decomps", "data"),
+            Output("dados-grafico-decomp", "data"),
             Input("atualiza-dados-graficos", "n_intervals"),
             Input("dados-caminhos-casos", "data"),
         )
@@ -710,7 +640,7 @@ class App:
             return self.__db.le_resumo_defluencias(data)
 
         @self.__app.callback(
-            Output("dados-grafico-newaves", "data"),
+            Output("dados-grafico-newave", "data"),
             Input("atualiza-dados-graficos", "n_intervals"),
             Input("dados-caminhos-casos", "data"),
         )
@@ -750,6 +680,22 @@ class App:
             return self.__db.resume_inviabilidades_decomps(data)
 
         @self.__app.callback(
+            Output("escolhe-variavel-newave", "options"),
+            Input("atualiza-dados-graficos", "n_intervals"),
+            Input("dados-caminhos-casos", "data"),
+        )
+        def atualiza_dados_dropdown_operacao_newave(interval, data):
+            return self.__db.le_sinteses_disponiveis_newave(data)
+
+        @self.__app.callback(
+            Output("escolhe-variavel-decomp", "options"),
+            Input("atualiza-dados-graficos", "n_intervals"),
+            Input("dados-caminhos-casos", "data"),
+        )
+        def atualiza_dados_dropdown_operacao_decomp(interval, data):
+            return self.__db.le_sinteses_disponiveis_decomp(data)
+
+        @self.__app.callback(
             Output("informacao-caso-atual", "children"),
             Input("dados-caso-atual", "data"),
         )
@@ -766,33 +712,24 @@ class App:
             return App.gera_tabela(dados_locais)
 
         @self.__app.callback(
-            Output("grafico-decomps", "figure"),
-            Input("dados-grafico-decomps", "data"),
-            Input("escolhe-variavel-decomps", "value"),
+            Output("grafico-decomp", "figure"),
+            Input("dados-caminhos-casos", "data"),
+            Input("escolhe-variavel-decomp", "value"),
         )
-        def gera_grafico_decomps(dados: str, variavel: str):
+        def gera_grafico_decomps(casos, variavel):
+            dados = self.__db.le_dados_sintese_decomp(casos, variavel)
             if dados is None:
                 Log.log().warning("Sem dados de DECOMP")
-                return go.Figure()
-            dados_locais: pd.DataFrame = pd.read_json(dados, orient="split")
-            if dados_locais.empty:
-                Log.log().warning("Sem dados de DECOMP")
-                return go.Figure()
+                return self.__default_fig
 
-            if "EARM" not in variavel:
-                casos_sem_inicial = list(dados_locais["Caso"].unique())
-                casos_sem_inicial = casos_sem_inicial[1:]
-                filtro = dados_locais["Caso"].isin(casos_sem_inicial)
-                dados_locais = dados_locais.loc[filtro, :]
-
-            def sortfun(col: pd.Series):
-                col.loc[col == "Inicial"] = ""
-                return col
-
-            dados_locais.sort_values(
-                ["Estudo", "Caso"], inplace=True, key=sortfun
+            fig = px.line(
+                dados,
+                x="Data Inicio",
+                y="mean",
+                color="Estudo",
+                color_discrete_sequence=DISCRETE_COLOR_PALLETE,
             )
-            fig = px.line(dados_locais, x="Caso", y=variavel, color="Estudo")
+            fig.update_layout(self.__graph_layout)
             return fig
 
         @self.__app.callback(
@@ -803,16 +740,22 @@ class App:
         def gera_grafico_reservatorios(dados: str, variavel: str):
             if dados is None:
                 Log.log().warning("Sem dados de reservatórios")
-                return go.Figure()
+                return self.__default_fig
             dados_locais: pd.DataFrame = pd.read_json(dados, orient="split")
             if dados_locais.empty:
                 Log.log().warning("Sem dados de reservatórios")
-                return go.Figure()
+                return self.__default_fig
             dados_locais = dados_locais.loc[
                 dados_locais["Estagio"] == "Estágio 1", :
             ]
             dados_locais.sort_values(["Estudo", "Caso"], inplace=True)
-            fig = px.line(dados_locais, x="Caso", y=variavel, color="Estudo")
+            fig = px.line(
+                dados_locais,
+                x="Caso",
+                y=variavel,
+                color="Estudo",
+                layout=self.__graph_layout,
+            )
             return fig
 
         @self.__app.callback(
@@ -823,33 +766,45 @@ class App:
         def gera_grafico_defluencias(dados: str, variavel: str):
             if dados is None:
                 Log.log().warning("Sem dados de defluências")
-                return go.Figure()
+                return self.__default_fig
             dados_locais: pd.DataFrame = pd.read_json(dados, orient="split")
             if dados_locais.empty:
                 Log.log().warning("Sem dados de defluências")
-                return go.Figure()
+                return self.__default_fig
             dados_locais = dados_locais.loc[
                 dados_locais["Estagio"] == "Estágio 1", :
             ]
             dados_locais.sort_values(["Estudo", "Caso"], inplace=True)
-            fig = px.line(dados_locais, x="Caso", y=variavel, color="Estudo")
+            fig = px.line(
+                dados_locais,
+                x="Caso",
+                y=variavel,
+                color="Estudo",
+                layout=self.__graph_layout,
+            )
             return fig
 
         @self.__app.callback(
-            Output("grafico-newaves", "figure"),
-            Input("dados-grafico-newaves", "data"),
-            Input("escolhe-variavel-newaves", "value"),
+            Output("grafico-newave", "figure"),
+            Input("dados-grafico-newave", "data"),
+            Input("escolhe-variavel-newave", "value"),
         )
         def gera_grafico_newaves(dados: str, variavel: str):
             if dados is None:
                 Log.log().warning("Sem dados de NEWAVE")
-                return go.Figure()
+                return self.__default_fig
             dados_locais: pd.DataFrame = pd.read_json(dados, orient="split")
             if dados_locais.empty:
                 Log.log().warning("Sem dados de NEWAVE")
-                return go.Figure()
+                return self.__default_fig
             dados_locais.sort_values(["Estudo", "Caso"], inplace=True)
-            fig = px.line(dados_locais, x="Caso", y=variavel, color="Estudo")
+            fig = px.line(
+                dados_locais,
+                x="Caso",
+                y=variavel,
+                color="Estudo",
+                layout=self.__graph_layout,
+            )
             return fig
 
         @self.__app.callback(

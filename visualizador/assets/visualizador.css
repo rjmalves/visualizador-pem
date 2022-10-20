@@ -1,5 +1,5 @@
 body {
-    background-color: aliceblue;
+    background-color: #dad7cd;
 }
 
 .app-header {
@@ -9,12 +9,18 @@ body {
 }
 
 .app-header-title {
-    letter-spacing: 0.23rem;
-    font-weight: 500;
+    letter-spacing: 0.05rem;
+    font-weight: bold;
+    font-size: 4rem;
+    display: flex;
+    color: #344e41;
 }
 
 .app-header-subtitle {
-    color: rgba(61, 80, 61, 0.74);
+    color: #588157;
+    font-size: 2.5rem;
+    letter-spacing: 0.03rem;
+    font-weight: lighter;
 }
 
 .app-header-img {
@@ -29,16 +35,16 @@ body {
 }
 
 .app-table-frame-title {
-    color: #fff;
+    color: #dad7cd;
     letter-spacing: 0.3rem;
-    font-size: 1em;
-    padding: 1px 1px 1px 5px;
+    font-size: 2rem;
+    padding: 10px 1px 1px 15px;
 }
 
 .app-frame-title {
-    color: #fff;
+    color: #dad7cd;
     letter-spacing: 0.3rem;
-    font-size: 1em;
+    font-size: 2rem;
     padding: 10px 5px 5px 25px;
 }
 
@@ -68,7 +74,7 @@ body {
 .current-case-table-container {
     display: flex;
     flex-direction: column;
-    background-color: #b9c5dd;
+    background-color: #344e41;
     border-radius: 0.55rem;
     padding: 10px 10px 25px 10px;
     margin: 10px 10px 25px 10px;
@@ -84,36 +90,74 @@ body {
 .graph-header {
     display: flex;
     justify-content: space-between;
-    color: #DFE3E8;
+    color: #e8e4df;
 }
 
 .dropdown-container {
     padding: 15px 15px 15px 15px;
     min-width: 250px;
-    color: black;
+    color: rgb(0, 0, 0);
     display: flex;
 }
 
-.variable-dropdown {
+.variable-dropdown  {
     min-width: 200px;
+    color: #344e41;
+    font-weight: bold;
+}
+
+.variable-dropdown .Select-control  {
+    background-color: #dad7cd;
+}
+
+.variable-dropdown .VirtualizedSelectOption {
+    background-color: #dad7cd;
+    color: #344e41;
+}
+
+.variable-dropdown .VirtualizedSelectFocusedOption {
+    background-color: #344e41;
+    color: #dad7cd;
 }
 
 .download-button {
-    color: white;
+    color: #344e41;
+    background-color: #dad7cd;
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.download-button:hover {
+    background-color: #344e41;
+    color: #dad7cd;
 }
 
 .dropdown-button-container {
     display: flex;
     align-items: center;
-    padding-right: 20px;
+    padding-right: 10px;
 }
 
 .graph-with-dropdown-container {
     display: flex;
     flex-direction: column;
-    background-color: #082255;
-    border-radius: 0.55rem;
+    background-color: #344e41;
+    border-radius: 1rem;
     box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+}
+
+.graph-with-dropdown-container .dash-graph {
+    padding: 10px;
+}
+
+.graph-with-dropdown-container .svg-container {
+    width: 100%;
+    padding: 10px;
+}
+
+.graph-with-dropdown-container .main-svg {
+    border-radius: 1rem;
+    width: 100%;
 }
 
 .first {
@@ -140,7 +184,7 @@ body {
         order: 0;
     }
     .app-header-title {
-        font-size: 1.5em;
+        font-size: 0.5rem;
         padding-top: 15px;
     }
 }

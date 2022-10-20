@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import numpy as np
 import time
@@ -8,6 +9,7 @@ from os import sep, stat
 from typing import List
 from os.path import join, normpath
 
+from visualizador.modelos.configuracoes import Configuracoes
 from visualizador.modelos.log import Log
 
 ARQUIVO_RESUMO_PROXIMO_CASO = "proximo_caso.json"
@@ -23,6 +25,10 @@ ARQUIVO_INVIABS_DECOMPS_RESUMIDAS = "inviabilidades_decomps_resumidas.csv"
 
 MAX_RETRY = 5
 INTERVALO_RETRY = 0.1
+
+EXTENSAO_SINTESE = ".parquet.gzip"
+VARIAVEIS_GERAIS_NEWAVE = ["COMPOSICAO_CUSTOS", "CONVERGENCIA", "TEMPO"]
+VARIAVEIS_GERAIS_DECOMP = ["PROBABILIDADES", "CONVERGENCIA", "TEMPO"]
 
 
 class DB:
@@ -50,7 +56,7 @@ class DB:
         num_retry = 0
         while num_retry < MAX_RETRY:
             try:
-                df = pd.read_csv(arq, index_col=0)
+                df = pd.read_parquet(arq + EXTENSAO_SINTESE)
                 return df
             except OSError:
                 num_retry += 1
@@ -555,3 +561,90 @@ class DB:
             Log().log().error(f"Erro lendo arquivo do caso {a}")
             Log().log().exception(e)
         log.info("Fim do resumo das inviabilidades do DECOMP")
+
+    def le_sinteses_disponiveis_newave(self, casos: List[str]) -> List[str]:
+        log = Log().log()
+        diretorios_sinteses_newave = [
+            join(
+                c,
+                Configuracoes().diretorio_sintese,
+                Configuracoes().diretorio_newave,
+            )
+            for c in casos
+        ]
+        arquivos = []
+        for d in diretorios_sinteses_newave:
+            arquivos += [a.strip(EXTENSAO_SINTESE) for a in os.listdir(d)]
+        arquivos = list(set(arquivos).difference(set(VARIAVEIS_GERAIS_NEWAVE)))
+        log.info(f"Dados operativos do NEWAVE: {arquivos}")
+        return sorted(arquivos)
+
+    def le_sinteses_disponiveis_decomp(self, casos: List[str]) -> List[str]:
+        log = Log().log()
+        diretorios_sinteses_decomp = [
+            join(
+                c,
+                Configuracoes().diretorio_sintese,
+                Configuracoes().diretorio_decomp,
+            )
+            for c in casos
+        ]
+        arquivos = []
+        for d in diretorios_sinteses_decomp:
+            arquivos += [a.strip(EXTENSAO_SINTESE) for a in os.listdir(d)]
+        arquivos = list(set(arquivos).difference(set(VARIAVEIS_GERAIS_DECOMP)))
+        arquivos = [a for a in arquivos if "INVIABILIDADES" not in a]
+        log.info(f"Dados operativos do DECOMP: {arquivos}")
+        return sorted(arquivos)
+
+    def le_dados_sintese_newave(
+        self, casos: List[str], variavel: str
+    ) -> pd.DataFrame:
+        log = Log().log()
+        diretorios_sinteses_newave = [
+            join(
+                c,
+                Configuracoes().diretorio_sintese,
+                Configuracoes().diretorio_newave,
+            )
+            for c in casos
+        ]
+        dfs = [
+            self.le_com_retry(d + variavel) for d in diretorios_sinteses_newave
+        ]
+        df_completo = pd.DataFrame()
+        for c, df in zip(casos, dfs):
+            df["Caso"] = c
+            df_completo = pd.concat(
+                [df_completo, df.loc[df["Estagio"] == 1]], ignore_index=True
+            )
+        return df_completo
+
+    def le_dados_sintese_decomp(
+        self, casos: List[str], variavel: str
+    ) -> pd.DataFrame:
+        if variavel is None:
+            return None
+        log = Log().log()
+        diretorios_sinteses_decomp = [
+            join(
+                c,
+                Configuracoes().diretorio_sintese,
+                Configuracoes().diretorio_decomp,
+            )
+            for c in casos
+        ]
+        log.info("CASOS: " + str(casos))
+        log.info("VARIAVEL: " + variavel)
+        dfs = [
+            self.le_com_retry(join(d, variavel))
+            for d in diretorios_sinteses_decomp
+        ]
+        log.info(dfs[0])
+        df_completo = pd.DataFrame()
+        for c, df in zip(casos, dfs):
+            df["Estudo"] = c.split(os.sep)[-1]
+            df_completo = pd.concat(
+                [df_completo, df.loc[df["Estagio"] == 1]], ignore_index=True
+            )
+        return df_completo
