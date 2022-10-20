@@ -1,11 +1,8 @@
-from email.utils import parsedate_to_datetime
-import os
 import dash
 from dash import dcc
 from dash import html
 import plotly.express as px
 import plotly.graph_objects as go
-from plotly import tools
 from os.path import join, isfile
 import pandas as pd
 import socket
@@ -34,16 +31,16 @@ DISCRETE_COLOR_PALLETE = [
 ]
 
 DISCRETE_COLOR_PALLETE_BACKGROUND = [
-    "rgba(249, 65, 68, 0.1)",
-    "rgba(39, 125, 161, 0.1)",
-    "rgba(144, 190, 109, 0.1)",
-    "rgba(243, 114, 44, 0.1)",
-    "rgba(87, 117, 144, 0.1)",
-    "rgba(249, 199, 79, 0.1)",
-    "rgba(248, 150, 30, 0.1)",
-    "rgba(77, 144, 142, 0.1)",
-    "rgba(249, 132, 74, 0.1)",
-    "rgba(67, 170, 139, 0.1)",
+    "rgba(249, 65, 68, 0.08)",
+    "rgba(39, 125, 161, 0.08)",
+    "rgba(144, 190, 109, 0.08)",
+    "rgba(243, 114, 44, 0.08)",
+    "rgba(87, 117, 144, 0.08)",
+    "rgba(249, 199, 79, 0.08)",
+    "rgba(248, 150, 30, 0.08)",
+    "rgba(77, 144, 142, 0.08)",
+    "rgba(249, 132, 74, 0.08)",
+    "rgba(67, 170, 139, 0.08)",
 ]
 
 VARIABLE_LEGENDS = {
@@ -52,9 +49,9 @@ VARIABLE_LEGENDS = {
     "CMO": "R$ / MWh",
     "CTER": "R$",
     "DEF": "MWmed",
-    "EARMI": "%",
+    "EARMI": "MWmed",
     "EARPI": "%",
-    "EARMF": "%",
+    "EARMF": "MWmed",
     "EARPF": "%",
     "ENAA": "MWmed",
     "ENAM": "%",
@@ -71,6 +68,17 @@ VARIABLE_LEGENDS = {
     "VARPF": "hm3",
 }
 
+NOMES_SUBMERCADOS = {
+    "SUDESTE": ["SUDESTE", "SE"],
+    "SE": ["SUDESTE", "SE"],
+    "SUL": ["SUL", "S"],
+    "S": ["SUL", "S"],
+    "NORDESTE": ["NORDESTE", "NE"],
+    "NE": ["NORDESTE", "NE"],
+    "NORTE": ["NORTE", "N"],
+    "N": ["NORTE", "N"],
+}
+
 
 class App:
     def __init__(self) -> None:
@@ -81,312 +89,6 @@ class App:
             url_base_pathname=Configuracoes().prefixo_url,
         )
         self.__inicializa()
-
-    @staticmethod
-    def __opcoes_dropdown_decomp() -> List[dict]:
-        variaveis = [
-            "CMO SE",
-            "CMO S",
-            "CMO NE",
-            "CMO N",
-            "EARM SIN",
-            "EARM SE",
-            "EARM S",
-            "EARM NE",
-            "EARM N",
-            "GT SIN",
-            "GT SE",
-            "GT S",
-            "GT NE",
-            "GT N",
-            "GT SIN (% MAX)",
-            "GT SE (% MAX)",
-            "GT S (% MAX)",
-            "GT NE (% MAX)",
-            "GT N (% MAX)",
-            "GT SIN (% FLEX)",
-            "GT SE (% FLEX)",
-            "GT S (% FLEX)",
-            "GT NE (% FLEX)",
-            "GT N (% FLEX)",
-            "GH SIN",
-            "GH SE",
-            "GH S",
-            "GH NE",
-            "GH N",
-            "Mercado SIN",
-            "Mercado SE",
-            "Mercado S",
-            "Mercado NE",
-            "Mercado N",
-            "Déficit SIN",
-            "Déficit SE",
-            "Déficit S",
-            "Déficit NE",
-            "Déficit N",
-        ]
-        opcoes = [{"label": p, "value": p} for p in variaveis]
-        return opcoes
-
-    @staticmethod
-    def __opcoes_dropdown_reservatorios() -> List[dict]:
-        variaveis = [
-            "CAMARGOS",
-            "FURNAS",
-            "M. DE MORAES",
-            "CACONDE",
-            "MARIMBONDO",
-            "A. VERMELHA",
-            "BATALHA",
-            "SERRA FACAO",
-            "EMBORCACAO",
-            "NOVA PONTE",
-            "MIRANDA",
-            "CAPIM BRANC1",
-            "CORUMBA IV",
-            "CORUMBA III",
-            "CORUMBA I",
-            "ITUMBIARA",
-            "SAO SIMAO",
-            "ESPORA",
-            "CACU",
-            "I. SOLTEIRA",
-            "BILLINGS",
-            "GUARAPIRANGA",
-            "BARRA BONITA",
-            "PROMISSAO",
-            "TRES IRMAOS",
-            "A.A. LAYDNER",
-            "CHAVANTES",
-            "MAUA",
-            "CAPIVARA",
-            "ITAIPU",
-            "JAGUARI",
-            "PARAIBUNA",
-            "SANTA BRANCA",
-            "FUNIL",
-            "LAJES",
-            "P. ESTRELA",
-            "MANSO",
-            "RONDON II",
-            "SAMUEL",
-            "SINOP",
-            "STA CLARA PR",
-            "JORDAO",
-            "G.B. MUNHOZ",
-            "SEGREDO",
-            "SLT.SANTIAGO",
-            "BARRA GRANDE",
-            "GARIBALDI",
-            "CAMPOS NOVOS",
-            "MACHADINHO",
-            "PASSO FUNDO",
-            "QUEBRA QUEIX",
-            "ERNESTINA",
-            "PASSO REAL",
-            "G.P. SOUZA",
-            "IRAPE",
-            "RETIRO BAIXO",
-            "TRES MARIAS",
-            "QUEIMADO",
-            "SOBRADINHO",
-            "ITAPARICA",
-            "P. CAVALO",
-            "B. ESPERANCA",
-            "SERRA MESA",
-            "PEIXE ANGIC",
-            "CURUA-UNA",
-            "TUCURUI",
-            "BALBINA",
-        ]
-        variaveis.sort()
-        opcoes = [{"label": p, "value": p} for p in variaveis]
-        return opcoes
-
-    @staticmethod
-    def __opcoes_dropdown_defluencias() -> List[dict]:
-        variaveis = [
-            "CAMARGOS",
-            "ITUTINGA",
-            "FUNIL-GRANDE",
-            "FURNAS",
-            "M. DE MORAES",
-            "ESTREITO",
-            "JAGUARA",
-            "IGARAPAVA",
-            "VOLTA GRANDE",
-            "P. COLOMBIA",
-            "CACONDE",
-            "E. DA CUNHA",
-            "A.S.OLIVEIRA",
-            "MARIMBONDO",
-            "A. VERMELHA",
-            "BATALHA",
-            "SERRA FACAO",
-            "EMBORCACAO",
-            "NOVA PONTE",
-            "MIRANDA",
-            "CAPIM BRANC1",
-            "CAPIM BRANC2",
-            "CORUMBA IV",
-            "CORUMBA III",
-            "CORUMBA I",
-            "ITUMBIARA",
-            "CACH.DOURADA",
-            "SAO SIMAO",
-            "SALTO",
-            "SLT VERDINHO",
-            "ESPORA",
-            "CACU",
-            "B. COQUEIROS",
-            "FOZ R. CLARO",
-            "I. SOLTEIRA",
-            "BILLINGS",
-            "HENRY BORDEN",
-            "GUARAPIRANGA",
-            "EDGARD SOUZA",
-            "BARRA BONITA",
-            "A.S. LIMA",
-            "IBITINGA",
-            "PROMISSAO",
-            "NAVANHANDAVA",
-            "TRES IRMAOS",
-            "JUPIA",
-            "SAO DOMINGOS",
-            "P. PRIMAVERA",
-            "A.A. LAYDNER",
-            "PIRAJU",
-            "CHAVANTES",
-            "OURINHOS",
-            "L.N. GARCEZ",
-            "CANOAS II",
-            "CANOAS I",
-            "MAUA",
-            "CAPIVARA",
-            "TAQUARUCU",
-            "ROSANA",
-            "ITAIPU",
-            "JAGUARI",
-            "PARAIBUNA",
-            "SANTA BRANCA",
-            "FUNIL",
-            "PICADA",
-            "SOBRAGI",
-            "TOCOS",
-            "SANTANA",
-            "SIMPLICIO",
-            "ILHA POMBOS",
-            "NILO PECANHA",
-            "LAJES",
-            "FONTES A",
-            "FONTES BC",
-            "P. PASSOS",
-            "SALTO GRANDE",
-            "P. ESTRELA",
-            "CANDONGA",
-            "GUILMAN-AMOR",
-            "SA CARVALHO",
-            "BAGUARI",
-            "AIMORES",
-            "MASCARENHAS",
-            "JAURU",
-            "ROSAL",
-            "MANSO",
-            "PONTE PEDRA",
-            "STA CLARA MG",
-            "ITIQUIRA I",
-            "ITIQUIRA II",
-            "GUAPORE",
-            "JIRAU",
-            "STO ANTONIO",
-            "RONDON II",
-            "SAMUEL",
-            "DARDANELOS",
-            "SINOP",
-            "COLIDER",
-            "TELES PIRES",
-            "SAO MANOEL",
-            "STA CLARA PR",
-            "FUNDAO",
-            "JORDAO",
-            "G.B. MUNHOZ",
-            "SEGREDO",
-            "SLT.SANTIAGO",
-            "SALTO OSORIO",
-            "SALTO CAXIAS",
-            "BAIXO IGUACU",
-            "BARRA GRANDE",
-            "GARIBALDI",
-            "CAMPOS NOVOS",
-            "MACHADINHO",
-            "ITA",
-            "PASSO FUNDO",
-            "MONJOLINHO",
-            "QUEBRA QUEIX",
-            "CASTRO ALVES",
-            "MONTE CLARO",
-            "14 DE JULHO",
-            "SAO JOSE",
-            "PASSO S JOAO",
-            "FOZ CHAPECO",
-            "ERNESTINA",
-            "PASSO REAL",
-            "JACUI",
-            "ITAUBA",
-            "D. FRANCISCA",
-            "G.P. SOUZA",
-            "IRAPE",
-            "ITAPEBI",
-            "RETIRO BAIXO",
-            "TRES MARIAS",
-            "QUEIMADO",
-            "SOBRADINHO",
-            "ITAPARICA",
-            "MOXOTO",
-            "P.AFONSO 123",
-            "P.AFONSO 4",
-            "XINGO",
-            "P. CAVALO",
-            "B. ESPERANCA",
-            "CACH.CALDEIR",
-            "SALTO PILAO",
-            "SERRA MESA",
-            "CANA BRAVA",
-            "SAO SALVADOR",
-            "PEIXE ANGIC",
-            "LAJEADO",
-            "ESTREITO TOC",
-            "CURUA-UNA",
-            "TUCURUI",
-            "BALBINA",
-            "COARACY NUNE",
-            "FERREIRA GOM",
-            "STO ANT JARI",
-            "BELO MONTE",
-            "PIMENTAL",
-        ]
-        variaveis.sort()
-        opcoes = [{"label": p, "value": p} for p in variaveis]
-        return opcoes
-
-    @staticmethod
-    def __opcoes_dropdown_newave() -> List[dict]:
-        variaveis = [
-            "GERACAO TERMICA",
-            "DEFICIT",
-            "VERTIMENTO",
-            "EXCESSO ENERGIA",
-            "VIOLACAO CAR",
-            "VIOLACAO SAR",
-            "VIOL. OUTROS USOS",
-            "VIOLACAO VZMIN",
-            "INTERCAMBIO",
-            "VERT. FIO N. TURB.",
-            "VIOLACAO GHMIN",
-            "TOTAL",
-        ]
-        opcoes = [{"label": p, "value": p} for p in variaveis]
-        return opcoes
 
     @staticmethod
     def __opcoes_dropdown_inviab() -> List[dict]:
@@ -474,9 +176,94 @@ class App:
                                                 html.Div(
                                                     children=[
                                                         dcc.Dropdown(
+                                                            id="escolhe-usina-operacao",
+                                                            options=[],
+                                                            value=None,
+                                                            placeholder="Usina",
+                                                            className="variable-dropdown",
+                                                        )
+                                                    ],
+                                                    style={"display": "none"},
+                                                    id="dropdown-usina-operacao",
+                                                    className="dropdown-container",
+                                                ),
+                                                html.Div(
+                                                    children=[
+                                                        dcc.Dropdown(
+                                                            id="escolhe-ree-operacao",
+                                                            options=[],
+                                                            value=None,
+                                                            placeholder="REE",
+                                                            className="variable-dropdown",
+                                                        )
+                                                    ],
+                                                    style={"display": "none"},
+                                                    id="dropdown-ree-operacao",
+                                                    className="dropdown-container",
+                                                ),
+                                                html.Div(
+                                                    children=[
+                                                        dcc.Dropdown(
+                                                            id="escolhe-submercado-operacao",
+                                                            options=[],
+                                                            value=None,
+                                                            placeholder="Submercado",
+                                                            className="variable-dropdown",
+                                                        )
+                                                    ],
+                                                    style={"display": "none"},
+                                                    id="dropdown-submercado-operacao",
+                                                    className="dropdown-container",
+                                                ),
+                                                html.Div(
+                                                    children=[
+                                                        dcc.Dropdown(
+                                                            id="escolhe-submercado-de-operacao",
+                                                            options=[],
+                                                            value=None,
+                                                            placeholder="Submercado De",
+                                                            className="variable-dropdown",
+                                                        )
+                                                    ],
+                                                    style={"display": "none"},
+                                                    id="dropdown-submercado-de-operacao",
+                                                    className="dropdown-container",
+                                                ),
+                                                html.Div(
+                                                    children=[
+                                                        dcc.Dropdown(
+                                                            id="escolhe-submercado-para-operacao",
+                                                            options=[],
+                                                            value=None,
+                                                            placeholder="Submercado Para",
+                                                            className="variable-dropdown",
+                                                        )
+                                                    ],
+                                                    style={"display": "none"},
+                                                    id="dropdown-submercado-para-operacao",
+                                                    className="dropdown-container",
+                                                ),
+                                                html.Div(
+                                                    children=[
+                                                        dcc.Dropdown(
+                                                            id="escolhe-patamar-operacao",
+                                                            options=[],
+                                                            value=None,
+                                                            placeholder="Patamar",
+                                                            className="variable-dropdown",
+                                                        )
+                                                    ],
+                                                    style={"display": "none"},
+                                                    id="dropdown-patamar-operacao",
+                                                    className="dropdown-container",
+                                                ),
+                                                html.Div(
+                                                    children=[
+                                                        dcc.Dropdown(
                                                             id="escolhe-variavel-operacao",
                                                             options=[],
                                                             value=None,
+                                                            placeholder="Variavel",
                                                             className="variable-dropdown",
                                                         )
                                                     ],
@@ -497,86 +284,6 @@ class App:
                             ],
                             className="twelve column graph-with-dropdown-container first",
                         ),
-                        html.Div(
-                            children=[
-                                html.Div(
-                                    [
-                                        html.H3(
-                                            "INVIABILIDADES",
-                                            className="app-frame-title",
-                                        ),
-                                        html.Div(
-                                            children=[
-                                                html.Div(
-                                                    children=[
-                                                        dcc.Dropdown(
-                                                            id="escolhe-variavel-inviab",
-                                                            options=App.__opcoes_dropdown_inviab(),
-                                                            value=App.__opcoes_dropdown_inviab()[
-                                                                -1
-                                                            ][
-                                                                "value"
-                                                            ],
-                                                            className="variable-dropdown",
-                                                        )
-                                                    ],
-                                                    className="dropdown-container",
-                                                ),
-                                                html.Button(
-                                                    "CSV",
-                                                    id="inviab-btn",
-                                                    className="download-button",
-                                                ),
-                                            ],
-                                            className="dropdown-button-container",
-                                        ),
-                                    ],
-                                    className="graph-header",
-                                ),
-                                dcc.Graph(id="grafico-inviabs"),
-                            ],
-                            className="twelve column graph-with-dropdown-container second",
-                        ),
-                        html.Div(
-                            children=[
-                                html.Div(
-                                    [
-                                        html.H3(
-                                            "TEMPO EXECUCAO",
-                                            className="app-frame-title",
-                                        ),
-                                        html.Div(
-                                            children=[
-                                                html.Div(
-                                                    children=[
-                                                        dcc.Dropdown(
-                                                            id="escolhe-variavel-tempo",
-                                                            options=App.__opcoes_dropdown_tempo(),
-                                                            value=App.__opcoes_dropdown_tempo()[
-                                                                -1
-                                                            ][
-                                                                "value"
-                                                            ],
-                                                            className="variable-dropdown",
-                                                        )
-                                                    ],
-                                                    className="dropdown-container",
-                                                ),
-                                                html.Button(
-                                                    "CSV",
-                                                    id="tempo-btn",
-                                                    className="download-button",
-                                                ),
-                                            ],
-                                            className="dropdown-button-container",
-                                        ),
-                                    ],
-                                    className="graph-header",
-                                ),
-                                dcc.Graph(id="grafico-tempo"),
-                            ],
-                            className="twelve column graph-with-dropdown-container second",
-                        ),
                     ],
                     className="app-content",
                 ),
@@ -590,18 +297,9 @@ class App:
                     interval=int(cfg.periodo_atualizacao_caso_atual),
                     n_intervals=0,
                 ),
-                dcc.Interval(
-                    id="resume-inviabilidades-decomp",
-                    interval=int(cfg.periodo_atualizacao_graficos),
-                    n_intervals=0,
-                ),
                 dcc.Store(id="dados-caso-atual"),
                 dcc.Store(id="dados-variaveis-operacao"),
-                dcc.Store(id="dados-grafico-estudo-encadeado"),
-                dcc.Store(id="dados-grafico-inviabs"),
                 dcc.Download(id="download-operacao"),
-                dcc.Download(id="download-inviabs"),
-                dcc.Download(id="download-tempo"),
                 html.Div(
                     id="hidden-div",
                     style={"display": "none"},
@@ -613,36 +311,12 @@ class App:
         )
 
         @self.__app.callback(
-            Output("dados-grafico-estudo-encadeado", "data"),
-            Input("atualiza-dados-graficos", "n_intervals"),
-            Input("dados-caminhos-casos", "data"),
-        )
-        def atualiza_dados_estudo(interval, data):
-            return self.__db.le_resumo_estudo_encadeado(data)
-
-        @self.__app.callback(
             Output("dados-caso-atual", "data"),
             Input("atualiza-dados-caso", "n_intervals"),
             Input("dados-caminhos-casos", "data"),
         )
         def atualiza_dados_caso(interval, data):
             return self.__db.le_informacoes_proximo_caso(data)
-
-        @self.__app.callback(
-            Output("dados-grafico-inviabs", "data"),
-            Input("atualiza-dados-graficos", "n_intervals"),
-            Input("dados-caminhos-casos", "data"),
-        )
-        def atualiza_dados_grafico_inviabs(interval, data):
-            return self.__db.le_inviabilidades_decomps(data)
-
-        @self.__app.callback(
-            Output("hidden-div", "n_clicks"),
-            Input("atualiza-dados-graficos", "n_intervals"),
-            Input("dados-caminhos-casos", "data"),
-        )
-        def resume_dados_inviabs_decomp(n_clicks, data):
-            return self.__db.resume_inviabilidades_decomps(data)
 
         @self.__app.callback(
             Output("escolhe-variavel-operacao", "options"),
@@ -774,6 +448,78 @@ class App:
             return fig
 
         @self.__app.callback(
+            Output("dropdown-usina-operacao", "style"),
+            Input("escolhe-variavel-operacao", "value"),
+        )
+        def atualiza_exibe_dropdown_usinas_operacao(variavel: str):
+            agregacao_espacial = variavel.split("_")[1] if variavel else ""
+            return (
+                {"display": "flex"}
+                if agregacao_espacial in ["UHE", "UTE", "UEE"]
+                else {"display": "none"}
+            )
+
+        @self.__app.callback(
+            Output("dropdown-ree-operacao", "style"),
+            Input("escolhe-variavel-operacao", "value"),
+        )
+        def atualiza_exibe_dropdown_ree_operacao(variavel: str):
+            agregacao_espacial = variavel.split("_")[1] if variavel else ""
+            return (
+                {"display": "flex"}
+                if agregacao_espacial == "REE"
+                else {"display": "none"}
+            )
+
+        @self.__app.callback(
+            Output("dropdown-submercado-operacao", "style"),
+            Input("escolhe-variavel-operacao", "value"),
+        )
+        def atualiza_exibe_dropdown_submercado_operacao(variavel: str):
+            agregacao_espacial = variavel.split("_")[1] if variavel else ""
+            return (
+                {"display": "flex"}
+                if agregacao_espacial == "SBM"
+                else {"display": "none"}
+            )
+
+        @self.__app.callback(
+            Output("dropdown-submercado-de-operacao", "style"),
+            Input("escolhe-variavel-operacao", "value"),
+        )
+        def atualiza_exibe_dropdown_submercado_de_operacao(variavel: str):
+            agregacao_espacial = variavel.split("_")[1] if variavel else ""
+            return (
+                {"display": "flex"}
+                if agregacao_espacial == "SBP"
+                else {"display": "none"}
+            )
+
+        @self.__app.callback(
+            Output("dropdown-submercado-para-operacao", "style"),
+            Input("escolhe-variavel-operacao", "value"),
+        )
+        def atualiza_exibe_dropdown_submercado_para_operacao(variavel: str):
+            agregacao_espacial = variavel.split("_")[1] if variavel else ""
+            return (
+                {"display": "flex"}
+                if agregacao_espacial == "SBP"
+                else {"display": "none"}
+            )
+
+        @self.__app.callback(
+            Output("dropdown-patamar-operacao", "style"),
+            Input("escolhe-variavel-operacao", "value"),
+        )
+        def atualiza_exibe_dropdown_patamar_operacao(variavel: str):
+            agregacao_temporal = variavel.split("_")[2] if variavel else ""
+            return (
+                {"display": "flex"}
+                if agregacao_temporal == "PAT"
+                else {"display": "none"}
+            )
+
+        @self.__app.callback(
             Output("dados-variaveis-operacao", "data"),
             Input("atualiza-dados-graficos", "n_intervals"),
             Input("dados-caminhos-casos", "data"),
@@ -808,61 +554,6 @@ class App:
                 return df_completo.to_json(orient="split")
 
         @self.__app.callback(
-            Output("grafico-inviabs", "figure"),
-            Input("dados-grafico-inviabs", "data"),
-            Input("escolhe-variavel-inviab", "value"),
-        )
-        def gera_grafico_inviab(dados: str, variavel: str):
-            if dados is None:
-                Log.log().warning("Sem dados de inviabilidades")
-                return go.Figure()
-            dados_locais: pd.DataFrame = pd.read_json(dados, orient="split")
-            if dados_locais.empty:
-                Log.log().warning("Sem dados de inviabilidades")
-                return go.Figure()
-            if variavel != "TOTAL":
-                dados_inv = dados_locais["Tipo"] == variavel
-                dados_locais = dados_locais.loc[dados_inv, :]
-            dados_locais.sort_values(["Estudo", "Caso"], inplace=True)
-            fig = px.bar(
-                dados_locais,
-                x="Caso",
-                y="Num. Violacoes",
-                color="Estudo",
-                hover_data=["Tipo"],
-            )
-            return fig
-
-        @self.__app.callback(
-            Output("grafico-tempo", "figure"),
-            Input("dados-grafico-estudo-encadeado", "data"),
-            Input("escolhe-variavel-tempo", "value"),
-        )
-        def gera_grafico_tempo(dados: str, variavel: str):
-            if dados is None:
-                Log.log().warning("Sem dados de TEMPO")
-                return go.Figure()
-            dados_locais: pd.DataFrame = pd.read_json(dados, orient="split")
-            if dados_locais.empty:
-                Log.log().warning("Sem dados de TEMPO")
-                return go.Figure()
-            if variavel != "TOTAL":
-                dados_prog = dados_locais["Programa"] == variavel
-                dados_locais = dados_locais.loc[dados_prog, :]
-
-            dados_locais = (
-                dados_locais.groupby(["Estudo", "Caso"]).sum().reset_index()
-            )
-            dados_locais.sort_values(["Estudo", "Caso"], inplace=True)
-            fig = px.bar(
-                dados_locais.loc[dados_locais["Sucesso"] > 0, :],
-                x="Caso",
-                y="Tempo Execucao (min)",
-                color="Estudo",
-            )
-            return fig
-
-        @self.__app.callback(
             Output("download-operacao", "data"),
             Input("operacao-btn", "n_clicks"),
             State("dados-variaveis-operacao", "data"),
@@ -879,19 +570,6 @@ class App:
                     dados["Data Fim"], unit="ms"
                 )
                 return dcc.send_data_frame(dados.to_csv, "operacao.csv")
-
-        @self.__app.callback(
-            Output("download-tempo", "data"),
-            Input("tempo-btn", "n_clicks"),
-            State("dados-caminhos-casos", "data"),
-        )
-        def gera_csv_tempo(n_clicks, data):
-            if n_clicks is None:
-                return
-            df = pd.read_json(
-                self.__db.le_resumo_estudo_encadeado(data), orient="split"
-            )
-            return dcc.send_data_frame(df.to_csv, "tempo_execucao.csv")
 
         @self.__app.callback(
             Output("dados-caminhos-casos", "data"),
