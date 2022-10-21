@@ -69,14 +69,22 @@ VARIABLE_LEGENDS = {
 }
 
 NOMES_SUBMERCADOS = {
-    "SUDESTE": ["SUDESTE", "SE"],
-    "SE": ["SUDESTE", "SE"],
-    "SUL": ["SUL", "S"],
-    "S": ["SUL", "S"],
-    "NORDESTE": ["NORDESTE", "NE"],
-    "NE": ["NORDESTE", "NE"],
-    "NORTE": ["NORTE", "N"],
-    "N": ["NORTE", "N"],
+    "SUDESTE": ("SUDESTE", "SE"),
+    "SUL": ("SUL", "S"),
+    "NORDESTE": ("NORDESTE", "NE"),
+    "NORTE": ("NORTE", "N"),
+    "FC": ("FC",),
+}
+
+GRUPOS_SUBMERCADOS = {
+    "SUDESTE": "SUDESTE",
+    "SE": "SUDESTE",
+    "SUL": "SUL",
+    "S": "SUL",
+    "NORDESTE": "NORDESTE",
+    "NE": "NORDESTE",
+    "NORTE": "NORTE",
+    "N": "NORTE",
 }
 
 
@@ -89,30 +97,6 @@ class App:
             url_base_pathname=Configuracoes().prefixo_url,
         )
         self.__inicializa()
-
-    @staticmethod
-    def __opcoes_dropdown_inviab() -> List[dict]:
-        variaveis = [
-            "RE",
-            "RHQ",
-            "TI",
-            "RHV",
-            "RHE",
-            "EV",
-            "DEFMIN",
-            "FP",
-            "DEFICIT",
-            "OUTRO",
-            "TOTAL",
-        ]
-        opcoes = [{"label": p, "value": p} for p in variaveis]
-        return opcoes
-
-    @staticmethod
-    def __opcoes_dropdown_tempo() -> List[dict]:
-        variaveis = ["NEWAVE", "DECOMP", "TOTAL"]
-        opcoes = [{"label": p, "value": p} for p in variaveis]
-        return opcoes
 
     def __inicializa(self):
         cfg = Configuracoes()
@@ -299,6 +283,7 @@ class App:
                 ),
                 dcc.Store(id="dados-caso-atual"),
                 dcc.Store(id="dados-variaveis-operacao"),
+                dcc.Store(id="filtros-variaveis-operacao"),
                 dcc.Download(id="download-operacao"),
                 html.Div(
                     id="hidden-div",
@@ -351,8 +336,9 @@ class App:
             Output("grafico-operacao", "figure"),
             Input("dados-variaveis-operacao", "data"),
             Input("escolhe-variavel-operacao", "value"),
+            Input("filtros-variaveis-operacao", "data"),
         )
-        def gera_grafico_operacao(dados_operacao, variavel):
+        def gera_grafico_operacao(dados_operacao, variavel, filtros):
             if dados_operacao is None:
                 return self.__default_fig
             dados = pd.read_json(dados_operacao, orient="split")
@@ -361,13 +347,25 @@ class App:
             )
             dados["Data Fim"] = pd.to_datetime(dados["Data Fim"], unit="ms")
             estudos = dados["Estudo"].unique().tolist()
-            estagio = 1
-            filtro_newave = (dados["Programa"] == "NEWAVE") & (
-                dados["Estagio"] == estagio
-            )
-            filtro_decomp = (dados["Programa"] == "DECOMP") & (
-                dados["Estagio"] == estagio
-            )
+
+            variaveis = list(dados.columns)
+            queries_variaveis = []
+            for k, v in filtros.items():
+                if k in variaveis:
+                    if "Submercado" in k:
+                        queries_variaveis.append(
+                            f"`{k}` in {str(NOMES_SUBMERCADOS.get(v))}"
+                        )
+                    elif "Patamar" in k:
+                        queries_variaveis.append(f"`{k}` == {v}")
+                    else:
+                        queries_variaveis.append(f"`{k}` == '{v}'")
+            query_final = " and ".join(queries_variaveis)
+            Log.log().info("QUERY:" + query_final)
+            if len(query_final) > 0:
+                dados = dados.query(query_final)
+            filtro_newave = dados["Programa"] == "NEWAVE"
+            filtro_decomp = dados["Programa"] == "DECOMP"
             df_newave = dados.loc[filtro_newave]
             df_decomp = dados.loc[filtro_decomp]
 
@@ -520,6 +518,108 @@ class App:
             )
 
         @self.__app.callback(
+            Output("escolhe-usina-operacao", "options"),
+            Input("atualiza-dados-graficos", "n_intervals"),
+            Input("dados-variaveis-operacao", "data"),
+        )
+        def atualiza_dados_dropdown_usina(interval, dados_operacao):
+            if dados_operacao:
+                dados = pd.read_json(dados_operacao, orient="split")
+                if "Usina" in dados.columns:
+                    return dados["Usina"].unique().tolist()
+            return []
+
+        @self.__app.callback(
+            Output("escolhe-ree-operacao", "options"),
+            Input("atualiza-dados-graficos", "n_intervals"),
+            Input("dados-variaveis-operacao", "data"),
+        )
+        def atualiza_dados_dropdown_ree(interval, dados_operacao):
+            if dados_operacao:
+                dados = pd.read_json(dados_operacao, orient="split")
+                if "REE" in dados.columns:
+                    return dados["REE"].unique().tolist()
+            return []
+
+        @self.__app.callback(
+            Output("escolhe-submercado-operacao", "options"),
+            Input("atualiza-dados-graficos", "n_intervals"),
+            Input("dados-variaveis-operacao", "data"),
+        )
+        def atualiza_dados_dropdown_submercado(interval, dados_operacao):
+            if dados_operacao:
+                dados = pd.read_json(dados_operacao, orient="split")
+                if "Submercado" in dados.columns:
+                    submercados_programas = (
+                        dados["Submercado"].unique().tolist()
+                    )
+                    return list(
+                        set(
+                            [
+                                GRUPOS_SUBMERCADOS.get(s, s)
+                                for s in submercados_programas
+                            ]
+                        )
+                    )
+            return []
+
+        @self.__app.callback(
+            Output("escolhe-submercado-de-operacao", "options"),
+            Input("atualiza-dados-graficos", "n_intervals"),
+            Input("dados-variaveis-operacao", "data"),
+        )
+        def atualiza_dados_dropdown_submercado_de(interval, dados_operacao):
+            if dados_operacao:
+                dados = pd.read_json(dados_operacao, orient="split")
+                if "Submercado De" in dados.columns:
+                    submercados_programas = (
+                        dados["Submercado De"].unique().tolist()
+                    )
+                    return list(
+                        set(
+                            [
+                                GRUPOS_SUBMERCADOS.get(s, s)
+                                for s in submercados_programas
+                            ]
+                        )
+                    )
+            return []
+
+        @self.__app.callback(
+            Output("escolhe-submercado-para-operacao", "options"),
+            Input("atualiza-dados-graficos", "n_intervals"),
+            Input("dados-variaveis-operacao", "data"),
+        )
+        def atualiza_dados_dropdown_submercado_para(interval, dados_operacao):
+            if dados_operacao:
+                dados = pd.read_json(dados_operacao, orient="split")
+                if "Submercado Para" in dados.columns:
+                    submercados_programas = (
+                        dados["Submercado Para"].unique().tolist()
+                    )
+                    return list(
+                        set(
+                            [
+                                GRUPOS_SUBMERCADOS.get(s, s)
+                                for s in submercados_programas
+                            ]
+                        )
+                    )
+            return []
+
+        @self.__app.callback(
+            Output("escolhe-patamar-operacao", "options"),
+            Input("atualiza-dados-graficos", "n_intervals"),
+            Input("dados-variaveis-operacao", "data"),
+        )
+        def atualiza_dados_dropdown_patamar(interval, dados_operacao):
+            if dados_operacao:
+                dados = pd.read_json(dados_operacao, orient="split")
+                if "Patamar" in dados.columns:
+                    return dados["Patamar"].unique().tolist()
+            return []
+
+        @self.__app.callback(
             Output("dados-variaveis-operacao", "data"),
             Input("atualiza-dados-graficos", "n_intervals"),
             Input("dados-caminhos-casos", "data"),
@@ -551,7 +651,41 @@ class App:
             if df_completo.empty:
                 return None
             else:
-                return df_completo.to_json(orient="split")
+                return df_completo.loc[df_completo["Estagio"] == 1].to_json(
+                    orient="split"
+                )
+
+        @self.__app.callback(
+            Output("filtros-variaveis-operacao", "data"),
+            Input("escolhe-usina-operacao", "value"),
+            Input("escolhe-ree-operacao", "value"),
+            Input("escolhe-submercado-operacao", "value"),
+            Input("escolhe-submercado-de-operacao", "value"),
+            Input("escolhe-submercado-para-operacao", "value"),
+            Input("escolhe-patamar-operacao", "value"),
+        )
+        def atualiza_filtros_variaveis_operacao(
+            usina: str,
+            ree: str,
+            submercado: str,
+            submercado_de: str,
+            submercado_para: str,
+            patamar: str,
+        ):
+            filtros = {}
+            if usina:
+                filtros["Usina"] = usina
+            if ree:
+                filtros["REE"] = ree
+            if submercado:
+                filtros["Submercado"] = submercado
+            if submercado_de:
+                filtros["Submercado De"] = submercado_de
+            if submercado_de:
+                filtros["Submercado Para"] = submercado_para
+            if patamar:
+                filtros["Patamar"] = patamar
+            return filtros
 
         @self.__app.callback(
             Output("download-operacao", "data"),

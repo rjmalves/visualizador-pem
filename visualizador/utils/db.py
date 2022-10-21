@@ -614,9 +614,12 @@ class DB:
         for c, df in zip(casos, dfs):
             if df.empty:
                 continue
+            cols_df = df.columns.tolist()
             df["Estudo"] = c.split(os.sep)[-1]
             df_caso = df.loc[df["Estagio"] == estagio] if estagio else df
-            df_completo = pd.concat([df_completo, df_caso], ignore_index=True)
+            df_completo = pd.concat(
+                [df_completo, df_caso[["Estudo"] + cols_df]], ignore_index=True
+            )
 
         return None if df_completo.empty else df_completo
 
@@ -641,7 +644,10 @@ class DB:
         for c, df in zip(casos, dfs):
             if df.empty:
                 continue
+            cols_df = df.columns.tolist()
             df["Estudo"] = c.split(os.sep)[-1]
             df_caso = df.loc[df["Estagio"] == estagio] if estagio else df
-            df_completo = pd.concat([df_completo, df_caso], ignore_index=True)
+            df_completo = pd.concat(
+                [df_completo, df_caso[["Estudo"] + cols_df]], ignore_index=True
+            )
         return None if df_completo.empty else df_completo
