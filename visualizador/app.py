@@ -372,6 +372,7 @@ class App:
             df_decomp = dados.loc[filtro_decomp]
 
             fig = go.Figure()
+            visibilidade_newave = "legendonly" if len(estudos) > 2 else None
             for i, estudo in enumerate(estudos):
                 if df_decomp is not None:
                     estudo_decomp = df_decomp.loc[
@@ -420,7 +421,7 @@ class App:
                                 legendgroup="NEWAVEp10",
                                 legendgrouptitle_text="NEWAVEp10",
                                 name=estudo,
-                                visible="legendonly",
+                                visible=visibilidade_newave,
                             )
                         )
                         fig.add_trace(
@@ -435,7 +436,7 @@ class App:
                                 legendgroup="NEWAVEp90",
                                 legendgrouptitle_text="NEWAVEp90",
                                 name=estudo,
-                                visible="legendonly",
+                                visible=visibilidade_newave,
                             )
                         )
 
