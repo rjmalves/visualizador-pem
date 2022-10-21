@@ -64,8 +64,10 @@ VARIABLE_LEGENDS = {
     "QAFL": "m3/s",
     "QDEF": "m3/s",
     "VAGUA": "R$ / hm3",
-    "VARPI": "hm3",
-    "VARPF": "hm3",
+    "VARMI": "hm3",
+    "VARMF": "hm3",
+    "VARPI": "%",
+    "VARPF": "%",
 }
 
 NOMES_SUBMERCADOS = {
@@ -354,7 +356,7 @@ class App:
                 if k in variaveis:
                     if "Submercado" in k:
                         queries_variaveis.append(
-                            f"`{k}` in {str(NOMES_SUBMERCADOS.get(v))}"
+                            f"`{k}` in {str(NOMES_SUBMERCADOS.get(v, '()'))}"
                         )
                     elif "Patamar" in k:
                         queries_variaveis.append(f"`{k}` == {v}")
