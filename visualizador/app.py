@@ -31,16 +31,16 @@ DISCRETE_COLOR_PALLETE = [
 ]
 
 DISCRETE_COLOR_PALLETE_BACKGROUND = [
-    "rgba(249, 65, 68, 0.08)",
-    "rgba(39, 125, 161, 0.08)",
-    "rgba(144, 190, 109, 0.08)",
-    "rgba(243, 114, 44, 0.08)",
-    "rgba(87, 117, 144, 0.08)",
-    "rgba(249, 199, 79, 0.08)",
-    "rgba(248, 150, 30, 0.08)",
-    "rgba(77, 144, 142, 0.08)",
-    "rgba(249, 132, 74, 0.08)",
-    "rgba(67, 170, 139, 0.08)",
+    "rgba(249, 65, 68, 0.3)",
+    "rgba(39, 125, 161, 0.3)",
+    "rgba(144, 190, 109, 0.3)",
+    "rgba(243, 114, 44, 0.3)",
+    "rgba(87, 117, 144, 0.3)",
+    "rgba(249, 199, 79, 0.3)",
+    "rgba(248, 150, 30, 0.3)",
+    "rgba(77, 144, 142, 0.3)",
+    "rgba(249, 132, 74, 0.3)",
+    "rgba(67, 170, 139, 0.3)",
 ]
 
 VARIABLE_LEGENDS = {
@@ -373,50 +373,6 @@ class App:
 
             fig = go.Figure()
             for i, estudo in enumerate(estudos):
-                if df_newave is not None:
-                    estudo_newave = df_newave.loc[
-                        df_newave["Estudo"] == estudo
-                    ]
-                    if not estudo_newave.empty:
-                        fig.add_trace(
-                            go.Scatter(
-                                x=estudo_newave["Data Inicio"],
-                                y=estudo_newave["mean"],
-                                line={
-                                    "color": DISCRETE_COLOR_PALLETE[i],
-                                    "dash": "dot",
-                                    "width": 2,
-                                },
-                                name=estudo,
-                                legendgroup="NEWAVE",
-                                legendgrouptitle_text="NEWAVE",
-                            )
-                        )
-                        fig.add_trace(
-                            go.Scatter(
-                                x=estudo_newave["Data Inicio"],
-                                y=estudo_newave["p10"],
-                                line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[
-                                    i
-                                ],
-                                legendgroup="NEWAVE",
-                                name="p10",
-                                showlegend=False,
-                            )
-                        )
-                        fig.add_trace(
-                            go.Scatter(
-                                x=estudo_newave["Data Inicio"],
-                                y=estudo_newave["p90"],
-                                line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[
-                                    i
-                                ],
-                                fill="tonexty",
-                                legendgroup="NEWAVE",
-                                name="p90",
-                                showlegend=False,
-                            )
-                        )
                 if df_decomp is not None:
                     estudo_decomp = df_decomp.loc[
                         df_decomp["Estudo"] == estudo
@@ -435,6 +391,53 @@ class App:
                                 legendgrouptitle_text="DECOMP",
                             )
                         )
+                if df_newave is not None:
+                    estudo_newave = df_newave.loc[
+                        df_newave["Estudo"] == estudo
+                    ]
+                    if not estudo_newave.empty:
+                        fig.add_trace(
+                            go.Scatter(
+                                x=estudo_newave["Data Inicio"],
+                                y=estudo_newave["mean"],
+                                line={
+                                    "color": DISCRETE_COLOR_PALLETE[i],
+                                    "dash": "dot",
+                                    "width": 2,
+                                },
+                                name=estudo,
+                                legendgroup="NEWAVEm",
+                                legendgrouptitle_text="NEWAVEm",
+                            )
+                        )
+                        fig.add_trace(
+                            go.Scatter(
+                                x=estudo_newave["Data Inicio"],
+                                y=estudo_newave["p10"],
+                                line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[
+                                    i
+                                ],
+                                legendgroup="NEWAVEp10",
+                                legendgrouptitle_text="NEWAVEp10",
+                                name=estudo,
+                                visible="legendonly",
+                            )
+                        )
+                        fig.add_trace(
+                            go.Scatter(
+                                x=estudo_newave["Data Inicio"],
+                                y=estudo_newave["p90"],
+                                line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[
+                                    i
+                                ],
+                                fillcolor=DISCRETE_COLOR_PALLETE_BACKGROUND[i],
+                                fill="tonexty",
+                                legendgroup="NEWAVEp90",
+                                legendgrouptitle_text="NEWAVEp90",
+                                name=estudo,
+                                visible="legendonly",
+                            )
+                        )
 
             fig.update_layout(self.__graph_layout)
             if variavel is not None:
@@ -444,6 +447,7 @@ class App:
                         variavel.split("_")[0], ""
                     ),
                     hovermode="x unified",
+                    legend=dict(groupclick="toggleitem"),
                 )
             return fig
 
