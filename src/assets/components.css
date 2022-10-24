@@ -1,0 +1,139 @@
+
+.card {
+    margin: 20px 10px;
+    padding: 0px 5px 5px 5px;
+    border-radius: 10px;
+    background-color: rgba(88, 129, 87, 1);
+}
+
+.table__container {
+    border-radius: 10px;
+    padding: 5px 10px;
+
+}
+
+.table__header {
+    color: #dad7cd;
+    box-sizing: border-box;
+    margin: 0;
+    display: flex;
+    justify-content: space-between;
+    letter-spacing: 0.1rem;
+    align-items: center;
+    padding: 5px 1%;
+    border-radius: 10px;
+}
+
+.table__editing__menu {
+    display: inline-block;
+}
+
+.table__editing__menu button {
+    background-color: #dad7cd;
+    color: rgba(88, 129, 87, 1);
+    transition: all 0.3s ease 0s;
+    font-weight: bolder;
+    font-size: 1.2rem;
+    border-radius: 10px;
+    padding: 0px 10px;
+    margin: 0px 10px;
+
+}
+
+.table__editing__menu button:hover  {
+    transition: all 0.3s ease 0s;
+    background-color: #344e41;
+    color: #dad7cd;
+}
+
+.dash-spreadsheet-container {
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px;
+}
+
+.table__container th {
+    border-color: #344e41;
+    color: #344e41
+}
+
+.dash_header {
+    background-color: rgba(88, 129, 87, 1);
+}
+
+.dash-select-cell input {
+    box-sizing: border-box;
+    appearance: none;
+    background: #dad7cd;
+    outline: 2px solid #333;
+    border: 3px solid #dad7cd;
+    border-radius: 5px;
+    width: 12px;
+    height: 12px;
+}
+
+.dash-select-cell input:checked {
+    box-sizing: border-box;
+    appearance: none;
+    background: rgba(88, 129, 87, 1);
+    border-radius: 5px;
+}
+
+.dropdown-container {
+    padding: 15px 5px 15px 5px;
+    min-width: 200px;
+    color: rgb(0, 0, 0);
+    display: flex;
+}
+
+.variable-dropdown  {
+    min-width: 200px;
+    color: #344e41;
+    font-weight: bold;
+}
+
+.variable-dropdown .Select-control  {
+    background-color: #dad7cd;
+}
+
+.variable-dropdown .VirtualizedSelectOption {
+    background-color: #dad7cd;
+    color: #344e41;
+}
+
+.variable-dropdown .VirtualizedSelectFocusedOption {
+    background-color: #344e41;
+    color: #dad7cd;
+}
+
+.download-button {
+    color: #344e41;
+    background-color: #dad7cd;
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.download-button:hover {
+    background-color: #344e41;
+    color: #dad7cd;
+}
+
+.dropdown-button-container {
+    display: flex;
+    align-items: center;
+    padding-right: 10px;
+}
+
+.dash-graph .dash-graph {
+    padding: 10px;
+}
+
+.dash-graph .svg-container {
+    width: 100%;
+    padding: 10px;
+}
+
+.dash-graph .main-svg {
+    border-radius: 1rem;
+    width: 100%;
+}
