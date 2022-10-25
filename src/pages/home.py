@@ -10,6 +10,7 @@ from src.components.currentstudiestable import (
 from src.components.newstudymodal import modal
 from src.components.operationgraph import (
     graph_updater,
+    operation_variables_options,
     operation_variables_data,
     operation_variables_filter,
     operation_data_download,
@@ -25,6 +26,7 @@ layout = html.Div(
         selected_study,
         table,
         graph,
+        operation_variables_options,
         operation_variables_filter,
         operation_variables_data,
         operation_data_download,

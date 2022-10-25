@@ -16,7 +16,7 @@ class API:
     @classmethod
     def fetch_available_results(cls, study_path: str) -> Optional[List[str]]:
         identifier = base62.encodebytes(study_path.encode("utf-8"))
-        url = f"{Settings.result_api}/{identifier}/"
+        url = f"{Settings.result_api}/{identifier}"
         r = cls.session.get(url)
         if r.status_code != 200:
             return None
@@ -36,11 +36,11 @@ class API:
 
     @classmethod
     def fetch_result(
-        cls, study_path: str, desired_data: str
+        cls, study_path: str, desired_data: str, filters: dict
     ) -> Optional[pd.DataFrame]:
         identifier = base62.encodebytes(study_path.encode("utf-8"))
-        url = f"{Settings.result_api}/{identifier}/{desired_data if desired_data else ''}"
-        r = cls.session.get(url)
+        url = f"{Settings.result_api}/{identifier}/{desired_data}"
+        r = cls.session.get(url, params=filters)
         if r.status_code != 200:
             return None
         else:
@@ -48,20 +48,54 @@ class API:
 
     @classmethod
     def fetch_result_list(
-        cls, studies_paths: List[str], desired_data: str
+        cls, studies_paths: List[str], desired_data: str, filters: dict
     ) -> Optional[pd.DataFrame]:
         valid_dfs: List[pd.DataFrame] = []
         for p in studies_paths:
             path = pathlib.Path(p)
             study = path.parts[-2]
-            df = cls.fetch_result(str(path), desired_data)
+            df = cls.fetch_result(str(path), desired_data, filters)
             if df is not None:
                 df_cols = df.columns.to_list()
-                df["Estudo"] = study
-                df = df[["Estudo"] + df_cols]
+                df["estudo"] = study
+                df = df[["estudo"] + df_cols]
                 valid_dfs.append(df)
         if len(valid_dfs) > 0:
             complete_df = pd.concat(valid_dfs, ignore_index=True)
             return complete_df
+        else:
+            return None
+
+    @classmethod
+    def fetch_result_options(
+        cls, study_path: str, desired_data: str
+    ) -> Optional[dict]:
+        identifier = base62.encodebytes(study_path.encode("utf-8"))
+        url = f"{Settings.result_api}/{identifier}/{desired_data}/options"
+        r = cls.session.get(url)
+        if r.status_code != 200:
+            return None
+        else:
+            return r.json()
+
+    @classmethod
+    def fetch_result_options_list(
+        cls, studies_paths: List[str], desired_data: str
+    ) -> Optional[dict]:
+        valid_opts: List[dict] = []
+        for p in studies_paths:
+            path = pathlib.Path(p)
+            opts = cls.fetch_result_options(str(path), desired_data)
+            if opts is not None:
+                valid_opts.append(opts)
+        if len(valid_opts) > 0:
+            complete_opts = {}
+            for o in valid_opts:
+                for k, v in o.items():
+                    if k not in complete_opts.keys():
+                        complete_opts[k] = set(v)
+                    else:
+                        complete_opts[k].update(v)
+            return {k: list(v) for k, v in complete_opts.items()}
         else:
             return None

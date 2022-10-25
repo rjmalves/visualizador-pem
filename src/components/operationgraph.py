@@ -4,6 +4,7 @@ import plotly.graph_objects as go
 from src.utils.settings import Settings
 from dash import html, callback, Output, Input, State, dcc
 from src.utils.api import API
+import src.utils.validation as validation
 
 DISCRETE_COLOR_PALLETE = [
     "rgba(249, 65, 68, 1)",
@@ -59,11 +60,11 @@ VARIABLE_LEGENDS = {
 }
 
 NOMES_SUBMERCADOS = {
-    "SUDESTE": ("SUDESTE", "SE"),
-    "SUL": ("SUL", "S"),
-    "NORDESTE": ("NORDESTE", "NE"),
-    "NORTE": ("NORTE", "N"),
-    "FC": ("FC",),
+    "SUDESTE": "'SUDESTE'|'SE'",
+    "SUL": "'SUL'|'S'",
+    "NORDESTE": "'NORDESTE'|'NE'",
+    "NORTE": "'NORTE'|'N'",
+    "FC": "'FC'",
 }
 
 GRUPOS_SUBMERCADOS = {
@@ -84,6 +85,7 @@ graph_updater = dcc.Interval(
 )
 
 operation_variables_data = dcc.Store(id="operation-data")
+operation_variables_options = dcc.Store(id="operation-data-options")
 operation_variables_filter = dcc.Store(id="operation-filters")
 operation_data_download = dcc.Download(id="operation-download")
 
@@ -309,46 +311,38 @@ def atualiza_exibe_dropdown_patamar_operacao(variavel: str):
 @callback(
     Output("choose-operation-usina", "options"),
     Input("update-graph-data", "n_intervals"),
-    Input("operation-data", "data"),
+    Input("operation-data-options", "data"),
 )
-def atualiza_dados_dropdown_usina(interval, dados_operacao):
-    if dados_operacao:
-        dados = pd.read_json(dados_operacao, orient="split")
-        if "Usina" in dados.columns:
-            return dados["Usina"].unique().tolist()
+def update_dropdown_options_usina(interval, options):
+    if options:
+        if "patamar" in options.keys():
+            return sorted(list(set(options["patamar"])))
     return []
 
 
 @callback(
     Output("choose-operation-ree", "options"),
     Input("update-graph-data", "n_intervals"),
-    Input("operation-data", "data"),
+    Input("operation-data-options", "data"),
 )
-def atualiza_dados_dropdown_ree(interval, dados_operacao):
-    if dados_operacao:
-        dados = pd.read_json(dados_operacao, orient="split")
-        if "REE" in dados.columns:
-            return dados["REE"].unique().tolist()
+def update_dropdown_options_ree(interval, options):
+    if options:
+        if "ree" in options.keys():
+            return sorted(list(set(options["ree"])))
     return []
 
 
 @callback(
     Output("choose-operation-submercado", "options"),
     Input("update-graph-data", "n_intervals"),
-    Input("operation-data", "data"),
+    Input("operation-data-options", "data"),
 )
-def atualiza_dados_dropdown_submercado(interval, dados_operacao):
-    if dados_operacao:
-        dados = pd.read_json(dados_operacao, orient="split")
-        if "Submercado" in dados.columns:
-            submercados_programas = dados["Submercado"].unique().tolist()
-            return list(
-                set(
-                    [
-                        GRUPOS_SUBMERCADOS.get(s, s)
-                        for s in submercados_programas
-                    ]
-                )
+def update_dropdown_options_submercado(interval, options):
+    if options:
+        if "submercado" in options.keys():
+            subs = list(set(options["submercado"]))
+            return sorted(
+                list(set([GRUPOS_SUBMERCADOS.get(s, s) for s in subs]))
             )
     return []
 
@@ -356,20 +350,14 @@ def atualiza_dados_dropdown_submercado(interval, dados_operacao):
 @callback(
     Output("choose-operation-submercado-de", "options"),
     Input("update-graph-data", "n_intervals"),
-    Input("operation-data", "data"),
+    Input("operation-data-options", "data"),
 )
-def atualiza_dados_dropdown_submercado_de(interval, dados_operacao):
-    if dados_operacao:
-        dados = pd.read_json(dados_operacao, orient="split")
-        if "Submercado De" in dados.columns:
-            submercados_programas = dados["Submercado De"].unique().tolist()
-            return list(
-                set(
-                    [
-                        GRUPOS_SUBMERCADOS.get(s, s)
-                        for s in submercados_programas
-                    ]
-                )
+def update_dropdown_options_submercado_de(interval, options):
+    if options:
+        if "submercadoDe" in options.keys():
+            subs = list(set(options["submercadoDe"]))
+            return sorted(
+                list(set([GRUPOS_SUBMERCADOS.get(s, s) for s in subs]))
             )
     return []
 
@@ -377,20 +365,14 @@ def atualiza_dados_dropdown_submercado_de(interval, dados_operacao):
 @callback(
     Output("choose-operation-submercado-para", "options"),
     Input("update-graph-data", "n_intervals"),
-    Input("operation-data", "data"),
+    Input("operation-data-options", "data"),
 )
-def atualiza_dados_dropdown_submercado_para(interval, dados_operacao):
-    if dados_operacao:
-        dados = pd.read_json(dados_operacao, orient="split")
-        if "Submercado Para" in dados.columns:
-            submercados_programas = dados["Submercado Para"].unique().tolist()
-            return list(
-                set(
-                    [
-                        GRUPOS_SUBMERCADOS.get(s, s)
-                        for s in submercados_programas
-                    ]
-                )
+def update_dropdown_options_submercado_para(interval, options):
+    if options:
+        if "submercadoPara" in options.keys():
+            subs = list(set(options["submercadoPara"]))
+            return sorted(
+                list(set([GRUPOS_SUBMERCADOS.get(s, s) for s in subs]))
             )
     return []
 
@@ -398,13 +380,12 @@ def atualiza_dados_dropdown_submercado_para(interval, dados_operacao):
 @callback(
     Output("choose-operation-patamar", "options"),
     Input("update-graph-data", "n_intervals"),
-    Input("operation-data", "data"),
+    Input("operation-data-options", "data"),
 )
-def atualiza_dados_dropdown_patamar(interval, dados_operacao):
-    if dados_operacao:
-        dados = pd.read_json(dados_operacao, orient="split")
-        if "Patamar" in dados.columns:
-            return dados["Patamar"].unique().tolist()
+def update_dropdown_options_patamar(interval, options):
+    if options:
+        if "patamar" in options.keys():
+            return sorted(list(set(options["patamar"])))
     return []
 
 
@@ -412,45 +393,80 @@ def atualiza_dados_dropdown_patamar(interval, dados_operacao):
     Output("operation-data", "data"),
     Input("update-graph-data", "n_intervals"),
     Input("current_studies", "data"),
+    Input("operation-filters", "data"),
     Input("choose-operation-variable", "value"),
 )
-def atualiza_dados_variaveis_operacao(interval, studies, variable: str):
+def update_operation_variables_data(
+    interval, studies, filters: dict, variable: str
+):
     if not studies:
         return None
     if not variable:
         return None
+    req_filters = validation.validate_required_filters(variable, filters)
+    if req_filters is None:
+        return None
+    fetch_filters = {**req_filters, "estagio": 1}
     studies_df = pd.read_json(studies, orient="split")
     paths = studies_df["CAMINHO"].tolist()
     complete_df = pd.DataFrame()
     newave_df = API.fetch_result_list(
-        [os.path.join(p, "NEWAVE") for p in paths], variable
+        [os.path.join(p, "NEWAVE") for p in paths], variable, fetch_filters
     )
     decomp_df = API.fetch_result_list(
-        [os.path.join(p, "DECOMP") for p in paths], variable
+        [os.path.join(p, "DECOMP") for p in paths], variable, fetch_filters
     )
     if newave_df is not None:
         cols_newave = newave_df.columns.to_list()
-        newave_df["Programa"] = "NEWAVE"
+        newave_df["programa"] = "NEWAVE"
         complete_df = pd.concat(
-            [complete_df, newave_df[["Programa"] + cols_newave]],
+            [complete_df, newave_df[["programa"] + cols_newave]],
             ignore_index=True,
         )
     if decomp_df is not None:
         cols_decomp = decomp_df.columns.to_list()
-        decomp_df["Programa"] = "DECOMP"
+        decomp_df["programa"] = "DECOMP"
         complete_df = pd.concat(
             [
                 complete_df,
-                decomp_df[["Programa"] + cols_decomp],
+                decomp_df[["programa"] + cols_decomp],
             ],
             ignore_index=True,
         )
     if complete_df.empty:
         return None
     else:
-        return complete_df.loc[complete_df["Estagio"] == 1].to_json(
-            orient="split"
-        )
+        return complete_df.to_json(orient="split")
+
+
+@callback(
+    Output("operation-data-options", "data"),
+    Input("update-graph-data", "n_intervals"),
+    Input("current_studies", "data"),
+    Input("choose-operation-variable", "value"),
+)
+def update_operation_data_options(interval, studies, variable: str):
+    if not studies:
+        return None
+    if not variable:
+        return None
+    studies_df = pd.read_json(studies, orient="split")
+    paths = studies_df["CAMINHO"].tolist()
+    complete_options = {}
+    newave_options = API.fetch_result_options_list(
+        [os.path.join(p, "NEWAVE") for p in paths], variable
+    )
+    decomp_options = API.fetch_result_options_list(
+        [os.path.join(p, "DECOMP") for p in paths], variable
+    )
+    if newave_options is not None:
+        complete_options = {**complete_options, **newave_options}
+    if decomp_options is not None:
+        complete_options = {**complete_options, **decomp_options}
+    if len(complete_options) == 0:
+        return None
+    else:
+        return complete_options
 
 
 @callback(
@@ -462,7 +478,7 @@ def atualiza_dados_variaveis_operacao(interval, studies, variable: str):
     Input("choose-operation-submercado-para", "value"),
     Input("choose-operation-patamar", "value"),
 )
-def atualiza_filtros_variaveis_operacao(
+def update_operation_variables_filters(
     usina: str,
     ree: str,
     submercado: str,
@@ -472,68 +488,52 @@ def atualiza_filtros_variaveis_operacao(
 ):
     filtros = {}
     if usina:
-        filtros["Usina"] = usina
+        filtros["usina"] = f"'{usina}'"
     if ree:
-        filtros["REE"] = ree
+        filtros["ree"] = f"'{ree}'"
     if submercado:
-        filtros["Submercado"] = submercado
+        filtros["submercado"] = NOMES_SUBMERCADOS.get(submercado)
     if submercado_de:
-        filtros["Submercado De"] = submercado_de
+        filtros["submercadoDe"] = NOMES_SUBMERCADOS.get(submercado_de)
     if submercado_de:
-        filtros["Submercado Para"] = submercado_para
+        filtros["submercadoPara"] = NOMES_SUBMERCADOS.get(submercado_para)
     if patamar:
-        filtros["Patamar"] = patamar
+        filtros["patamar"] = f"{patamar}"
     return filtros
 
 
 @callback(
     Output("operation-graph", "figure"),
     Input("operation-data", "data"),
-    Input("choose-operation-variable", "value"),
-    Input("operation-filters", "data"),
+    State("choose-operation-variable", "value"),
 )
-def gera_grafico_operacao(dados_operacao, variavel, filtros: dict):
+def generate_operation_graph(operation_data, variable):
     graph_layout = go.Layout(
         plot_bgcolor="rgba(158, 149, 128, 0.2)",
         paper_bgcolor="rgba(255,255,255,1)",
     )
     fig = go.Figure()
     fig.update_layout(graph_layout)
-    if dados_operacao is None:
+    if operation_data is None:
         return fig
-    dados = pd.read_json(dados_operacao, orient="split")
-    dados["Data Inicio"] = pd.to_datetime(dados["Data Inicio"], unit="ms")
-    dados["Data Fim"] = pd.to_datetime(dados["Data Fim"], unit="ms")
-    estudos = dados["Estudo"].unique().tolist()
+    dados = pd.read_json(operation_data, orient="split")
+    dados["dataInicio"] = pd.to_datetime(dados["dataInicio"], unit="ms")
+    dados["dataFim"] = pd.to_datetime(dados["dataFim"], unit="ms")
+    estudos = dados["estudo"].unique().tolist()
 
-    variaveis = list(dados.columns)
-    queries_variaveis = []
-    for k, v in filtros.items():
-        if k in variaveis:
-            if "Submercado" in k:
-                queries_variaveis.append(
-                    f"`{k}` in {str(NOMES_SUBMERCADOS.get(v, '()'))}"
-                )
-            elif "Patamar" in k:
-                queries_variaveis.append(f"`{k}` == {v}")
-            else:
-                queries_variaveis.append(f"`{k}` == '{v}'")
-    query_final = " and ".join(queries_variaveis)
-    if len(query_final) > 0:
-        dados = dados.query(query_final)
-    filtro_newave = dados["Programa"] == "NEWAVE"
-    filtro_decomp = dados["Programa"] == "DECOMP"
+    filtro_newave = dados["programa"] == "NEWAVE"
+    filtro_decomp = dados["programa"] == "DECOMP"
     df_newave = dados.loc[filtro_newave]
     df_decomp = dados.loc[filtro_decomp]
 
     visibilidade_newave = "legendonly" if len(estudos) > 2 else None
     for i, estudo in enumerate(estudos):
         if df_decomp is not None:
-            estudo_decomp = df_decomp.loc[df_decomp["Estudo"] == estudo]
+            estudo_decomp = df_decomp.loc[df_decomp["estudo"] == estudo]
             if not estudo_decomp.empty:
                 fig.add_trace(
                     go.Scatter(
-                        x=estudo_decomp["Data Inicio"],
+                        x=estudo_decomp["dataInicio"],
                         y=estudo_decomp["mean"],
                         line={
                             "color": DISCRETE_COLOR_PALLETE[i],
@@ -545,11 +545,11 @@ def gera_grafico_operacao(dados_operacao, variavel, filtros: dict):
                     )
                 )
         if df_newave is not None:
-            estudo_newave = df_newave.loc[df_newave["Estudo"] == estudo]
+            estudo_newave = df_newave.loc[df_newave["estudo"] == estudo]
             if not estudo_newave.empty:
                 fig.add_trace(
                     go.Scatter(
-                        x=estudo_newave["Data Inicio"],
+                        x=estudo_newave["dataInicio"],
                         y=estudo_newave["mean"],
                         line={
                             "color": DISCRETE_COLOR_PALLETE[i],
@@ -563,7 +563,7 @@ def gera_grafico_operacao(dados_operacao, variavel, filtros: dict):
                 )
                 fig.add_trace(
                     go.Scatter(
-                        x=estudo_newave["Data Inicio"],
+                        x=estudo_newave["dataInicio"],
                         y=estudo_newave["p10"],
                         line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[i],
                         legendgroup="NEWAVEp10",
@@ -574,7 +574,7 @@ def gera_grafico_operacao(dados_operacao, variavel, filtros: dict):
                 )
                 fig.add_trace(
                     go.Scatter(
-                        x=estudo_newave["Data Inicio"],
+                        x=estudo_newave["dataInicio"],
                         y=estudo_newave["p90"],
                         line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[i],
                         fillcolor=DISCRETE_COLOR_PALLETE_BACKGROUND[i],
@@ -586,11 +586,10 @@ def gera_grafico_operacao(dados_operacao, variavel, filtros: dict):
                     )
                 )
 
-    fig.update_layout(graph_layout)
-    if variavel is not None:
+    if variable is not None:
         fig.update_layout(
-            xaxis_title="Data Inicio",
-            yaxis_title=VARIABLE_LEGENDS.get(variavel.split("_")[0], ""),
+            xaxis_title="Data",
+            yaxis_title=VARIABLE_LEGENDS.get(variable.split("_")[0], ""),
             hovermode="x unified",
             legend=dict(groupclick="toggleitem"),
         )
@@ -607,6 +606,6 @@ def gera_csv_operacao(n_clicks, dados_operacao):
         return
     if dados_operacao is not None:
         dados = pd.read_json(dados_operacao, orient="split")
-        dados["Data Inicio"] = pd.to_datetime(dados["Data Inicio"], unit="ms")
-        dados["Data Fim"] = pd.to_datetime(dados["Data Fim"], unit="ms")
+        dados["dataInicio"] = pd.to_datetime(dados["dataInicio"], unit="ms")
+        dados["dataFim"] = pd.to_datetime(dados["dataFim"], unit="ms")
         return dcc.send_data_frame(dados.to_csv, "operacao.csv")
