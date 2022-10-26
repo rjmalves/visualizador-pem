@@ -32,30 +32,33 @@ table = html.Div(
             ],
             className="card-header",
         ),
-        dash_table.DataTable(
-            data=df.to_dict("records"),
-            columns=[{"id": c, "name": c} for c in df.columns],
-            cell_selectable=False,
-            row_selectable="single",
-            id="current-studies-table",
-            style_data={
-                "color": "black",
-                "backgroundColor": "rgba(218, 215, 205, 0.7)",
-                "fontWeight": "bolder",
-                "fontSize": "1rem",
-            },
-            style_data_conditional=[
-                {
-                    "if": {"row_index": "odd"},
-                    "backgroundColor": "rgb(220, 220, 220)",
-                }
-            ],
-            style_header={
-                "backgroundColor": "#a3b18a",
-                "color": "#dad7cd",
-                "fontWeight": "bold",
-                "textAlign": "center",
-            },
+        html.Div(
+            dash_table.DataTable(
+                data=df.to_dict("records"),
+                columns=[{"id": c, "name": c} for c in df.columns],
+                cell_selectable=False,
+                row_selectable="single",
+                id="current-studies-table",
+                style_data={
+                    "color": "black",
+                    "backgroundColor": "rgba(218, 215, 205, 0.7)",
+                    "fontWeight": "bolder",
+                    "fontSize": "1rem",
+                },
+                style_data_conditional=[
+                    {
+                        "if": {"row_index": "odd"},
+                        "backgroundColor": "rgb(220, 220, 220)",
+                    }
+                ],
+                style_header={
+                    "backgroundColor": "#a3b18a",
+                    "color": "#dad7cd",
+                    "fontWeight": "bold",
+                    "textAlign": "center",
+                },
+            ),
+            className="card-content",
         ),
     ],
     className="card",

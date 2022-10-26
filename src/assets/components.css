@@ -41,32 +41,8 @@
     color: #dad7cd;
 }
 
-.dash-spreadsheet-container {
-    border-radius: 10px;
-    overflow: hidden;
-    border: 1px;
-}
-
-.dash_header {
-    background-color: rgba(88, 129, 87, 1);
-}
-
-.dash-select-cell input {
-    box-sizing: border-box;
-    appearance: none;
-    background: #dad7cd;
-    outline: 2px solid #333;
-    border: 3px solid #dad7cd;
-    border-radius: 5px;
-    width: 12px;
-    height: 12px;
-}
-
-.dash-select-cell input:checked {
-    box-sizing: border-box;
-    appearance: none;
-    background: rgba(88, 129, 87, 1);
-    border-radius: 5px;
+.card-content {
+    margin: 10px 20px;
 }
 
 .dropdown-container {
