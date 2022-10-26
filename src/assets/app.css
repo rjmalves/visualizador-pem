@@ -1,107 +1,5 @@
-/* Add a black background color to the top navigation */
-.navbar {
-    background-color: #344e41;
-    box-sizing: border-box;
-    margin: 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 1%;
-    border-radius: 10px;
-}
-
-/* Style the links inside the navigation bar */
-.navbar li, a, button {
-    font-weight: 500;
-    font-size: 16px;
-    color: #ecf0f1;
-    text-decoration: none;
-}
-
-.logo {
-    cursor: pointer;
-    height: 40px;
-    padding: 0px 20px;
-}
-
-.navbar__links {
-    list-style: none;
-}
-
-.navbar__links li {
-    display: inline-block;
-    padding: 0px 30px;
-}
-
-.navbar__links li a {
-    letter-spacing: 0.08rem;
-    transition: all 0.3s ease 0s;
-}
-
-.navbar__links li a:hover {
-    transition: all 0.3s ease 0s;
-    color: rgba(88, 129, 87, 1);
-}
-
-.navbar button {
-    padding: 9px 25px;
-    background-color: rgba(88, 129, 87, 1);
-    border: none;
-    border-radius: 50px;
-    cursor: pointer;
-    transition: all 0.3s ease 0s;
-}
-
-.navbar button:hover {
-    background-color: rgba(88, 129, 87, 0.8);
-}
-
-.header__title {
-    letter-spacing: 0.05rem;
-    font-weight: bold;
-    font-size: 3rem;
-    display: flex;
-    color: #344e41;
-}
-
-.header__subtitle {
-    color: #588157;
-    font-size: 1.5rem;
-    letter-spacing: 0.03rem;
-    font-weight: lighter;
-}
-
-
 body {
-    background-color: #dad7cd;
-}
-
-footer {
-    padding: 0.5rem 0.0rem;
-}
-
-.divider {
-    border: 1px solid #dad7cd;
-    margin: 0.5rem 0rem;
-}
-
-.rights {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    text-decoration: none;
-    color: #dad7cd;
-    font-size: 0.8rem;
-    letter-spacing: 0.1rem;
-}
-
-.footer__container {
-    background-color: #344e41;
-    border-radius: 10px;
-    padding: 0.5rem 0.5rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+    background-color: var(--background-color);
 }
 
 .app-content {
@@ -234,14 +132,6 @@ footer {
 .graph-with-dropdown-container .main-svg {
     border-radius: 1rem;
     width: 100%;
-}
-
-.first {
-    margin-top: 15px;
-}
-
-.second {
-    margin-top: 15px;
 }
 
 @media only screen and (max-width: 600px) {

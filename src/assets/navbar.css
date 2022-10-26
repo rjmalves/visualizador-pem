@@ -1,0 +1,57 @@
+/* Add a black background color to the top navigation */
+.navbar {
+    background-color: var(--card-border-color);
+    box-sizing: border-box;
+    margin: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 1%;
+    border-radius: 10px;
+}
+
+/* Style the links inside the navigation bar */
+.navbar li, a, button {
+    font-weight: 500;
+    font-size: 16px;
+    color: var(--card-header-text-color);
+    text-decoration: none;
+}
+
+.logo {
+    cursor: pointer;
+    height: 40px;
+    padding: 0px 20px;
+}
+
+.navbar-links {
+    list-style: none;
+}
+
+.navbar-links li {
+    display: inline-block;
+    padding: 0px 30px;
+}
+
+.navbar-links li a {
+    letter-spacing: 0.08rem;
+    transition: all 0.3s ease 0s;
+}
+
+.navbar-links li a:hover {
+    transition: all 0.3s ease 0s;
+    color: var(--card-header-text-color-hover);
+}
+
+.navbar button {
+    padding: 9px 25px;
+    background-color: var(--button-background-color);
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease 0s;
+}
+
+.navbar button:hover {
+    background-color: var(--button-background-color-hover);
+}

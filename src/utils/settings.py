@@ -1,11 +1,28 @@
 import os
+import socket
+import fcntl
+import struct
+
+
+def __get_ip_address(ifname: str):
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    return socket.inet_ntoa(
+        fcntl.ioctl(
+            s.fileno(),
+            0x8915,
+            struct.pack("256s".encode("utf-8"), ifname[:15].encode("utf-8")),
+        )[20:24]
+    )
+
+
+LOCALHOST = __get_ip_address("eth0")
 
 
 class Settings:
     mode = os.getenv("MODE", "DEV")
     host = os.getenv("HOST", "0.0.0.0")
     port = int(os.getenv("PORT", "5050"))
-    result_api = os.getenv("RESULT_API", "http://172.24.173.136:5048/results")
+    result_api = os.getenv("RESULT_API", f"http://{LOCALHOST}:5048/results")
     api_key = os.getenv("API_KEY", "")
     graphs_update_period = int(os.getenv("GRAPHS_UPDATE_PERIOD", "600000"))
     current_state_update_period = int(
@@ -22,7 +39,7 @@ class Settings:
         cls.host = os.getenv("HOST", "0.0.0.0")
         cls.port = int(os.getenv("PORT", "5050"))
         cls.result_api = os.getenv(
-            "RESULT_API", "http://172.24.173.136:5048/results"
+            "RESULT_API", f"http://{LOCALHOST}:5048/results"
         )
         cls.api_key = os.getenv("API_KEY", "")
         cls.graphs_update_period = int(

@@ -1,19 +1,12 @@
-
 .card {
     margin: 20px 10px;
     padding: 0px 5px 5px 5px;
     border-radius: 10px;
-    background-color: rgba(88, 129, 87, 1);
+    background-color: var(--card-border-color);
 }
 
-.table__container {
-    border-radius: 10px;
-    padding: 5px 10px;
-
-}
-
-.table__header {
-    color: #dad7cd;
+.card-header {
+    color: rgba(135,157,141,1);
     box-sizing: border-box;
     margin: 0;
     display: flex;
@@ -24,25 +17,27 @@
     border-radius: 10px;
 }
 
-.table__editing__menu {
+.card-menu {
     display: inline-block;
 }
 
-.table__editing__menu button {
-    background-color: #dad7cd;
-    color: rgba(88, 129, 87, 1);
+.card-menu button {
+    padding: 9px 25px;
+    margin: 0px 0px 0px 10px;
+    font-weight: 500;
+    font-size: 16px;
+    color: var(--card-header-text-color);
+    text-decoration: none;
+    background-color: var(--button-background-color);
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
     transition: all 0.3s ease 0s;
-    font-weight: bolder;
-    font-size: 1.2rem;
-    border-radius: 10px;
-    padding: 0px 10px;
-    margin: 0px 10px;
-
 }
 
-.table__editing__menu button:hover  {
+.card-menu button:hover  {
     transition: all 0.3s ease 0s;
-    background-color: #344e41;
+    background-color: var(--button-background-color-hover);
     color: #dad7cd;
 }
 
@@ -50,11 +45,6 @@
     border-radius: 10px;
     overflow: hidden;
     border: 1px;
-}
-
-.table__container th {
-    border-color: #344e41;
-    color: #344e41
 }
 
 .dash_header {

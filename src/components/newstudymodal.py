@@ -9,23 +9,23 @@ modal = html.Div(
                 dbc.ModalHeader(
                     dbc.ModalTitle(
                         "ADICIONE UM NOVO ESTUDO",
-                        className="new__study__form__title",
+                        className="new-study-form-title",
                     )
                 ),
                 dbc.ModalBody(
                     [
                         dcc.Input(
                             placeholder="Insira o ID do estudo a ser visualizado...",
-                            id="new__study__id",
-                            className="new__study__id__form__field",
+                            id="new-study",
+                            className="new-study-id-form-field",
                         )
                     ]
                 ),
                 dbc.ModalFooter(
                     html.Button(
                         "Adicionar",
-                        id="confirm__study__button",
-                        className="confirm__study__button",
+                        id="confirm-study-button",
+                        className="confirm-study-button",
                     )
                 ),
             ],
@@ -46,8 +46,8 @@ modal = html.Div(
 @callback(
     Output("modal", "is_open"),
     [
-        Input("add__study__button", "n_clicks"),
-        Input("confirm__study__button", "n_clicks"),
+        Input("add-study-button", "n_clicks"),
+        Input("confirm-study-button", "n_clicks"),
     ],
     [State("modal", "is_open")],
 )

@@ -215,7 +215,7 @@ graph = html.Div(
 @callback(
     Output("choose-operation-variable", "options"),
     Input("update-graph-data", "n_intervals"),
-    Input("current_studies", "data"),
+    Input("current-studies", "data"),
 )
 def update_operation_variables_dropdown_options(interval, studies_data):
     studies = pd.read_json(studies_data, orient="split")
@@ -392,7 +392,7 @@ def update_dropdown_options_patamar(interval, options):
 @callback(
     Output("operation-data", "data"),
     Input("update-graph-data", "n_intervals"),
-    Input("current_studies", "data"),
+    Input("current-studies", "data"),
     Input("operation-filters", "data"),
     Input("choose-operation-variable", "value"),
 )
@@ -442,7 +442,7 @@ def update_operation_variables_data(
 @callback(
     Output("operation-data-options", "data"),
     Input("update-graph-data", "n_intervals"),
-    Input("current_studies", "data"),
+    Input("current-studies", "data"),
     Input("choose-operation-variable", "value"),
 )
 def update_operation_data_options(interval, studies, variable: str):
