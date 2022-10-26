@@ -93,9 +93,9 @@ graph = html.Div(
     children=[
         html.Div(
             [
-                html.H3(
+                html.H4(
                     "VARIÁVEIS DA OPERAÇÂO",
-                    className="table__header__title",
+                    className="card-title",
                 ),
                 html.Div(
                     children=[
@@ -198,15 +198,14 @@ graph = html.Div(
                         html.Button(
                             "CSV",
                             id="operation-download-btn",
-                            className="download-button",
                         ),
                     ],
-                    className="dropdown-button-container",
+                    className="card-menu",
                 ),
             ],
-            className="table__header",
+            className="card-header",
         ),
-        html.Div(dcc.Graph(id="operation-graph")),
+        html.Div(dcc.Graph(id="operation-graph"), className="card-content"),
     ],
     className="card",
 )
@@ -315,8 +314,8 @@ def atualiza_exibe_dropdown_patamar_operacao(variavel: str):
 )
 def update_dropdown_options_usina(interval, options):
     if options:
-        if "patamar" in options.keys():
-            return sorted(list(set(options["patamar"])))
+        if "usina" in options.keys():
+            return sorted(list(set(options["usina"])))
     return []
 
 

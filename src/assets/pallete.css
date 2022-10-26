@@ -24,4 +24,8 @@
     --card-header-text-color-hover: rgba(135,157,141,1);
     --button-background-color: rgba(135,157,141,1);
     --button-background-color-hover: rgba( 43, 90, 57,1);
+    --card-dropdown-background-color: rgba(204,213,207,1);
+    --card-dropdown-background-color-hover: rgba( 43, 90, 57,1);
+    --card-dropdown-text-color: rgba( 43, 90, 57,1);
+    --card-dropdown-text-color-hover: rgba(204,213,207,1);
 }

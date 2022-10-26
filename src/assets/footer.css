@@ -3,7 +3,7 @@ footer {
 }
 
 .divider {
-    border: 1px solid #dad7cd;
+    border: 1px solid var(--card-header-text-color);
     margin: 0.5rem 0rem;
 }
 
@@ -12,13 +12,13 @@ footer {
     flex-wrap: wrap;
     justify-content: space-between;
     text-decoration: none;
-    color: #dad7cd;
+    color: var(--card-header-text-color);
     font-size: 0.8rem;
     letter-spacing: 0.1rem;
 }
 
 .footer__container {
-    background-color: #344e41;
+    background-color: var(--card-border-color);
     border-radius: 10px;
     padding: 0.5rem 0.5rem;
     display: flex;
