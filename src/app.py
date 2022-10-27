@@ -8,7 +8,6 @@ This is where we define the various css items to fetch as well as the layout of 
 import dash
 from dash import html
 import dash_bootstrap_components as dbc
-from flask import Flask
 from waitress import serve
 
 # local imports
@@ -29,10 +28,8 @@ def serve_layout():
 
 class App:
     def __init__(self) -> None:
-        self.__server = Flask(__name__)
         self.__app = dash.Dash(
             __name__,
-            server=self.__server,
             use_pages=True,
             # suppress_callback_exceptions=True,
             title="Visualizador",
@@ -40,7 +37,6 @@ class App:
             url_base_pathname=Settings.url_prefix,
         )
         self.__app.layout = serve_layout
-        self.__server = self.__app.server
 
     def serve(self):
         if Settings.mode == "DEV":
