@@ -22,6 +22,7 @@ class Settings:
     mode = os.getenv("MODE", "DEV")
     host = os.getenv("HOST", "0.0.0.0")
     port = int(os.getenv("PORT", "5050"))
+    storage = os.getenv("STORAGE", "session")
     result_api = os.getenv("RESULT_API", f"http://{LOCALHOST}:5048/results")
     api_key = os.getenv("API_KEY", "")
     graphs_update_period = int(os.getenv("GRAPHS_UPDATE_PERIOD", "600000"))
@@ -38,6 +39,7 @@ class Settings:
         cls.mode = os.getenv("MODE", "DEV")
         cls.host = os.getenv("HOST", "0.0.0.0")
         cls.port = int(os.getenv("PORT", "5050"))
+        cls.storage = os.getenv("STORAGE", "session")
         cls.result_api = os.getenv(
             "RESULT_API", f"http://{LOCALHOST}:5048/results"
         )

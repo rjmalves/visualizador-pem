@@ -84,9 +84,15 @@ graph_updater = dcc.Interval(
     n_intervals=0,
 )
 
-operation_variables_data = dcc.Store(id="operation-data")
-operation_variables_options = dcc.Store(id="operation-data-options")
-operation_variables_filter = dcc.Store(id="operation-filters")
+operation_variables_data = dcc.Store(
+    id="operation-data", storage_type=Settings.storage
+)
+operation_variables_options = dcc.Store(
+    id="operation-data-options", storage_type=Settings.storage
+)
+operation_variables_filter = dcc.Store(
+    id="operation-filters", storage_type=Settings.storage
+)
 operation_data_download = dcc.Download(id="operation-download")
 
 graph = html.Div(
