@@ -1,4 +1,5 @@
 from dash import html, dcc, callback, Input, Output
+import os
 from src.utils.settings import Settings
 
 navbar = html.Header(
@@ -12,7 +13,9 @@ navbar = html.Header(
                             html.Li(
                                 html.A(
                                     "CASOS",
-                                    href="/casos",
+                                    href=os.path.join(
+                                        Settings.url_prefix, "/casos"
+                                    ),
                                     className="navbar-link",
                                     id="casos-navbar-link",
                                 )
@@ -20,7 +23,9 @@ navbar = html.Header(
                             html.Li(
                                 html.A(
                                     "ENCADEADOR",
-                                    href="/encadeador",
+                                    href=os.path.join(
+                                        Settings.url_prefix, "/encadeador"
+                                    ),
                                     className="navbar-link",
                                     id="encadeador-navbar-link",
                                 )
