@@ -218,15 +218,9 @@ graph = html.Div(
 )
 def update_operation_variables_dropdown_options(interval, studies_data):
     studies = pd.read_json(studies_data, orient="split")
-    all_variables = set()
-    for _, line in studies.iterrows():
-        newave_path = os.path.join(line["CAMINHO"], "NEWAVE")
-        decomp_path = os.path.join(line["CAMINHO"], "DECOMP")
-        unique_variables = API.fetch_available_results_list(
-            [newave_path, decomp_path]
-        )
-        all_variables = all_variables.union(set(unique_variables))
-    return sorted(list(all_variables))
+    paths = studies["CAMINHO"].tolist()
+    unique_variables = API.fetch_available_results_list(paths)
+    return sorted(unique_variables)
 
 
 @callback(
@@ -405,43 +399,18 @@ def update_operation_variables_data(
     req_filters = validation.validate_required_filters(variable, filters)
     if req_filters is None:
         return None
-    fetch_filters = {**req_filters, "estagio": 1}
     studies_df = pd.read_json(studies, orient="split")
     paths = studies_df["CAMINHO"].tolist()
-    complete_df = pd.DataFrame()
-    newave_df = API.fetch_result_list(
-        [os.path.join(p, "NEWAVE") for p in paths],
+    df = API.fetch_result_list(
+        paths,
         variable,
-        fetch_filters,
-        path_part_to_name_study=-2,
+        req_filters,
+        path_part_to_name_study=-1,
     )
-    decomp_df = API.fetch_result_list(
-        [os.path.join(p, "DECOMP") for p in paths],
-        variable,
-        fetch_filters,
-        path_part_to_name_study=-2,
-    )
-    if newave_df is not None:
-        cols_newave = newave_df.columns.to_list()
-        newave_df["programa"] = "NEWAVE"
-        complete_df = pd.concat(
-            [complete_df, newave_df[["programa"] + cols_newave]],
-            ignore_index=True,
-        )
-    if decomp_df is not None:
-        cols_decomp = decomp_df.columns.to_list()
-        decomp_df["programa"] = "DECOMP"
-        complete_df = pd.concat(
-            [
-                complete_df,
-                decomp_df[["programa"] + cols_decomp],
-            ],
-            ignore_index=True,
-        )
-    if complete_df.empty:
+    if df.empty:
         return None
     else:
-        return complete_df.to_json(orient="split")
+        return df.to_json(orient="split")
 
 
 @callback(
@@ -457,21 +426,11 @@ def update_operation_data_options(interval, studies, variable: str):
         return None
     studies_df = pd.read_json(studies, orient="split")
     paths = studies_df["CAMINHO"].tolist()
-    complete_options = {}
-    newave_options = API.fetch_result_options_list(
-        [os.path.join(p, "NEWAVE") for p in paths], variable
-    )
-    decomp_options = API.fetch_result_options_list(
-        [os.path.join(p, "DECOMP") for p in paths], variable
-    )
-    if newave_options is not None:
-        complete_options = {**complete_options, **newave_options}
-    if decomp_options is not None:
-        complete_options = {**complete_options, **decomp_options}
-    if len(complete_options) == 0:
+    options = API.fetch_result_options_list(paths, variable)
+    if len(options) == 0:
         return None
     else:
-        return complete_options
+        return options
 
 
 @callback(
@@ -526,68 +485,43 @@ def generate_operation_graph(operation_data, variable):
     dados["dataFim"] = pd.to_datetime(dados["dataFim"], unit="ms")
     estudos = dados["estudo"].unique().tolist()
 
-    filtro_newave = dados["programa"] == "NEWAVE"
-    filtro_decomp = dados["programa"] == "DECOMP"
-    df_newave = dados.loc[filtro_newave]
-    df_decomp = dados.loc[filtro_decomp]
-
-    visibilidade_newave = "legendonly" if len(estudos) > 2 else None
     for i, estudo in enumerate(estudos):
-        if df_decomp is not None:
-            estudo_decomp = df_decomp.loc[df_decomp["estudo"] == estudo]
-            if not estudo_decomp.empty:
+        if dados is not None:
+            dados_estudo = dados.loc[dados["estudo"] == estudo]
+            if not dados_estudo.empty:
                 fig.add_trace(
                     go.Scatter(
-                        x=estudo_decomp["dataInicio"],
-                        y=estudo_decomp["mean"],
+                        x=dados_estudo["dataInicio"],
+                        y=dados_estudo["mean"],
                         line={
                             "color": DISCRETE_COLOR_PALLETE[i],
                             "width": 3,
                         },
                         name=estudo,
-                        legendgroup="DECOMP",
-                        legendgrouptitle_text="DECOMP",
-                    )
-                )
-        if df_newave is not None:
-            estudo_newave = df_newave.loc[df_newave["estudo"] == estudo]
-            if not estudo_newave.empty:
-                fig.add_trace(
-                    go.Scatter(
-                        x=estudo_newave["dataInicio"],
-                        y=estudo_newave["mean"],
-                        line={
-                            "color": DISCRETE_COLOR_PALLETE[i],
-                            "dash": "dot",
-                            "width": 2,
-                        },
-                        name=estudo,
-                        legendgroup="NEWAVEm",
-                        legendgrouptitle_text="NEWAVEm",
+                        legendgroup="mean",
+                        legendgrouptitle_text="mean",
                     )
                 )
                 fig.add_trace(
                     go.Scatter(
-                        x=estudo_newave["dataInicio"],
-                        y=estudo_newave["p10"],
+                        x=dados_estudo["dataInicio"],
+                        y=dados_estudo["p10"],
                         line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[i],
-                        legendgroup="NEWAVEp10",
-                        legendgrouptitle_text="NEWAVEp10",
+                        legendgroup="p10",
+                        legendgrouptitle_text="p10",
                         name=estudo,
-                        visible=visibilidade_newave,
                     )
                 )
                 fig.add_trace(
                     go.Scatter(
-                        x=estudo_newave["dataInicio"],
-                        y=estudo_newave["p90"],
+                        x=dados_estudo["dataInicio"],
+                        y=dados_estudo["p90"],
                         line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[i],
                         fillcolor=DISCRETE_COLOR_PALLETE_BACKGROUND[i],
                         fill="tonexty",
-                        legendgroup="NEWAVEp90",
-                        legendgrouptitle_text="NEWAVEp90",
+                        legendgroup="p90",
+                        legendgrouptitle_text="p90",
                         name=estudo,
-                        visible=visibilidade_newave,
                     )
                 )
 

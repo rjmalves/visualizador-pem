@@ -1,12 +1,11 @@
 import pandas as pd
 import dash
 from dash import html, callback, Output, Input, State, dash_table, dcc, ctx
-from src.utils.api import API
 
 DUMMY_DATA = {
     "id": [1],
     "CAMINHO": [
-        "/home/rogerio/git/visualizador-encadeador-pem/tests/2520",
+        "/home/pem/estudos/CPAMP/Ciclo_2021-2022/Backtest/casos/2520",
     ],
 }
 

@@ -8,7 +8,7 @@ from src.components.currentstudiestable import (
     table,
 )
 from src.components.newstudymodal import modal
-from src.components.operationgraph import (
+from src.components.operationgraphcasos import (
     graph_updater,
     operation_variables_options,
     operation_variables_data,
@@ -17,7 +17,7 @@ from src.components.operationgraph import (
     graph,
 )
 
-dash.register_page(__name__, path="/", redirect_from=["/home"], title="Home")
+dash.register_page(__name__, path="/", redirect_from=["/casos"], title="Casos")
 
 layout = html.Div(
     [
@@ -32,5 +32,5 @@ layout = html.Div(
         operation_data_download,
         graph_updater,
     ],
-    className="app__page",
+    className="casos-app-page",
 )

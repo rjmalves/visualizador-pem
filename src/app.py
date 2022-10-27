@@ -21,7 +21,7 @@ def serve_layout():
     return html.Div(
         [
             navbar.navbar,
-            dbc.Container(dash.page_container, class_name="my-2"),
+            dbc.Container(dash.page_container),
             footer.footer,
         ]
     )
@@ -41,7 +41,7 @@ class App:
                 }
             ],
             # suppress_callback_exceptions=True,
-            title="Encadeador",
+            title="Visualizador",
             update_title="Carregando...",
             url_base_pathname=Settings.url_prefix,
         )

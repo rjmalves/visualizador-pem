@@ -1,6 +1,7 @@
 pandas
 plotly
 dash
+dash_bootstrap_components
 python-dotenv
 waitress
 pybase62

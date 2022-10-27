@@ -11,13 +11,13 @@ navbar = html.Header(
                             html.Li(
                                 html.A(
                                     "CASOS",
-                                    href="/",
+                                    href="/casos",
                                 )
                             ),
                             html.Li(
                                 html.A(
                                     "ENCADEADOR",
-                                    href="/",
+                                    href="/encadeador",
                                 )
                             ),
                             # html.Li(
@@ -30,7 +30,7 @@ navbar = html.Header(
                         className="navbar-links",
                     ),
                 ),
-                html.A(html.Button("Login"), href="/", className="login"),
+                html.A(html.Button("Login"), href="/login", className="login"),
             ],
             className="navbar",
         ),

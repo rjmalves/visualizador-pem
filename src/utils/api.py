@@ -48,12 +48,16 @@ class API:
 
     @classmethod
     def fetch_result_list(
-        cls, studies_paths: List[str], desired_data: str, filters: dict
+        cls,
+        studies_paths: List[str],
+        desired_data: str,
+        filters: dict,
+        path_part_to_name_study: int,
     ) -> Optional[pd.DataFrame]:
         valid_dfs: List[pd.DataFrame] = []
         for p in studies_paths:
             path = pathlib.Path(p)
-            study = path.parts[-2]
+            study = path.parts[path_part_to_name_study]
             df = cls.fetch_result(str(path), desired_data, filters)
             if df is not None:
                 df_cols = df.columns.to_list()
