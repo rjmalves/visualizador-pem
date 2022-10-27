@@ -6,3 +6,4 @@ python-dotenv
 waitress
 pybase62
 pyarrow
+requests

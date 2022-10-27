@@ -9,6 +9,7 @@ import dash
 from dash import html
 import dash_bootstrap_components as dbc
 from flask import Flask
+from waitress import serve
 
 # local imports
 from src.components import footer, navbar
@@ -45,4 +46,4 @@ class App:
         if Settings.mode == "DEV":
             self.__app.run(host="0.0.0.0", port=str(Settings.port), debug=True)
         elif Settings.mode == "PROD":
-            self.__app.run(host="0.0.0.0", port=str(Settings.port))
+            serve(self.__app.server, host="0.0.0.0", port=str(Settings.port))
