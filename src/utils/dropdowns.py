@@ -3,6 +3,19 @@ import os
 from src.utils.api import API
 
 
+NOT_OPERATION_FILES = [
+    "COMPOSICAO_CUSTOS",
+    "TEMPO",
+    "CONVERGENCIA",
+    "PROBABILIDADES",
+    "INVIABILIDADES_CODIGO",
+    "INVIABILIDADES_LIMITE",
+    "INVIABILIDADES_PATAMAR_LIMITE",
+    "INVIABILIDADES_PATAMAR",
+    "INVIABILIDADES_SBM_PATAMAR",
+]
+
+
 def update_operation_variables_dropdown_options_encadeador(
     interval, studies_data
 ):
@@ -15,6 +28,9 @@ def update_operation_variables_dropdown_options_encadeador(
             [newave_path, decomp_path]
         )
         all_variables = all_variables.union(set(unique_variables))
+        all_variables = [
+            a for a in all_variables if a not in NOT_OPERATION_FILES
+        ]
     return sorted(list(all_variables))
 
 
@@ -22,6 +38,9 @@ def update_operation_variables_dropdown_options_casos(interval, studies_data):
     studies = pd.read_json(studies_data, orient="split")
     paths = studies["CAMINHO"].tolist()
     unique_variables = API.fetch_available_results_list(paths)
+    unique_variables = [
+        a for a in unique_variables if a not in NOT_OPERATION_FILES
+    ]
     return sorted(unique_variables)
 
 
