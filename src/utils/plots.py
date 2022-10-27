@@ -27,7 +27,60 @@ DISCRETE_COLOR_PALLETE_BACKGROUND = [
     "rgba(67, 170, 139, 0.3)",
 ]
 
-VARIABLE_LEGENDS = {
+VARIABLE_NAMES = {
+    "COP": "Custo de Operação",
+    "CFU": "Custo Futuro",
+    "CMO": "Custo Marginal de Operação",
+    "CTER": "Custo de Geração Térmica",
+    "DEF": "Déficit",
+    "EARMI": "Energia Armazenada Inicial",
+    "EARPI": "Energia Armazenada Inicial",
+    "EARMF": "Energia Armazenada Final",
+    "EARPF": "Energia Armazenada Final",
+    "ENAA": "Energia Natural Afluente",
+    "ENAM": "Energia Natural Afluente",
+    "EVERNT": "Energia Vertida Não-Turbinável",
+    "EVERT": "Energia Vertida Turbinável",
+    "GHID": "Geração Hidráulica",
+    "GTER": "Geração Térmica",
+    "INT": "Intercâmbio",
+    "MER": "Mercado",
+    "QAFL": "Vazão Afluente",
+    "QDEF": "Vazão Defluente",
+    "QINC": "Vazão Afluente Incremental",
+    "VAGUA": "Valor da Água",
+    "VARMI": "Volume Armazenado Inicial",
+    "VARMF": "Volume Armazenado Final",
+    "VARPI": "Volume Armazenado Inicial",
+    "VARPF": "Volume Armazenado Final",
+    "VTUR": "Volume Turbinado",
+    "VVER": "Volume Vertido",
+}
+
+SPATIAL_RES_NAMES = {
+    "SIN": "SIN",
+    "SBM": "Submercado",
+    "SBP": "Submercados",
+    "REE": "REE",
+    "UHE": "UHE",
+    "UTE": "UTE",
+    "UEE": "UEE",
+}
+
+SPATIAL_RES_FILTER_NAMES = {
+    "SIN": "SIN",
+    "SBM": "submercado",
+    "REE": "ree",
+    "UHE": "usina",
+    "UTE": "usina",
+    "UEE": "usina",
+}
+
+TEMPORAL_RES_NAMES = {"PAT": "Patamar"}
+
+TEMPORAL_RES_FILTER_NAMES = {"PAT": "patamar"}
+
+VARIABLE_UNITS = {
     "COP": "R$",
     "CFU": "R$",
     "CMO": "R$ / MWh",
@@ -47,15 +100,20 @@ VARIABLE_LEGENDS = {
     "MER": "MWmed",
     "QAFL": "m3/s",
     "QDEF": "m3/s",
+    "QINC": "m3/s",
     "VAGUA": "R$ / hm3",
     "VARMI": "hm3",
     "VARMF": "hm3",
     "VARPI": "%",
     "VARPF": "%",
+    "VTUR": "hm3",
+    "VVER": "hm3",
 }
 
 
-def generate_operation_graph_encadeador(operation_data, variable: str):
+def generate_operation_graph_encadeador(
+    operation_data, variable: str, filters
+):
     graph_layout = go.Layout(
         plot_bgcolor="rgba(158, 149, 128, 0.2)",
         paper_bgcolor="rgba(255,255,255,1)",
@@ -136,15 +194,16 @@ def generate_operation_graph_encadeador(operation_data, variable: str):
 
     if variable is not None:
         fig.update_layout(
+            title=__make_operation_plot_title(variable, filters),
             xaxis_title="Data",
-            yaxis_title=VARIABLE_LEGENDS.get(variable.split("_")[0], ""),
+            yaxis_title=VARIABLE_UNITS.get(variable.split("_")[0], ""),
             hovermode="x unified",
             legend=dict(groupclick="toggleitem"),
         )
     return fig
 
 
-def generate_operation_graph_casos(operation_data, variable):
+def generate_operation_graph_casos(operation_data, variable, filters):
     graph_layout = go.Layout(
         plot_bgcolor="rgba(158, 149, 128, 0.2)",
         paper_bgcolor="rgba(255,255,255,1)",
@@ -214,9 +273,44 @@ def generate_operation_graph_casos(operation_data, variable):
 
     if variable is not None:
         fig.update_layout(
+            title=__make_operation_plot_title(variable, filters),
             xaxis_title="Data",
-            yaxis_title=VARIABLE_LEGENDS.get(variable.split("_")[0], ""),
+            yaxis_title=VARIABLE_UNITS.get(variable.split("_")[0], ""),
             hovermode="x unified",
             legend=dict(groupclick="toggleitem"),
         )
     return fig
+
+
+def __make_operation_plot_title(variable: str, filters: dict) -> str:
+
+    variable_data = variable.split("_")
+    name = variable_data[0]
+    spatial_res = variable_data[1]
+    temporal_res = variable_data[2]
+
+    full_name = VARIABLE_NAMES.get(name)
+    full_spatial_res = SPATIAL_RES_NAMES.get(spatial_res)
+    full_temporal_res = TEMPORAL_RES_NAMES.get(temporal_res)
+    title = ""
+    if full_name:
+        title += full_name
+
+    if spatial_res == "SIN":
+        title += " - SIN"
+    elif spatial_res == "SBP":
+        sbm_de = filters["submercadoDe"].split("|")[0].strip("'")
+        sbm_para = filters["submercadoPara"].split("|")[0].strip("'")
+        title += f" - {full_spatial_res} {sbm_de} -> {sbm_para}"
+    elif spatial_res == "SBM":
+        sbm = filters["submercado"].split("|")[0].strip("'")
+        title += f" - {full_spatial_res} {sbm}"
+    elif full_spatial_res:
+        title += f" - {full_spatial_res} {filters[SPATIAL_RES_FILTER_NAMES[spatial_res]]}"
+
+    if temporal_res == "EST":
+        pass
+    elif full_temporal_res:
+        title += f" - {full_temporal_res} {filters[TEMPORAL_RES_FILTER_NAMES[temporal_res]]}"
+
+    return title

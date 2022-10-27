@@ -25,7 +25,7 @@ def edit_current_study_data(
                 return current_studies
             else:
                 current_ids = current_data["id"].to_list()
-                last_id = 1 if len(current_ids) == 0 else int(current_ids[-1])
+                last_id = 0 if len(current_ids) == 0 else int(current_ids[-1])
                 new_data = pd.DataFrame(
                     data={
                         "id": [str(last_id + 1)],

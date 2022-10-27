@@ -160,6 +160,9 @@ def update_data(interval, studies, filters: dict, variable: str):
         OperationGraphAIO.ids.variable_dropdown("encadeador-operation-graph"),
         "value",
     ),
+    State(OperationGraphAIO.ids.filters("casos-operation-graph"), "data"),
 )
-def generate_operation_graph(operation_data, variable):
-    return plots.generate_operation_graph_encadeador(operation_data, variable)
+def generate_operation_graph(operation_data, variable, filters):
+    return plots.generate_operation_graph_encadeador(
+        operation_data, variable, filters
+    )

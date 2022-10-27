@@ -1,19 +1,37 @@
 
-.new__study__form__title {
-    color: #dee2e6;
-    font-size: 1.5rem;
-    letter-spacing: 0.05rem;
+.modal-button {
+  padding: 9px 25px;
+  margin: 0px 0px 0px 10px;
+  font-weight: 500;
+  font-size: 16px;
+  color: var(--card-header-text-color);
+  text-decoration: none;
+  background-color: var(--button-background-color);
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease 0s;
 }
 
-.new__study__id__form__field {
+.modal-button:hover  {
+  transition: all 0.3s ease 0s;
+  background-color: var(--button-background-color-hover);
+  color: var(--card-header-text-color);
+}
+
+.modal-input-field[type=text] {
     width: 100%;
-    font-size: 1.2rem;
+    padding: 12px 20px;
+    margin: 8px 0;
+    border: 8px solid var(--card-border-color);
+    transition: all 0.3s ease 0s;
+    box-sizing: border-box;
 }
 
-.confirm__study__button {
-    color:#344e41
+.modal-input-field[type=text]:focus {
+  transition: all 0.3s ease 0s;
+  border: 8px solid var(--modal-form-input-border-color);
 }
-
 
 /* The below styles were copied from bootstrap */
 
@@ -131,7 +149,7 @@
     flex-direction: column;
     width: 100%;
     pointer-events: auto;
-    background-color: #588157;
+    background-color: var(--card-border-color);
     background-clip: padding-box;
     border: 1px solid rgba(0, 0, 0, 0.2);
     border-radius: 0.5rem;

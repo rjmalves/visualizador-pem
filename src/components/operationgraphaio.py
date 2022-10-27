@@ -345,13 +345,16 @@ class OperationGraphAIO(html.Div):
                     n_intervals=0,
                 ),
                 dcc.Store(
-                    id=self.ids.data(aio_id), storage_type=Settings.storage
+                    id=self.ids.data(aio_id),
+                    storage_type=Settings.storage,
                 ),
                 dcc.Store(
-                    id=self.ids.options(aio_id), storage_type=Settings.storage
+                    id=self.ids.options(aio_id),
+                    storage_type=Settings.storage,
                 ),
                 dcc.Store(
-                    id=self.ids.filters(aio_id), storage_type=Settings.storage
+                    id=self.ids.filters(aio_id),
+                    storage_type=Settings.storage,
                 ),
                 dcc.Download(id=self.ids.download(aio_id)),
             ],
@@ -534,7 +537,7 @@ class OperationGraphAIO(html.Div):
         if submercado_de:
             filtros["submercadoPara"] = NOMES_SUBMERCADOS.get(submercado_para)
         if patamar:
-            filtros["patamar"] = f"{patamar}"
+            filtros["patamar"] = f"'{patamar}'"
         return filtros
 
     @callback(

@@ -5,13 +5,18 @@
     background-color: var(--card-border-color);
 }
 
+.card-title {
+    color: var(--card-header-text-color);
+    letter-spacing: 0.1rem;
+    font-size: large;
+    margin: 1% 1% 0.5% 1%;
+}
+
 .card-header {
-    color: rgba(135,157,141,1);
     box-sizing: border-box;
     margin: 0;
     display: flex;
     justify-content: space-between;
-    letter-spacing: 0.1rem;
     align-items: center;
     padding: 5px 1%;
     border-radius: 10px;

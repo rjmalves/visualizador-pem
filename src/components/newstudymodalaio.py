@@ -58,7 +58,7 @@ class NewStudyModalAIO(html.Div):
                         dbc.ModalHeader(
                             dbc.ModalTitle(
                                 "ADICIONE UM NOVO ESTUDO",
-                                className="new-study-form-title",
+                                className="card-title",
                             )
                         ),
                         dbc.ModalBody(
@@ -66,7 +66,8 @@ class NewStudyModalAIO(html.Div):
                                 dcc.Input(
                                     placeholder="Insira o ID do estudo a ser visualizado...",
                                     id=self.ids.new_study_name(aio_id),
-                                    className="new-study-id-form-field",
+                                    className="modal-input-field",
+                                    type="text",
                                 )
                             ]
                         ),
@@ -74,7 +75,7 @@ class NewStudyModalAIO(html.Div):
                             html.Button(
                                 "Adicionar",
                                 id=self.ids.confirm_study_btn(aio_id),
-                                className="confirm-study-button",
+                                className="modal-button",
                             )
                         ),
                     ],
