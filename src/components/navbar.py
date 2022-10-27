@@ -14,7 +14,7 @@ navbar = html.Header(
                                 html.A(
                                     "CASOS",
                                     href=os.path.join(
-                                        Settings.url_prefix, "/casos"
+                                        Settings.url_prefix, "casos"
                                     ),
                                     className="navbar-link",
                                     id="casos-navbar-link",
@@ -24,7 +24,7 @@ navbar = html.Header(
                                 html.A(
                                     "ENCADEADOR",
                                     href=os.path.join(
-                                        Settings.url_prefix, "/encadeador"
+                                        Settings.url_prefix, "encadeador"
                                     ),
                                     className="navbar-link",
                                     id="encadeador-navbar-link",
