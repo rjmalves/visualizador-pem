@@ -13,9 +13,7 @@ import src.utils.data as data
 import src.utils.plots as plots
 
 
-dash.register_page(
-    __name__, path="/", redirect_from=["/encadeador"], title="Encadeador"
-)
+dash.register_page(__name__, title="Encadeador")
 
 layout = html.Div(
     [

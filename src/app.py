@@ -12,7 +12,6 @@ from flask import Flask
 
 # local imports
 from src.components import footer, navbar
-from src.utils.log import Log
 from src.utils.settings import Settings
 
 
@@ -33,24 +32,14 @@ class App:
         self.__app = dash.Dash(
             __name__,
             server=self.__server,
-            use_pages=True,  # turn on Dash pages
-            meta_tags=[
-                {  # check if device is a mobile device. This is a must if you do any mobile styling
-                    "name": "viewport",
-                    "content": "width=device-width, initial-scale=1",
-                }
-            ],
+            use_pages=True,
             # suppress_callback_exceptions=True,
             title="Visualizador",
             update_title="Carregando...",
             url_base_pathname=Settings.url_prefix,
         )
-        self.__app.layout = (
-            serve_layout  # set the layout to the serve_layout function
-        )
-        self.__server = (
-            self.__app.server
-        )  # the server is needed to deploy the application
+        self.__app.layout = serve_layout
+        self.__server = self.__app.server
 
     def serve(self):
         if Settings.mode == "DEV":

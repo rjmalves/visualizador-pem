@@ -13,7 +13,7 @@ import src.utils.data as data
 import src.utils.plots as plots
 
 
-dash.register_page(__name__, path="/casos", title="Casos")
+dash.register_page(__name__, path="/", redirect_from=["/casos"], title="Casos")
 
 layout = html.Div(
     [

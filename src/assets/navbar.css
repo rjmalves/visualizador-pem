@@ -43,6 +43,11 @@
     color: var(--card-header-text-color-hover);
 }
 
+.navbar-link.active {
+    color: var(--button-background-color);
+    font-weight: bolder;
+}
+
 .navbar button {
     padding: 9px 25px;
     background-color: var(--button-background-color);
