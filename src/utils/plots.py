@@ -45,6 +45,7 @@ VARIABLE_NAMES = {
     "EVERT": "Energia Vertida Turbinável",
     "GHID": "Geração Hidráulica",
     "GTER": "Geração Térmica",
+    "GEOL": "Geração Eólica",
     "INT": "Intercâmbio",
     "MER": "Mercado",
     "QAFL": "Vazão Afluente",
@@ -58,6 +59,7 @@ VARIABLE_NAMES = {
     "VARPF": "Volume Armazenado Final",
     "VTUR": "Volume Turbinado",
     "VVER": "Volume Vertido",
+    "VENTO": "Velocidade do Vento",
 }
 
 SPATIAL_RES_NAMES = {
@@ -99,6 +101,7 @@ VARIABLE_UNITS = {
     "EVERT": "MWmed",
     "GHID": "MWmed",
     "GTER": "MWmed",
+    "GEOL": "MWmed",
     "INT": "MWmed",
     "MER": "MWmed",
     "QAFL": "m3/s",
@@ -112,6 +115,7 @@ VARIABLE_UNITS = {
     "VARPF": "%",
     "VTUR": "hm3",
     "VVER": "hm3",
+    "VENTO": "m/s",
 }
 
 
