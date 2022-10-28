@@ -19,9 +19,11 @@
 
 :root {
     --background-color: rgba(204,213,207,1);
+    --navbar-menu-option: rgba(135,157,141,1);
+    --navbar-menu-option-hover: rgba(204,213,207,1);
+    --navbar-active-menu-option: rgba(204,213,207,1);
     --card-border-color: rgba( 61,103, 74,1);
     --card-header-text-color: rgba(204,213,207,1);
-    --card-header-text-color-hover: rgba(135,157,141,1);
     --button-background-color: rgba(135,157,141,1);
     --button-background-color-hover: rgba( 43, 90, 57,1);
     --card-dropdown-background-color: rgba(204,213,207,1);

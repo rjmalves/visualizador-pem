@@ -40,11 +40,16 @@
 
 .navbar-links li a:hover {
     transition: all 0.3s ease 0s;
-    color: var(--card-header-text-color-hover);
+    color: var(--navbar-menu-option-hover);
+}
+
+.navbar-link {
+    color: var(--navbar-menu-option);
+    font-weight: bolder;
 }
 
 .navbar-link.active {
-    color: var(--button-background-color);
+    color: var(--navbar-active-menu-optionr);
     font-weight: bolder;
 }
 
