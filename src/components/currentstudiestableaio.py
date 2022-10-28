@@ -66,13 +66,20 @@ class CurrentStudiesTableAIO(html.Div):
                         html.H4("ESTUDOS ATUAIS", className="card-title"),
                         html.Div(
                             [
-                                html.Button(
-                                    "Adicionar",
-                                    id=self.ids.add_study_btn(aio_id),
-                                ),
-                                html.Button(
-                                    "Remover",
-                                    id=self.ids.remove_study_btn(aio_id),
+                                html.Div(
+                                    [
+                                        html.Button(
+                                            "Adicionar",
+                                            id=self.ids.add_study_btn(aio_id),
+                                        ),
+                                        html.Button(
+                                            "Remover",
+                                            id=self.ids.remove_study_btn(
+                                                aio_id
+                                            ),
+                                        ),
+                                    ],
+                                    className="card-menu-row",
                                 ),
                             ],
                             className="card-menu",

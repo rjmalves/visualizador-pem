@@ -9,7 +9,9 @@
     color: var(--card-header-text-color);
     letter-spacing: 0.1rem;
     font-size: large;
-    margin: 1% 1% 0.5% 1%;
+    display: flex;
+    align-items:center;
+    justify-content:center;
 }
 
 .card-header {
@@ -22,13 +24,15 @@
 }
 
 .card-menu {
-    display: inline-block;
+    display: grid;
+    align-items:center;
+    justify-content:center;
 }
 
 .card-menu-row {
     justify-content: space-between;
     display: flex;
-    margin: 5px 0px;
+    margin: 10px 0px;
 }
 
 .card-menu button {
@@ -52,7 +56,7 @@
 }
 
 .card-content {
-    margin: 10px 20px;
+    margin: 5px 20px;
 }
 
 .variable-dropdown  {

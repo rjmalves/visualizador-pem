@@ -219,11 +219,13 @@ def generate_operation_graph_casos(operation_data, variable, filters):
     dados["dataInicio"] = pd.to_datetime(dados["dataInicio"], unit="ms")
     dados["dataFim"] = pd.to_datetime(dados["dataFim"], unit="ms")
     estudos = dados["estudo"].unique().tolist()
+    line_shape = "hv"
 
     for i, estudo in enumerate(estudos):
         if dados is not None:
             dados_estudo = dados.loc[dados["estudo"] == estudo]
             if not dados_estudo.empty:
+                dados_estudo = __add_final_date_line_to_df(dados_estudo)
                 fig.add_trace(
                     go.Scatter(
                         x=dados_estudo["dataInicio"],
@@ -231,6 +233,7 @@ def generate_operation_graph_casos(operation_data, variable, filters):
                         line={
                             "color": DISCRETE_COLOR_PALLETE[i],
                             "width": 3,
+                            "shape": line_shape,
                         },
                         name=estudo,
                         legendgroup="mean",
@@ -245,6 +248,7 @@ def generate_operation_graph_casos(operation_data, variable, filters):
                             "color": DISCRETE_COLOR_PALLETE[i],
                             "width": 3,
                             "dash": "dot",
+                            "shape": line_shape,
                         },
                         name=estudo,
                         legendgroup="median",
@@ -256,6 +260,7 @@ def generate_operation_graph_casos(operation_data, variable, filters):
                         x=dados_estudo["dataInicio"],
                         y=dados_estudo["p10"],
                         line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[i],
+                        line_shape=line_shape,
                         legendgroup="p10",
                         legendgrouptitle_text="p10",
                         name=estudo,
@@ -267,6 +272,7 @@ def generate_operation_graph_casos(operation_data, variable, filters):
                         y=dados_estudo["p90"],
                         line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[i],
                         fillcolor=DISCRETE_COLOR_PALLETE_BACKGROUND[i],
+                        line_shape=line_shape,
                         fill="tonexty",
                         legendgroup="p90",
                         legendgrouptitle_text="p90",
@@ -322,9 +328,11 @@ def generate_operation_graph_casos_twinx(
     dados_twinx["dataFim"] = pd.to_datetime(dados_twinx["dataFim"], unit="ms")
     estudos_twinx = dados_twinx["estudo"].unique().tolist()
     estudos_completos = list(set(estudos).union(set(estudos_twinx)))
+    line_shape = "hv"
 
     for i, estudo in enumerate(estudos_completos):
         dados_estudo = dados.loc[dados["estudo"] == estudo]
+        dados_estudo = __add_final_date_line_to_df(dados_estudo)
         dados_legend = __make_operation_plot_legend_name(
             estudo, variable, filters
         )
@@ -339,6 +347,7 @@ def generate_operation_graph_casos_twinx(
                     line={
                         "color": DISCRETE_COLOR_PALLETE[i],
                         "width": 3,
+                        "shape": line_shape,
                     },
                     name="mean",
                     legendgroup=dados_legend,
@@ -353,6 +362,7 @@ def generate_operation_graph_casos_twinx(
                         "color": DISCRETE_COLOR_PALLETE[i],
                         "width": 3,
                         "dash": "dot",
+                        "shape": line_shape,
                     },
                     name="median",
                     legendgroup=dados_legend,
@@ -363,6 +373,7 @@ def generate_operation_graph_casos_twinx(
                     x=dados_estudo["dataInicio"],
                     y=dados_estudo["p10"],
                     line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[i],
+                    line_shape=line_shape,
                     name="p10",
                     legendgroup=dados_legend,
                 )
@@ -373,12 +384,14 @@ def generate_operation_graph_casos_twinx(
                     y=dados_estudo["p90"],
                     line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[i],
                     fillcolor=DISCRETE_COLOR_PALLETE_BACKGROUND[i],
+                    line_shape=line_shape,
                     fill="tonexty",
                     name="p90",
                     legendgroup=dados_legend,
                 )
             )
         dados_estudo = dados_twinx.loc[dados_twinx["estudo"] == estudo]
+        dados_estudo = __add_final_date_line_to_df(dados_estudo)
         if not dados_estudo.empty:
             fig.add_trace(
                 go.Scatter(
@@ -387,6 +400,7 @@ def generate_operation_graph_casos_twinx(
                     line={
                         "color": DISCRETE_COLOR_PALLETE[2 * i + 1],
                         "width": 3,
+                        "shape": line_shape,
                     },
                     name="mean",
                     legendgroup=dados_twinx_legend,
@@ -402,6 +416,7 @@ def generate_operation_graph_casos_twinx(
                         "color": DISCRETE_COLOR_PALLETE[2 * i + 1],
                         "width": 3,
                         "dash": "dot",
+                        "shape": line_shape,
                     },
                     name="median",
                     legendgroup=dados_twinx_legend,
@@ -413,6 +428,7 @@ def generate_operation_graph_casos_twinx(
                     x=dados_estudo["dataInicio"],
                     y=dados_estudo["p10"],
                     line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[2 * i + 1],
+                    line_shape=line_shape,
                     name="p10",
                     legendgroup=dados_twinx_legend,
                 ),
@@ -424,6 +440,7 @@ def generate_operation_graph_casos_twinx(
                     y=dados_estudo["p90"],
                     line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[2 * i + 1],
                     fillcolor=DISCRETE_COLOR_PALLETE_BACKGROUND[2 * i + 1],
+                    line_shape=line_shape,
                     fill="tonexty",
                     name="p90",
                     legendgroup=dados_twinx_legend,
@@ -482,6 +499,14 @@ def __make_operation_plot_title(variable: str, filters: dict) -> str:
         title += f" - {full_temporal_res} {filters[TEMPORAL_RES_FILTER_NAMES[temporal_res]]}"
 
     return title
+
+
+def __add_final_date_line_to_df(df: pd.DataFrame) -> pd.DataFrame:
+    new_df = df.copy()
+    last_index = df.index.tolist()[-1]
+    new_df.loc[last_index + 1, :] = df.loc[last_index, :]
+    new_df.loc[last_index + 1, "dataInicio"] = df.loc[last_index, "dataFim"]
+    return new_df
 
 
 def __make_operation_plot_legend_name(
