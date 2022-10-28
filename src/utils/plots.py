@@ -1,4 +1,5 @@
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 import pandas as pd
 
 DISCRETE_COLOR_PALLETE = [
@@ -284,6 +285,171 @@ def generate_operation_graph_casos(operation_data, variable, filters):
     return fig
 
 
+def generate_operation_graph_casos_twinx(
+    operation_data,
+    variable,
+    filters,
+    operation_data_twinx,
+    variable_twinx,
+    filters_twinx,
+):
+
+    graph_layout = go.Layout(
+        plot_bgcolor="rgba(158, 149, 128, 0.2)",
+        paper_bgcolor="rgba(255,255,255,1)",
+    )
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    fig.update_layout(graph_layout)
+    if operation_data is None and operation_data_twinx is None:
+        return fig
+    if operation_data is not None and operation_data_twinx is None:
+        return generate_operation_graph_casos(
+            operation_data, variable, filters
+        )
+    elif operation_data is None and operation_data_twinx is not None:
+        return generate_operation_graph_casos(
+            operation_data_twinx, variable_twinx, filters_twinx
+        )
+
+    dados = pd.read_json(operation_data, orient="split")
+    dados["dataInicio"] = pd.to_datetime(dados["dataInicio"], unit="ms")
+    dados["dataFim"] = pd.to_datetime(dados["dataFim"], unit="ms")
+    estudos = dados["estudo"].unique().tolist()
+    dados_twinx = pd.read_json(operation_data_twinx, orient="split")
+    dados_twinx["dataInicio"] = pd.to_datetime(
+        dados_twinx["dataInicio"], unit="ms"
+    )
+    dados_twinx["dataFim"] = pd.to_datetime(dados_twinx["dataFim"], unit="ms")
+    estudos_twinx = dados_twinx["estudo"].unique().tolist()
+    estudos_completos = list(set(estudos).union(set(estudos_twinx)))
+
+    for i, estudo in enumerate(estudos_completos):
+        dados_estudo = dados.loc[dados["estudo"] == estudo]
+        dados_legend = __make_operation_plot_legend_name(
+            estudo, variable, filters
+        )
+        dados_twinx_legend = __make_operation_plot_legend_name(
+            estudo, variable_twinx, filters_twinx
+        )
+        if not dados_estudo.empty:
+            fig.add_trace(
+                go.Scatter(
+                    x=dados_estudo["dataInicio"],
+                    y=dados_estudo["mean"],
+                    line={
+                        "color": DISCRETE_COLOR_PALLETE[i],
+                        "width": 3,
+                    },
+                    name="mean",
+                    legendgroup=dados_legend,
+                    legendgrouptitle_text=dados_legend,
+                )
+            )
+            fig.add_trace(
+                go.Scatter(
+                    x=dados_estudo["dataInicio"],
+                    y=dados_estudo["median"],
+                    line={
+                        "color": DISCRETE_COLOR_PALLETE[i],
+                        "width": 3,
+                        "dash": "dot",
+                    },
+                    name="median",
+                    legendgroup=dados_legend,
+                )
+            )
+            fig.add_trace(
+                go.Scatter(
+                    x=dados_estudo["dataInicio"],
+                    y=dados_estudo["p10"],
+                    line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[i],
+                    name="p10",
+                    legendgroup=dados_legend,
+                )
+            )
+            fig.add_trace(
+                go.Scatter(
+                    x=dados_estudo["dataInicio"],
+                    y=dados_estudo["p90"],
+                    line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[i],
+                    fillcolor=DISCRETE_COLOR_PALLETE_BACKGROUND[i],
+                    fill="tonexty",
+                    name="p90",
+                    legendgroup=dados_legend,
+                )
+            )
+        dados_estudo = dados_twinx.loc[dados_twinx["estudo"] == estudo]
+        if not dados_estudo.empty:
+            fig.add_trace(
+                go.Scatter(
+                    x=dados_estudo["dataInicio"],
+                    y=dados_estudo["mean"],
+                    line={
+                        "color": DISCRETE_COLOR_PALLETE[2 * i + 1],
+                        "width": 3,
+                    },
+                    name="mean",
+                    legendgroup=dados_twinx_legend,
+                    legendgrouptitle_text=dados_twinx_legend,
+                ),
+                secondary_y=True,
+            )
+            fig.add_trace(
+                go.Scatter(
+                    x=dados_estudo["dataInicio"],
+                    y=dados_estudo["median"],
+                    line={
+                        "color": DISCRETE_COLOR_PALLETE[2 * i + 1],
+                        "width": 3,
+                        "dash": "dot",
+                    },
+                    name="median",
+                    legendgroup=dados_twinx_legend,
+                ),
+                secondary_y=True,
+            )
+            fig.add_trace(
+                go.Scatter(
+                    x=dados_estudo["dataInicio"],
+                    y=dados_estudo["p10"],
+                    line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[2 * i + 1],
+                    name="p10",
+                    legendgroup=dados_twinx_legend,
+                ),
+                secondary_y=True,
+            )
+            fig.add_trace(
+                go.Scatter(
+                    x=dados_estudo["dataInicio"],
+                    y=dados_estudo["p90"],
+                    line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[2 * i + 1],
+                    fillcolor=DISCRETE_COLOR_PALLETE_BACKGROUND[2 * i + 1],
+                    fill="tonexty",
+                    name="p90",
+                    legendgroup=dados_twinx_legend,
+                ),
+                secondary_y=True,
+            )
+
+    full_title = (
+        f"{__make_operation_plot_title(variable, filters)}"
+        + f" | {__make_operation_plot_title(variable_twinx, filters_twinx)}"
+    )
+    fig.update_layout(
+        title=full_title,
+        xaxis_title="Data",
+        yaxis_title=VARIABLE_UNITS.get(variable.split("_")[0], ""),
+        hovermode="x unified",
+        legend=dict(groupclick="toggleitem"),
+    )
+    fig.update_yaxes(
+        title_text=VARIABLE_UNITS.get(variable_twinx.split("_")[0], ""),
+        secondary_y=True,
+    )
+
+    return fig
+
+
 def __make_operation_plot_title(variable: str, filters: dict) -> str:
 
     variable_data = variable.split("_")
@@ -316,3 +482,34 @@ def __make_operation_plot_title(variable: str, filters: dict) -> str:
         title += f" - {full_temporal_res} {filters[TEMPORAL_RES_FILTER_NAMES[temporal_res]]}"
 
     return title
+
+
+def __make_operation_plot_legend_name(
+    estudo: str, variable: str, filters: dict
+) -> str:
+
+    variable_data = variable.split("_")
+    name = variable_data[0]
+    spatial_res = variable_data[1]
+    temporal_res = variable_data[2]
+
+    legend = f"{estudo} - {name}"
+
+    if spatial_res == "SIN":
+        legend += " - SIN"
+    elif spatial_res == "SBP":
+        sbm_de = filters["submercadoDe"].split("|")[0].strip("'")
+        sbm_para = filters["submercadoPara"].split("|")[0].strip("'")
+        legend += f" - {spatial_res} {sbm_de} -> {sbm_para}"
+    elif spatial_res == "SBM":
+        sbm = filters["submercado"].split("|")[0].strip("'")
+        legend += f" - SBM {sbm}"
+    else:
+        legend += f" - {spatial_res} {filters[SPATIAL_RES_FILTER_NAMES[spatial_res]]}"
+
+    if temporal_res == "EST":
+        pass
+    else:
+        legend += f" - {temporal_res} {filters[TEMPORAL_RES_FILTER_NAMES[temporal_res]]}"
+
+    return legend
