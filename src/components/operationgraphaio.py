@@ -208,126 +208,137 @@ class OperationGraphAIO(html.Div):
                             className="card-title",
                         ),
                         html.Div(
-                            children=[
+                            [
                                 html.Div(
                                     children=[
-                                        dcc.Dropdown(
-                                            id=self.ids.usina_dropdown(aio_id),
-                                            options=[],
-                                            value=None,
-                                            placeholder="Usina",
-                                            className="variable-dropdown",
-                                        )
-                                    ],
-                                    style={"display": "none"},
-                                    id=self.ids.usina_dropdown_container(
-                                        aio_id
-                                    ),
-                                    className="dropdown-container",
-                                ),
-                                html.Div(
-                                    children=[
-                                        dcc.Dropdown(
-                                            id=self.ids.ree_dropdown(aio_id),
-                                            options=[],
-                                            value=None,
-                                            placeholder="REE",
-                                            className="variable-dropdown",
-                                        )
-                                    ],
-                                    style={"display": "none"},
-                                    id=self.ids.ree_dropdown_container(aio_id),
-                                    className="dropdown-container",
-                                ),
-                                html.Div(
-                                    children=[
-                                        dcc.Dropdown(
-                                            id=self.ids.submercado_dropdown(
+                                        html.Div(
+                                            children=[
+                                                dcc.Dropdown(
+                                                    id=self.ids.usina_dropdown(
+                                                        aio_id
+                                                    ),
+                                                    options=[],
+                                                    value=None,
+                                                    placeholder="Usina",
+                                                    className="variable-dropdown",
+                                                )
+                                            ],
+                                            style={"display": "none"},
+                                            id=self.ids.usina_dropdown_container(
                                                 aio_id
                                             ),
-                                            options=[],
-                                            value=None,
-                                            placeholder="Submercado",
-                                            className="variable-dropdown",
-                                        )
-                                    ],
-                                    style={"display": "none"},
-                                    id=self.ids.submercado_dropdown_container(
-                                        aio_id
-                                    ),
-                                    className="dropdown-container",
-                                ),
-                                html.Div(
-                                    children=[
-                                        dcc.Dropdown(
-                                            id=self.ids.submercadoDe_dropdown(
+                                            className="dropdown-container",
+                                        ),
+                                        html.Div(
+                                            children=[
+                                                dcc.Dropdown(
+                                                    id=self.ids.ree_dropdown(
+                                                        aio_id
+                                                    ),
+                                                    options=[],
+                                                    value=None,
+                                                    placeholder="REE",
+                                                    className="variable-dropdown",
+                                                )
+                                            ],
+                                            style={"display": "none"},
+                                            id=self.ids.ree_dropdown_container(
                                                 aio_id
                                             ),
-                                            options=[],
-                                            value=None,
-                                            placeholder="Submercado De",
-                                            className="variable-dropdown",
-                                        )
-                                    ],
-                                    style={"display": "none"},
-                                    id=self.ids.submercadoDe_dropdown_container(
-                                        aio_id
-                                    ),
-                                    className="dropdown-container",
-                                ),
-                                html.Div(
-                                    children=[
-                                        dcc.Dropdown(
-                                            id=self.ids.submercadoPara_dropdown(
+                                            className="dropdown-container",
+                                        ),
+                                        html.Div(
+                                            children=[
+                                                dcc.Dropdown(
+                                                    id=self.ids.submercado_dropdown(
+                                                        aio_id
+                                                    ),
+                                                    options=[],
+                                                    value=None,
+                                                    placeholder="Submercado",
+                                                    className="variable-dropdown",
+                                                )
+                                            ],
+                                            style={"display": "none"},
+                                            id=self.ids.submercado_dropdown_container(
                                                 aio_id
                                             ),
-                                            options=[],
-                                            value=None,
-                                            placeholder="Submercado Para",
-                                            className="variable-dropdown",
-                                        )
-                                    ],
-                                    style={"display": "none"},
-                                    id=self.ids.submercadoPara_dropdown_container(
-                                        aio_id
-                                    ),
-                                    className="dropdown-container",
-                                ),
-                                html.Div(
-                                    children=[
-                                        dcc.Dropdown(
-                                            id=self.ids.patamar_dropdown(
+                                            className="dropdown-container",
+                                        ),
+                                        html.Div(
+                                            children=[
+                                                dcc.Dropdown(
+                                                    id=self.ids.submercadoDe_dropdown(
+                                                        aio_id
+                                                    ),
+                                                    options=[],
+                                                    value=None,
+                                                    placeholder="Submercado De",
+                                                    className="variable-dropdown",
+                                                )
+                                            ],
+                                            style={"display": "none"},
+                                            id=self.ids.submercadoDe_dropdown_container(
                                                 aio_id
                                             ),
-                                            options=[],
-                                            value=None,
-                                            placeholder="Patamar",
-                                            className="variable-dropdown",
-                                        )
-                                    ],
-                                    style={"display": "none"},
-                                    id=self.ids.patamar_dropdown_container(
-                                        aio_id
-                                    ),
-                                    className="dropdown-container",
-                                ),
-                                html.Div(
-                                    children=[
-                                        dcc.Dropdown(
-                                            id=self.ids.variable_dropdown(
+                                            className="dropdown-container",
+                                        ),
+                                        html.Div(
+                                            children=[
+                                                dcc.Dropdown(
+                                                    id=self.ids.submercadoPara_dropdown(
+                                                        aio_id
+                                                    ),
+                                                    options=[],
+                                                    value=None,
+                                                    placeholder="Submercado Para",
+                                                    className="variable-dropdown",
+                                                )
+                                            ],
+                                            style={"display": "none"},
+                                            id=self.ids.submercadoPara_dropdown_container(
                                                 aio_id
                                             ),
-                                            options=[],
-                                            value=None,
-                                            placeholder="Variavel",
-                                            className="variable-dropdown",
-                                        )
+                                            className="dropdown-container",
+                                        ),
+                                        html.Div(
+                                            children=[
+                                                dcc.Dropdown(
+                                                    id=self.ids.patamar_dropdown(
+                                                        aio_id
+                                                    ),
+                                                    options=[],
+                                                    value=None,
+                                                    placeholder="Patamar",
+                                                    className="variable-dropdown",
+                                                )
+                                            ],
+                                            style={"display": "none"},
+                                            id=self.ids.patamar_dropdown_container(
+                                                aio_id
+                                            ),
+                                            className="dropdown-container",
+                                        ),
+                                        html.Div(
+                                            children=[
+                                                dcc.Dropdown(
+                                                    id=self.ids.variable_dropdown(
+                                                        aio_id
+                                                    ),
+                                                    options=[],
+                                                    value=None,
+                                                    placeholder="Variavel",
+                                                    className="variable-dropdown",
+                                                )
+                                            ],
+                                            className="dropdown-container",
+                                        ),
+                                        html.Button(
+                                            "CSV",
+                                            id=self.ids.download_btn(aio_id),
+                                        ),
                                     ],
-                                    className="dropdown-container",
-                                ),
-                                html.Button(
-                                    "CSV",
-                                    id=self.ids.download_btn(aio_id),
+                                    className="card-menu-row",
                                 ),
                             ],
                             className="card-menu",

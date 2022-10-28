@@ -84,192 +84,192 @@ GRUPOS_SUBMERCADOS = {
 class OperationGraphTwinxAIO(html.Div):
     class ids:
         data = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "data",
             "aio_id": aio_id,
         }
         options = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "options",
             "aio_id": aio_id,
         }
         filters = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "filters",
             "aio_id": aio_id,
         }
         usina_dropdown = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "usina_dropdown",
             "aio_id": aio_id,
         }
         usina_dropdown_container = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "usina_dropdown_container",
             "aio_id": aio_id,
         }
         ree_dropdown = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "ree_dropdown",
             "aio_id": aio_id,
         }
         ree_dropdown_container = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "ree_dropdown_container",
             "aio_id": aio_id,
         }
         submercado_dropdown = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "submercado_dropdown",
             "aio_id": aio_id,
         }
         submercado_dropdown_container = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "submercado_dropdown_container",
             "aio_id": aio_id,
         }
         submercadoDe_dropdown = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "submercadoDe_dropdown",
             "aio_id": aio_id,
         }
         submercadoDe_dropdown_container = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "submercadoDe_dropdown_container",
             "aio_id": aio_id,
         }
         submercadoPara_dropdown = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "submercadoPara_dropdown",
             "aio_id": aio_id,
         }
         submercadoPara_dropdown_container = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "submercadoPara_dropdown_container",
             "aio_id": aio_id,
         }
         patamar_dropdown = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "patamar_dropdown",
             "aio_id": aio_id,
         }
         patamar_dropdown_container = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "patamar_dropdown_container",
             "aio_id": aio_id,
         }
         variable_dropdown = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "variable_dropdown",
             "aio_id": aio_id,
         }
         data_twinx = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "data_twinx",
             "aio_id": aio_id,
         }
         options_twinx = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "options_twinx",
             "aio_id": aio_id,
         }
         filters_twinx = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "filters_twinx",
             "aio_id": aio_id,
         }
         usina_dropdown_twinx = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "usina_dropdown_twinx",
             "aio_id": aio_id,
         }
         usina_dropdown_container_twinx = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "usina_dropdown_container_twinx",
             "aio_id": aio_id,
         }
         ree_dropdown_twinx = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "ree_dropdown_twinx",
             "aio_id": aio_id,
         }
         ree_dropdown_container_twinx = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "ree_dropdown_container_twinx",
             "aio_id": aio_id,
         }
         submercado_dropdown_twinx = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "submercado_dropdown_twinx",
             "aio_id": aio_id,
         }
         submercado_dropdown_container_twinx = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "submercado_dropdown_container_twinx",
             "aio_id": aio_id,
         }
         submercadoDe_dropdown_twinx = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "submercadoDe_dropdown_twinx",
             "aio_id": aio_id,
         }
         submercadoDe_dropdown_container_twinx = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "submercadoDe_dropdown_container_twinx",
             "aio_id": aio_id,
         }
         submercadoPara_dropdown_twinx = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "submercadoPara_dropdown_twinx",
             "aio_id": aio_id,
         }
         submercadoPara_dropdown_container_twinx = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "submercadoPara_dropdown_container_twinx",
             "aio_id": aio_id,
         }
         patamar_dropdown_twinx = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "patamar_dropdown_twinx",
             "aio_id": aio_id,
         }
         patamar_dropdown_container_twinx = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "patamar_dropdown_container_twinx",
             "aio_id": aio_id,
         }
         variable_dropdown_twinx = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "variable_dropdown_twinx",
             "aio_id": aio_id,
         }
         download = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "download",
             "aio_id": aio_id,
         }
         download_btn = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "download_btn",
             "aio_id": aio_id,
         }
         download_twinx = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "download_twinx",
             "aio_id": aio_id,
         }
         download_btn_twinx = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "download_btn_twinx",
             "aio_id": aio_id,
         }
         graph = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "graph",
             "aio_id": aio_id,
         }
         updater = lambda aio_id: {
-            "component": "OperationGraphAIO",
+            "component": "OperationGraphTwinxAIO",
             "subcomponent": "updater",
             "aio_id": aio_id,
         }
