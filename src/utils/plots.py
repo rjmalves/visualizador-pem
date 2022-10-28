@@ -330,9 +330,9 @@ def generate_operation_graph_casos_twinx(
     estudos_completos = list(set(estudos).union(set(estudos_twinx)))
     line_shape = "hv"
 
+    next_color = 0
     for i, estudo in enumerate(estudos_completos):
         dados_estudo = dados.loc[dados["estudo"] == estudo]
-        dados_estudo = __add_final_date_line_to_df(dados_estudo)
         dados_legend = __make_operation_plot_legend_name(
             estudo, variable, filters
         )
@@ -340,12 +340,13 @@ def generate_operation_graph_casos_twinx(
             estudo, variable_twinx, filters_twinx
         )
         if not dados_estudo.empty:
+            dados_estudo = __add_final_date_line_to_df(dados_estudo)
             fig.add_trace(
                 go.Scatter(
                     x=dados_estudo["dataInicio"],
                     y=dados_estudo["mean"],
                     line={
-                        "color": DISCRETE_COLOR_PALLETE[i],
+                        "color": DISCRETE_COLOR_PALLETE[next_color],
                         "width": 3,
                         "shape": line_shape,
                     },
@@ -359,7 +360,7 @@ def generate_operation_graph_casos_twinx(
                     x=dados_estudo["dataInicio"],
                     y=dados_estudo["median"],
                     line={
-                        "color": DISCRETE_COLOR_PALLETE[i],
+                        "color": DISCRETE_COLOR_PALLETE[next_color],
                         "width": 3,
                         "dash": "dot",
                         "shape": line_shape,
@@ -372,7 +373,7 @@ def generate_operation_graph_casos_twinx(
                 go.Scatter(
                     x=dados_estudo["dataInicio"],
                     y=dados_estudo["p10"],
-                    line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[i],
+                    line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[next_color],
                     line_shape=line_shape,
                     name="p10",
                     legendgroup=dados_legend,
@@ -382,23 +383,25 @@ def generate_operation_graph_casos_twinx(
                 go.Scatter(
                     x=dados_estudo["dataInicio"],
                     y=dados_estudo["p90"],
-                    line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[i],
-                    fillcolor=DISCRETE_COLOR_PALLETE_BACKGROUND[i],
+                    line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[next_color],
+                    fillcolor=DISCRETE_COLOR_PALLETE_BACKGROUND[next_color],
                     line_shape=line_shape,
                     fill="tonexty",
                     name="p90",
                     legendgroup=dados_legend,
                 )
             )
+            next_color += 1
+
         dados_estudo = dados_twinx.loc[dados_twinx["estudo"] == estudo]
-        dados_estudo = __add_final_date_line_to_df(dados_estudo)
         if not dados_estudo.empty:
+            dados_estudo = __add_final_date_line_to_df(dados_estudo)
             fig.add_trace(
                 go.Scatter(
                     x=dados_estudo["dataInicio"],
                     y=dados_estudo["mean"],
                     line={
-                        "color": DISCRETE_COLOR_PALLETE[2 * i + 1],
+                        "color": DISCRETE_COLOR_PALLETE[next_color],
                         "width": 3,
                         "shape": line_shape,
                     },
@@ -413,7 +416,7 @@ def generate_operation_graph_casos_twinx(
                     x=dados_estudo["dataInicio"],
                     y=dados_estudo["median"],
                     line={
-                        "color": DISCRETE_COLOR_PALLETE[2 * i + 1],
+                        "color": DISCRETE_COLOR_PALLETE[next_color],
                         "width": 3,
                         "dash": "dot",
                         "shape": line_shape,
@@ -427,7 +430,7 @@ def generate_operation_graph_casos_twinx(
                 go.Scatter(
                     x=dados_estudo["dataInicio"],
                     y=dados_estudo["p10"],
-                    line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[2 * i + 1],
+                    line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[next_color],
                     line_shape=line_shape,
                     name="p10",
                     legendgroup=dados_twinx_legend,
@@ -438,8 +441,8 @@ def generate_operation_graph_casos_twinx(
                 go.Scatter(
                     x=dados_estudo["dataInicio"],
                     y=dados_estudo["p90"],
-                    line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[2 * i + 1],
-                    fillcolor=DISCRETE_COLOR_PALLETE_BACKGROUND[2 * i + 1],
+                    line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[next_color],
+                    fillcolor=DISCRETE_COLOR_PALLETE_BACKGROUND[next_color],
                     line_shape=line_shape,
                     fill="tonexty",
                     name="p90",
@@ -447,6 +450,7 @@ def generate_operation_graph_casos_twinx(
                 ),
                 secondary_y=True,
             )
+            next_color += 1
 
     full_title = (
         f"{__make_operation_plot_title(variable, filters)}"
