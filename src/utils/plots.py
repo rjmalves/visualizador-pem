@@ -1,6 +1,7 @@
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import pandas as pd
+from typing import List
 
 DISCRETE_COLOR_PALLETE = [
     "rgba(249, 65, 68, 1)",
@@ -334,10 +335,10 @@ def generate_operation_graph_casos_twinx(
     for i, estudo in enumerate(estudos_completos):
         dados_estudo = dados.loc[dados["estudo"] == estudo]
         dados_legend = __make_operation_plot_legend_name(
-            estudo, variable, filters
+            estudos_completos, estudo, variable, filters
         )
         dados_twinx_legend = __make_operation_plot_legend_name(
-            estudo, variable_twinx, filters_twinx
+            estudos_completos, estudo, variable_twinx, filters_twinx
         )
         if not dados_estudo.empty:
             dados_estudo = __add_final_date_line_to_df(dados_estudo)
@@ -514,7 +515,7 @@ def __add_final_date_line_to_df(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def __make_operation_plot_legend_name(
-    estudo: str, variable: str, filters: dict
+    estudos: List[str], estudo: str, variable: str, filters: dict
 ) -> str:
 
     variable_data = variable.split("_")
@@ -522,7 +523,7 @@ def __make_operation_plot_legend_name(
     spatial_res = variable_data[1]
     temporal_res = variable_data[2]
 
-    legend = f"{estudo} - {name}"
+    legend = f"{estudo} - {name}" if len(estudos) > 1 else f"{name}"
 
     if spatial_res == "SIN":
         legend += " - SIN"
