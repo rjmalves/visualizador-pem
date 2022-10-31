@@ -1,16 +1,14 @@
 # package imports
 import dash
 import pandas as pd
-from dash import html, callback, Input, Output, State, ctx
+from dash import html, callback, Input, Output, State
 
 from src.components.newstudymodalaio import NewStudyModalAIO
 from src.components.currentstudiestableaio import CurrentStudiesTableAIO
-from src.components.operationgraphaio import OperationGraphAIO
+from src.components.ppquente.operationgraphppq import OperationGraphPPQ
 
 import src.utils.modals as modals
-import src.utils.dropdowns as dropdowns
 import src.utils.data as data
-import src.utils.plots as plots
 
 
 dash.register_page(__name__, path="/ppquente", title="Casos")
@@ -19,7 +17,7 @@ layout = html.Div(
     [
         NewStudyModalAIO(aio_id="ppq-modal"),
         CurrentStudiesTableAIO(aio_id="ppq-current-studies"),
-        OperationGraphAIO(aio_id="ppq-operation-graph"),
+        OperationGraphPPQ(aio_id="ppq-operation-graph"),
     ],
     className="ppq-app-page",
 )
@@ -76,80 +74,8 @@ def edit_current_casos_study_data(
 
 
 @callback(
-    Output(
-        OperationGraphAIO.ids.variable_dropdown("ppq-operation-graph"),
-        "options",
-    ),
-    Input(
-        OperationGraphAIO.ids.updater("ppq-operation-graph"),
-        "n_intervals",
-    ),
+    Output(OperationGraphPPQ.ids.studies("ppq-operation-graph"), "data"),
     Input(CurrentStudiesTableAIO.ids.data("ppq-current-studies"), "data"),
 )
-def update_variables_dropdown_options(interval, studies_data):
-    return dropdowns.update_operation_variables_dropdown_options_casos(
-        interval, studies_data
-    )
-
-
-@callback(
-    Output(OperationGraphAIO.ids.options("ppq-operation-graph"), "data"),
-    Input(
-        OperationGraphAIO.ids.updater("ppq-operation-graph"),
-        "n_intervals",
-    ),
-    Input(CurrentStudiesTableAIO.ids.data("ppq-current-studies"), "data"),
-    Input(
-        OperationGraphAIO.ids.variable_dropdown("ppq-operation-graph"),
-        "value",
-    ),
-)
-def update_options(interval, studies, variable: str):
-    return dropdowns.update_operation_options_casos(
-        interval, studies, variable
-    )
-
-
-@callback(
-    Output(OperationGraphAIO.ids.data("ppq-operation-graph"), "data"),
-    Input(
-        OperationGraphAIO.ids.updater("ppq-operation-graph"),
-        "n_intervals",
-    ),
-    Input(CurrentStudiesTableAIO.ids.data("ppq-current-studies"), "data"),
-    Input(OperationGraphAIO.ids.filters("ppq-operation-graph"), "data"),
-    Input(
-        OperationGraphAIO.ids.variable_dropdown("ppq-operation-graph"),
-        "value",
-    ),
-)
-def update_data(interval, studies, filters: dict, variable: str):
-    return data.update_operation_data_ppq(interval, studies, filters, variable)
-
-
-@callback(
-    Output(OperationGraphAIO.ids.graph("ppq-operation-graph"), "figure"),
-    Input(OperationGraphAIO.ids.data("ppq-operation-graph"), "data"),
-    State(
-        OperationGraphAIO.ids.variable_dropdown("ppq-operation-graph"),
-        "value",
-    ),
-    State(OperationGraphAIO.ids.filters("ppq-operation-graph"), "data"),
-)
-def generate_operation_graph(operation_data, variable, filters):
-    return plots.generate_operation_graph_ppq(
-        operation_data, variable, filters
-    )
-
-
-@callback(
-    Output(
-        OperationGraphAIO.ids.estagio_dropdown_container(
-            "ppq-operation-graph"
-        ),
-        "style",
-    ),
-    Input(OperationGraphAIO.ids.data("ppq-operation-graph"), "data"),
-)
-def show_estagio_dropdown(variable):
-    return {"display": "flex"}
+def update_current_studies(studies_data):
+    return studies_data

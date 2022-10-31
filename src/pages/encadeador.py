@@ -1,16 +1,15 @@
 # package imports
 import dash
-import pandas as pd
-from dash import html, callback, Input, Output, State, ctx
+from dash import html, callback, Input, Output, State
 
 from src.components.newstudymodalaio import NewStudyModalAIO
 from src.components.currentstudiestableaio import CurrentStudiesTableAIO
-from src.components.operationgraphaio import OperationGraphAIO
+from src.components.encadeador.operationgraphencadeador import (
+    OperationGraphEncadeador,
+)
 
 import src.utils.modals as modals
-import src.utils.dropdowns as dropdowns
 import src.utils.data as data
-import src.utils.plots as plots
 
 
 dash.register_page(__name__, title="Encadeador")
@@ -19,7 +18,7 @@ layout = html.Div(
     [
         NewStudyModalAIO(aio_id="encadeador-modal"),
         CurrentStudiesTableAIO(aio_id="encadeador-current-studies"),
-        OperationGraphAIO(aio_id="encadeador-operation-graph"),
+        OperationGraphEncadeador(aio_id="encadeador-operation-graph"),
     ],
     className="encadeador-app-page",
 )
@@ -89,78 +88,12 @@ def edit_current_encadeador_study_data(
 
 @callback(
     Output(
-        OperationGraphAIO.ids.variable_dropdown("encadeador-operation-graph"),
-        "options",
-    ),
-    Input(
-        OperationGraphAIO.ids.updater("encadeador-operation-graph"),
-        "n_intervals",
+        OperationGraphEncadeador.ids.studies("encadeador-operation-graph"),
+        "data",
     ),
     Input(
         CurrentStudiesTableAIO.ids.data("encadeador-current-studies"), "data"
     ),
 )
-def update_variables_dropdown_options(interval, studies_data):
-    return dropdowns.update_operation_variables_dropdown_options_encadeador(
-        interval, studies_data
-    )
-
-
-@callback(
-    Output(
-        OperationGraphAIO.ids.options("encadeador-operation-graph"), "data"
-    ),
-    Input(
-        OperationGraphAIO.ids.updater("encadeador-operation-graph"),
-        "n_intervals",
-    ),
-    Input(
-        CurrentStudiesTableAIO.ids.data("encadeador-current-studies"), "data"
-    ),
-    Input(
-        OperationGraphAIO.ids.variable_dropdown("encadeador-operation-graph"),
-        "value",
-    ),
-)
-def update_options(interval, studies, variable: str):
-    return dropdowns.update_operation_options_encadeador(
-        interval, studies, variable
-    )
-
-
-@callback(
-    Output(OperationGraphAIO.ids.data("encadeador-operation-graph"), "data"),
-    Input(
-        OperationGraphAIO.ids.updater("encadeador-operation-graph"),
-        "n_intervals",
-    ),
-    Input(
-        CurrentStudiesTableAIO.ids.data("encadeador-current-studies"), "data"
-    ),
-    Input(OperationGraphAIO.ids.filters("encadeador-operation-graph"), "data"),
-    Input(
-        OperationGraphAIO.ids.variable_dropdown("encadeador-operation-graph"),
-        "value",
-    ),
-)
-def update_data(interval, studies, filters: dict, variable: str):
-    return data.update_operation_data_encadeador(
-        interval, studies, filters, variable
-    )
-
-
-@callback(
-    Output(
-        OperationGraphAIO.ids.graph("encadeador-operation-graph"), "figure"
-    ),
-    Input(OperationGraphAIO.ids.data("encadeador-operation-graph"), "data"),
-    State(
-        OperationGraphAIO.ids.variable_dropdown("encadeador-operation-graph"),
-        "value",
-    ),
-    State(OperationGraphAIO.ids.filters("encadeador-operation-graph"), "data"),
-)
-def generate_operation_graph(operation_data, variable, filters):
-    return plots.generate_operation_graph_encadeador(
-        operation_data, variable, filters
-    )
+def update_current_studies(studies_data):
+    return studies_data

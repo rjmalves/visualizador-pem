@@ -31,6 +31,9 @@ def validate_required_filters(
         [filters.get(k) for k in REQUIRED_FILTERS.get(temporal_res, [])]
     )
     valid_ppq = any([filters.get("estagio"), not ppq])
+    filters_scenario = {}
+    if filters.get("cenario"):
+        filters_scenario["cenario"] = filters.get("cenario")
     if valid_spatial and valid_temporal and valid_ppq:
         filters_spatial = {
             k: filters[k] for k in REQUIRED_FILTERS.get(spatial_res)
@@ -39,6 +42,11 @@ def validate_required_filters(
             k: filters[k] for k in REQUIRED_FILTERS.get(temporal_res)
         }
         filters_ppq = {"estagio": filters.get("estagio")} if ppq else {}
-        return {**filters_spatial, **filters_temporal, **filters_ppq}
+        return {
+            **filters_spatial,
+            **filters_temporal,
+            **filters_scenario,
+            **filters_ppq,
+        }
     else:
         return None

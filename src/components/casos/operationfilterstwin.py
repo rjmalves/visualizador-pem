@@ -1,8 +1,10 @@
 from dash import html, dcc, callback, Input, State, Output, MATCH
 import uuid
+import pandas as pd
 
 from src.utils.settings import Settings
-
+import src.utils.dropdowns as dropdowns
+import src.utils.data as data
 
 NOMES_SUBMERCADOS = {
     "SUDESTE": "'SUDESTE'|'SE'",
@@ -24,111 +26,126 @@ GRUPOS_SUBMERCADOS = {
 }
 
 
-class OperationFiltersAIO(html.Div):
+class OperationFiltersTwin(html.Div):
     class ids:
+        studies = lambda aio_id: {
+            "component": "OperationFiltersTwin",
+            "subcomponent": "studies",
+            "aio_id": aio_id,
+        }
+        data = lambda aio_id: {
+            "component": "OperationFiltersTwin",
+            "subcomponent": "data",
+            "aio_id": aio_id,
+        }
         options = lambda aio_id: {
-            "component": "OperationFiltersAIO",
+            "component": "OperationFiltersTwin",
             "subcomponent": "options",
             "aio_id": aio_id,
         }
         filters = lambda aio_id: {
-            "component": "OperationFiltersAIO",
+            "component": "OperationFiltersTwin",
             "subcomponent": "filters",
             "aio_id": aio_id,
         }
         usina_dropdown = lambda aio_id: {
-            "component": "OperationFiltersAIO",
+            "component": "OperationFiltersTwin",
             "subcomponent": "usina_dropdown",
             "aio_id": aio_id,
         }
         usina_dropdown_container = lambda aio_id: {
-            "component": "OperationFiltersAIO",
+            "component": "OperationFiltersTwin",
             "subcomponent": "usina_dropdown_container",
             "aio_id": aio_id,
         }
         ree_dropdown = lambda aio_id: {
-            "component": "OperationFiltersAIO",
+            "component": "OperationFiltersTwin",
             "subcomponent": "ree_dropdown",
             "aio_id": aio_id,
         }
         ree_dropdown_container = lambda aio_id: {
-            "component": "OperationFiltersAIO",
+            "component": "OperationFiltersTwin",
             "subcomponent": "ree_dropdown_container",
             "aio_id": aio_id,
         }
         submercado_dropdown = lambda aio_id: {
-            "component": "OperationFiltersAIO",
+            "component": "OperationFiltersTwin",
             "subcomponent": "submercado_dropdown",
             "aio_id": aio_id,
         }
         submercado_dropdown_container = lambda aio_id: {
-            "component": "OperationFiltersAIO",
+            "component": "OperationFiltersTwin",
             "subcomponent": "submercado_dropdown_container",
             "aio_id": aio_id,
         }
         submercadoDe_dropdown = lambda aio_id: {
-            "component": "OperationFiltersAIO",
+            "component": "OperationFiltersTwin",
             "subcomponent": "submercadoDe_dropdown",
             "aio_id": aio_id,
         }
         submercadoDe_dropdown_container = lambda aio_id: {
-            "component": "OperationFiltersAIO",
+            "component": "OperationFiltersTwin",
             "subcomponent": "submercadoDe_dropdown_container",
             "aio_id": aio_id,
         }
         submercadoPara_dropdown = lambda aio_id: {
-            "component": "OperationFiltersAIO",
+            "component": "OperationFiltersTwin",
             "subcomponent": "submercadoPara_dropdown",
             "aio_id": aio_id,
         }
         submercadoPara_dropdown_container = lambda aio_id: {
-            "component": "OperationFiltersAIO",
+            "component": "OperationFiltersTwin",
             "subcomponent": "submercadoPara_dropdown_container",
             "aio_id": aio_id,
         }
         patamar_dropdown = lambda aio_id: {
-            "component": "OperationFiltersAIO",
+            "component": "OperationFiltersTwin",
             "subcomponent": "patamar_dropdown",
             "aio_id": aio_id,
         }
         patamar_dropdown_container = lambda aio_id: {
-            "component": "OperationFiltersAIO",
+            "component": "OperationFiltersTwin",
             "subcomponent": "patamar_dropdown_container",
             "aio_id": aio_id,
         }
         estagio_dropdown = lambda aio_id: {
-            "component": "OperationFiltersAIO",
+            "component": "OperationFiltersTwin",
             "subcomponent": "estagio_dropdown",
             "aio_id": aio_id,
         }
         estagio_dropdown_container = lambda aio_id: {
-            "component": "OperationFiltersAIO",
+            "component": "OperationFiltersTwin",
             "subcomponent": "estagio_dropdown_container",
             "aio_id": aio_id,
         }
         cenario_dropdown = lambda aio_id: {
-            "component": "OperationFiltersAIO",
+            "component": "OperationFiltersTwin",
             "subcomponent": "cenario_dropdown",
             "aio_id": aio_id,
         }
         cenario_dropdown_container = lambda aio_id: {
-            "component": "OperationFiltersAIO",
+            "component": "OperationFiltersTwin",
             "subcomponent": "cenario_dropdown_container",
             "aio_id": aio_id,
         }
         variable_dropdown = lambda aio_id: {
-            "component": "OperationFiltersAIO",
+            "component": "OperationFiltersTwin",
             "subcomponent": "variable_dropdown",
             "aio_id": aio_id,
         }
         download = lambda aio_id: {
-            "component": "OperationFiltersAIO",
+            "component": "OperationFiltersTwin",
             "subcomponent": "download",
             "aio_id": aio_id,
         }
         download_btn = lambda aio_id: {
-            "component": "OperationFiltersAIO",
+            "component": "OperationFiltersTwin",
             "subcomponent": "download_btn",
+            "aio_id": aio_id,
+        }
+        updater = lambda aio_id: {
+            "component": "OperationFiltersTwin",
+            "subcomponent": "updater",
             "aio_id": aio_id,
         }
 
@@ -136,7 +153,6 @@ class OperationFiltersAIO(html.Div):
 
     def __init__(
         self,
-        updater_id,
         aio_id=None,
         usina_dropdown_props=None,
         ree_dropdown_props=None,
@@ -200,12 +216,10 @@ class OperationFiltersAIO(html.Div):
             patamar_dropdown_props["style"] = {"display": "none"}
         if "style" not in estagio_dropdown_props:
             estagio_dropdown_props["style"] = {"display": "none"}
-        if "style" not in cenario_dropdown_props:
-            cenario_dropdown_props["style"] = {"display": "none"}
-        if "style" not in cenario_dropdown_props:
-            cenario_dropdown_props["style"] = {"display": "none"}
-        if "style" not in variable_dropdown_props:
-            variable_dropdown_props["style"] = {"display": "none"}
+        # if "style" not in cenario_dropdown_props:
+        #     cenario_dropdown_props["style"] = {"display": "none"}
+        # if "style" not in variable_dropdown_props:
+        #     variable_dropdown_props["style"] = {"display": "none"}
 
         if "className" not in usina_dropdown_props:
             usina_dropdown_props["className"] = "dropdown-container"
@@ -336,9 +350,13 @@ class OperationFiltersAIO(html.Div):
                 html.Div(
                     **variable_dropdown_props,
                 ),
-                html.Button(
-                    "CSV",
-                    id=self.ids.download_btn(aio_id),
+                dcc.Store(
+                    id=self.ids.studies(aio_id),
+                    storage_type=Settings.storage,
+                ),
+                dcc.Store(
+                    id=self.ids.data(aio_id),
+                    storage_type=Settings.storage,
                 ),
                 dcc.Store(
                     id=self.ids.options(aio_id),
@@ -347,6 +365,16 @@ class OperationFiltersAIO(html.Div):
                 dcc.Store(
                     id=self.ids.filters(aio_id),
                     storage_type=Settings.storage,
+                ),
+                dcc.Interval(
+                    id=self.ids.updater(aio_id),
+                    interval=int(Settings.graphs_update_period),
+                    n_intervals=0,
+                ),
+                dcc.Download(id=self.ids.download(aio_id)),
+                html.Button(
+                    "CSV",
+                    id=self.ids.download_btn(aio_id),
                 ),
             ],
             className="card-menu-row",
@@ -511,6 +539,19 @@ class OperationFiltersAIO(html.Div):
         return []
 
     @callback(
+        Output(ids.cenario_dropdown(MATCH), "options"),
+        Input(ids.updater(MATCH), "n_intervals"),
+        Input(ids.options(MATCH), "data"),
+    )
+    def update_cenario_options(interval, options):
+        if options:
+            if "cenario" in options.keys():
+                cens_str = list(set(options["cenario"]))
+                cens_i = [int(c) for c in cens_str]
+                return [str(c) for c in sorted(cens_i)]
+        return []
+
+    @callback(
         Output(ids.filters(MATCH), "data"),
         Input(ids.usina_dropdown(MATCH), "value"),
         Input(ids.ree_dropdown(MATCH), "value"),
@@ -519,6 +560,7 @@ class OperationFiltersAIO(html.Div):
         Input(ids.submercadoPara_dropdown(MATCH), "value"),
         Input(ids.patamar_dropdown(MATCH), "value"),
         Input(ids.estagio_dropdown(MATCH), "value"),
+        Input(ids.cenario_dropdown(MATCH), "value"),
     )
     def update_filters(
         usina: str,
@@ -548,3 +590,52 @@ class OperationFiltersAIO(html.Div):
         if cenario:
             filtros["cenario"] = f"{cenario}"
         return filtros
+
+    @callback(
+        Output(ids.variable_dropdown(MATCH), "options"),
+        Input(ids.updater(MATCH), "n_intervals"),
+        Input(ids.studies(MATCH), "data"),
+    )
+    def update_variables_dropdown_options(interval, studies_data):
+        return dropdowns.update_operation_variables_dropdown_options_casos(
+            interval, studies_data
+        )
+
+    @callback(
+        Output(ids.options(MATCH), "data"),
+        Input(ids.updater(MATCH), "n_intervals"),
+        Input(ids.studies(MATCH), "data"),
+        Input(ids.variable_dropdown(MATCH), "value"),
+    )
+    def update_options(interval, studies, variable: str):
+        return dropdowns.update_operation_options_casos(
+            interval, studies, variable
+        )
+
+    @callback(
+        Output(ids.data(MATCH), "data"),
+        Input(ids.updater(MATCH), "n_intervals"),
+        Input(ids.studies(MATCH), "data"),
+        Input(ids.filters(MATCH), "data"),
+        Input(ids.variable_dropdown(MATCH), "value"),
+    )
+    def update_data(interval, studies, filters: dict, variable: str):
+        return data.update_operation_data_casos(
+            interval, studies, filters, variable
+        )
+
+    @callback(
+        Output(ids.download(MATCH), "data"),
+        Input(ids.download_btn(MATCH), "n_clicks"),
+        State(ids.data(MATCH), "data"),
+    )
+    def generate_csv(n_clicks, operation_data):
+        if n_clicks is None:
+            return
+        if operation_data is not None:
+            dados = pd.read_json(operation_data, orient="split")
+            dados["dataInicio"] = pd.to_datetime(
+                dados["dataInicio"], unit="ms"
+            )
+            dados["dataFim"] = pd.to_datetime(dados["dataFim"], unit="ms")
+            return dcc.send_data_frame(dados.to_csv, "operacao.csv")

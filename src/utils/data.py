@@ -117,6 +117,8 @@ def update_operation_data_casos(
         {**req_filters, "preprocess": "QUANTILE_AVERAGE"},
         path_part_to_name_study=-1,
     )
+    if df is None:
+        return None
     if df.empty:
         return None
     else:
@@ -141,6 +143,8 @@ def update_operation_data_ppq(interval, studies, filters: dict, variable: str):
         {**req_filters, "preprocess": "AVERAGE"},
         path_part_to_name_study=-1,
     )
+    if df is None:
+        return None
     if df.empty:
         return None
     else:
