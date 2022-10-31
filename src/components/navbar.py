@@ -30,6 +30,16 @@ navbar = html.Header(
                                     id="encadeador-navbar-link",
                                 )
                             ),
+                            html.Li(
+                                html.A(
+                                    "PPQ",
+                                    href=os.path.join(
+                                        Settings.url_prefix, "ppquente"
+                                    ),
+                                    className="navbar-link",
+                                    id="ppquente-navbar-link",
+                                )
+                            ),
                         ],
                         className="navbar-links",
                     ),
@@ -62,6 +72,18 @@ def update_active_casos_link(pathname: str):
 def update_active_encadeador_link(pathname: str):
     relpath = pathname.split(Settings.url_prefix)
     if any(["encadeador" in p for p in relpath]):
+        return "navbar-link active"
+    else:
+        return "navbar-link"
+
+
+@callback(
+    Output("ppquente-navbar-link", "className"),
+    Input("url", "pathname"),
+)
+def update_active_ppquente_link(pathname: str):
+    relpath = pathname.split(Settings.url_prefix)
+    if any(["ppquente" in p for p in relpath]):
         return "navbar-link active"
     else:
         return "navbar-link"

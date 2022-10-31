@@ -476,6 +476,70 @@ def generate_operation_graph_casos_twinx(
     return fig
 
 
+def generate_operation_graph_ppq(operation_data, variable, filters):
+    graph_layout = go.Layout(
+        plot_bgcolor="rgba(158, 149, 128, 0.2)",
+        paper_bgcolor="rgba(255,255,255,1)",
+    )
+    fig = go.Figure()
+    fig.update_layout(graph_layout)
+    if operation_data is None:
+        return fig
+    dados = pd.read_json(operation_data, orient="split")
+    estudos = dados["estudo"].unique().tolist()
+
+    for i, estudo in enumerate(estudos):
+        if dados is not None:
+            dados_estudo = dados.loc[dados["estudo"] == estudo]
+            if not dados_estudo.empty:
+                dados_estudo = dados_estudo.sort_values("iteracao")
+                fig.add_trace(
+                    go.Scatter(
+                        x=dados_estudo["iteracao"],
+                        y=dados_estudo["mean"],
+                        line={
+                            "color": DISCRETE_COLOR_PALLETE[i],
+                            "dash": "dot",
+                            "width": 2,
+                        },
+                        name="mean",
+                        legendgroup=estudo,
+                        legendgrouptitle_text=estudo,
+                    )
+                )
+                fig.add_trace(
+                    go.Scatter(
+                        x=dados_estudo["iteracao"],
+                        y=dados_estudo["mean"] - dados_estudo["std"],
+                        line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[i],
+                        fillcolor=DISCRETE_COLOR_PALLETE_BACKGROUND[i],
+                        legendgroup=estudo,
+                        name="lower bound",
+                    )
+                )
+                fig.add_trace(
+                    go.Scatter(
+                        x=dados_estudo["iteracao"],
+                        y=dados_estudo["mean"] + dados_estudo["std"],
+                        line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[i],
+                        fill="tonexty",
+                        legendgroup=estudo,
+                        legendgrouptitle_text=estudo,
+                        name="upper bound",
+                    )
+                )
+
+    if variable is not None:
+        fig.update_layout(
+            title=__make_operation_plot_title(variable, filters),
+            xaxis_title="Data",
+            yaxis_title=VARIABLE_UNITS.get(variable.split("_")[0], ""),
+            hovermode="x unified",
+            legend=dict(groupclick="toggleitem"),
+        )
+    return fig
+
+
 def __make_operation_plot_title(variable: str, filters: dict) -> str:
 
     variable_data = variable.split("_")

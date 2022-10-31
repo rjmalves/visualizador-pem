@@ -160,6 +160,16 @@ class OperationGraphAIO(html.Div):
             "subcomponent": "patamar_dropdown_container",
             "aio_id": aio_id,
         }
+        estagio_dropdown = lambda aio_id: {
+            "component": "OperationGraphAIO",
+            "subcomponent": "estagio_dropdown",
+            "aio_id": aio_id,
+        }
+        estagio_dropdown_container = lambda aio_id: {
+            "component": "OperationGraphAIO",
+            "subcomponent": "estagio_dropdown_container",
+            "aio_id": aio_id,
+        }
         variable_dropdown = lambda aio_id: {
             "component": "OperationGraphAIO",
             "subcomponent": "variable_dropdown",
@@ -315,6 +325,24 @@ class OperationGraphAIO(html.Div):
                                             ],
                                             style={"display": "none"},
                                             id=self.ids.patamar_dropdown_container(
+                                                aio_id
+                                            ),
+                                            className="dropdown-container",
+                                        ),
+                                        html.Div(
+                                            children=[
+                                                dcc.Dropdown(
+                                                    id=self.ids.estagio_dropdown(
+                                                        aio_id
+                                                    ),
+                                                    options=[],
+                                                    value=None,
+                                                    placeholder="Estagio",
+                                                    className="variable-dropdown",
+                                                )
+                                            ],
+                                            style={"display": "none"},
+                                            id=self.ids.estagio_dropdown_container(
                                                 aio_id
                                             ),
                                             className="dropdown-container",
@@ -520,6 +548,17 @@ class OperationGraphAIO(html.Div):
         return []
 
     @callback(
+        Output(ids.estagio_dropdown(MATCH), "options"),
+        Input(ids.updater(MATCH), "n_intervals"),
+        Input(ids.options(MATCH), "data"),
+    )
+    def update_estagio_options(interval, options):
+        if options:
+            if "estagio" in options.keys():
+                return sorted(list(set(options["estagio"])))
+        return []
+
+    @callback(
         Output(ids.filters(MATCH), "data"),
         Input(ids.usina_dropdown(MATCH), "value"),
         Input(ids.ree_dropdown(MATCH), "value"),
@@ -527,6 +566,7 @@ class OperationGraphAIO(html.Div):
         Input(ids.submercadoDe_dropdown(MATCH), "value"),
         Input(ids.submercadoPara_dropdown(MATCH), "value"),
         Input(ids.patamar_dropdown(MATCH), "value"),
+        Input(ids.estagio_dropdown(MATCH), "value"),
     )
     def update_filters(
         usina: str,
@@ -535,6 +575,7 @@ class OperationGraphAIO(html.Div):
         submercado_de: str,
         submercado_para: str,
         patamar: str,
+        estagio: str,
     ):
         filtros = {}
         if usina:
@@ -549,6 +590,8 @@ class OperationGraphAIO(html.Div):
             filtros["submercadoPara"] = NOMES_SUBMERCADOS.get(submercado_para)
         if patamar:
             filtros["patamar"] = f"'{patamar}'"
+        if estagio:
+            filtros["estagio"] = f"{estagio}"
         return filtros
 
     @callback(

@@ -121,3 +121,27 @@ def update_operation_data_casos(
         return None
     else:
         return df.to_json(orient="split")
+
+
+def update_operation_data_ppq(interval, studies, filters: dict, variable: str):
+    if not studies:
+        return None
+    if not variable:
+        return None
+    req_filters = validation.validate_required_filters(
+        variable, filters, ppq=True
+    )
+    if req_filters is None:
+        return None
+    studies_df = pd.read_json(studies, orient="split")
+    paths = studies_df["CAMINHO"].tolist()
+    df = API.fetch_result_list(
+        paths,
+        variable,
+        {**req_filters, "preprocess": "AVERAGE"},
+        path_part_to_name_study=-1,
+    )
+    if df.empty:
+        return None
+    else:
+        return df.to_json(orient="split")
