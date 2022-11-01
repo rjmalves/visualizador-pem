@@ -609,7 +609,7 @@ def generate_operation_graph_ppq(operation_data, variable, filters):
     if variable is not None:
         fig.update_layout(
             title=__make_operation_plot_title(variable, filters),
-            xaxis_title="Data",
+            xaxis_title="Iteracao",
             yaxis_title=VARIABLE_UNITS.get(variable.split("_")[0], ""),
             hovermode="x unified",
             legend=dict(groupclick="toggleitem"),
