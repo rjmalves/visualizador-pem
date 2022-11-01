@@ -30,7 +30,7 @@
 }
 
 .card-menu-row {
-    justify-content: space-between;
+    justify-content: flex-end;
     display: flex;
     margin: 10px 0px;
 }

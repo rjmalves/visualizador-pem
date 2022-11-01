@@ -134,6 +134,7 @@ def generate_operation_graph_casos(operation_data, variable, filters):
     estudos = dados["estudo"].unique().tolist()
     line_shape = "hv"
 
+    visibilidade_p = __background_area_visibility(estudos)
     for i, estudo in enumerate(estudos):
         if dados is not None:
             dados_estudo = dados.loc[dados["estudo"] == estudo]
@@ -177,6 +178,7 @@ def generate_operation_graph_casos(operation_data, variable, filters):
                         legendgroup="p10",
                         legendgrouptitle_text="p10",
                         name=estudo,
+                        visible=visibilidade_p,
                     )
                 )
                 fig.add_trace(
@@ -190,6 +192,7 @@ def generate_operation_graph_casos(operation_data, variable, filters):
                         legendgroup="p90",
                         legendgrouptitle_text="p90",
                         name=estudo,
+                        visible=visibilidade_p,
                     )
                 )
                 if filters.get("cenario"):
@@ -258,9 +261,10 @@ def generate_operation_graph_casos_twinx(
     dados_twinx["dataFim"] = pd.to_datetime(dados_twinx["dataFim"], unit="ms")
     estudos_twinx = dados_twinx["estudo"].unique().tolist()
     estudos_completos = list(set(estudos).union(set(estudos_twinx)))
-    line_shape = "hv"
 
+    line_shape = "hv"
     next_color = 0
+    visibilidade_p = __background_area_visibility(estudos)
     for i, estudo in enumerate(estudos_completos):
         dados_estudo = dados.loc[dados["estudo"] == estudo]
         dados_legend = __make_operation_plot_legend_name(
@@ -307,6 +311,7 @@ def generate_operation_graph_casos_twinx(
                     line_shape=line_shape,
                     name="p10",
                     legendgroup=dados_legend,
+                    visible=visibilidade_p,
                 )
             )
             fig.add_trace(
@@ -319,8 +324,26 @@ def generate_operation_graph_casos_twinx(
                     fill="tonexty",
                     name="p90",
                     legendgroup=dados_legend,
+                    visible=visibilidade_p,
                 )
             )
+            if filters.get("cenario"):
+                cen = filters.get("cenario")
+                fig.add_trace(
+                    go.Scatter(
+                        x=dados_estudo["dataInicio"],
+                        y=dados_estudo["cenario"],
+                        line={
+                            "color": DISCRETE_COLOR_PALLETE[i],
+                            "width": 2,
+                            "shape": line_shape,
+                            "dash": "dash",
+                        },
+                        legendgroup=f"cenario {cen}",
+                        legendgrouptitle_text=f"cenario {cen}",
+                        name=estudo,
+                    )
+                )
             next_color += 1
 
         dados_estudo = dados_twinx.loc[dados_twinx["estudo"] == estudo]
@@ -364,6 +387,7 @@ def generate_operation_graph_casos_twinx(
                     line_shape=line_shape,
                     name="p10",
                     legendgroup=dados_twinx_legend,
+                    visible=visibilidade_p,
                 ),
                 secondary_y=True,
             )
@@ -377,9 +401,28 @@ def generate_operation_graph_casos_twinx(
                     fill="tonexty",
                     name="p90",
                     legendgroup=dados_twinx_legend,
+                    visible=visibilidade_p,
                 ),
                 secondary_y=True,
             )
+            if filters.get("cenario"):
+                cen = filters.get("cenario")
+                fig.add_trace(
+                    go.Scatter(
+                        x=dados_estudo["dataInicio"],
+                        y=dados_estudo["cenario"],
+                        line={
+                            "color": DISCRETE_COLOR_PALLETE[i],
+                            "width": 2,
+                            "shape": line_shape,
+                            "dash": "dash",
+                        },
+                        legendgroup=f"cenario {cen}",
+                        legendgrouptitle_text=f"cenario {cen}",
+                        name=estudo,
+                    ),
+                    secondary_y=True,
+                )
             next_color += 1
 
     full_title = (
@@ -422,7 +465,7 @@ def generate_operation_graph_encadeador(
     df_newave = dados.loc[filtro_newave]
     df_decomp = dados.loc[filtro_decomp]
 
-    visibilidade_newave = "legendonly" if len(estudos) > 2 else None
+    visibilidade_newave = __background_area_visibility(estudos)
     for i, estudo in enumerate(estudos):
         if df_decomp is not None:
             estudo_decomp = df_decomp.loc[df_decomp["estudo"] == estudo]
@@ -455,6 +498,7 @@ def generate_operation_graph_encadeador(
                         name=estudo,
                         legendgroup="NEWAVEm",
                         legendgrouptitle_text="NEWAVEm",
+                        visible=visibilidade_newave,
                     )
                 )
                 fig.add_trace(
@@ -605,6 +649,10 @@ def __make_operation_plot_title(variable: str, filters: dict) -> str:
         title += f" - {full_temporal_res} {filters[TEMPORAL_RES_FILTER_NAMES[temporal_res]]}"
 
     return title
+
+
+def __background_area_visibility(estudos: list) -> str:
+    return "legendonly" if len(estudos) > 2 else None
 
 
 def __add_final_date_line_to_df(df: pd.DataFrame) -> pd.DataFrame:

@@ -316,6 +316,14 @@ class OperationFiltersTwin(html.Div):
         super().__init__(
             children=[
                 html.Div(
+                    id=self.ids.estagio_dropdown_container(aio_id),
+                    **estagio_dropdown_props,
+                ),
+                html.Div(
+                    id=self.ids.cenario_dropdown_container(aio_id),
+                    **cenario_dropdown_props,
+                ),
+                html.Div(
                     id=self.ids.usina_dropdown_container(aio_id),
                     **usina_dropdown_props,
                 ),
@@ -338,14 +346,6 @@ class OperationFiltersTwin(html.Div):
                 html.Div(
                     id=self.ids.patamar_dropdown_container(aio_id),
                     **patamar_dropdown_props,
-                ),
-                html.Div(
-                    id=self.ids.estagio_dropdown_container(aio_id),
-                    **estagio_dropdown_props,
-                ),
-                html.Div(
-                    id=self.ids.cenario_dropdown_container(aio_id),
-                    **cenario_dropdown_props,
                 ),
                 html.Div(
                     **variable_dropdown_props,
