@@ -5,6 +5,7 @@ from dash import html, callback, Input, Output, State
 from src.components.newstudymodalaio import NewStudyModalAIO
 from src.components.currentstudiestableaio import CurrentStudiesTableAIO
 from src.components.casos.operationgraph import OperationGraph
+from src.components.casos.acumprobgraph import AcumProbGraph
 
 import src.utils.modals as modals
 import src.utils.data as data
@@ -17,6 +18,7 @@ layout = html.Div(
         NewStudyModalAIO(aio_id="casos-modal"),
         CurrentStudiesTableAIO(aio_id="casos-current-studies"),
         OperationGraph(aio_id="casos-operation-graph"),
+        AcumProbGraph(aio_id="casos-permanencia-graph"),
     ],
     className="casos-app-page",
 )
@@ -74,6 +76,14 @@ def edit_current_casos_study_data(
 
 @callback(
     Output(OperationGraph.ids.studies("casos-operation-graph"), "data"),
+    Input(CurrentStudiesTableAIO.ids.data("casos-current-studies"), "data"),
+)
+def update_current_studies(studies_data):
+    return studies_data
+
+
+@callback(
+    Output(AcumProbGraph.ids.studies("casos-permanencia-graph"), "data"),
     Input(CurrentStudiesTableAIO.ids.data("casos-current-studies"), "data"),
 )
 def update_current_studies(studies_data):

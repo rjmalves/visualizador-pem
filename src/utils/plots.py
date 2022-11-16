@@ -118,6 +118,19 @@ VARIABLE_UNITS = {
     "VENTO": "m/s",
 }
 
+NOT_SCENARIO_COLUMNS = [
+    "estudo",
+    "estagio",
+    "submercado",
+    "submercadoDe",
+    "submercadoPara",
+    "ree",
+    "usina",
+    "patamar",
+    "dataInicio",
+    "dataFim",
+]
+
 
 def generate_operation_graph_casos(operation_data, variable, filters):
     graph_layout = go.Layout(
@@ -617,6 +630,54 @@ def generate_operation_graph_ppq(operation_data, variable, filters):
     return fig
 
 
+def __process_acumprob(operation_data: pd.DataFrame) -> pd.DataFrame:
+    cols_scenarios = [
+        c for c in operation_data.columns if c not in NOT_SCENARIO_COLUMNS
+    ]
+    vals = operation_data[cols_scenarios].to_numpy().flatten()
+    df = pd.DataFrame(data={"values": vals})
+    df["cdf"] = df.rank(method="average", pct=True)
+    return df.sort_values("values")
+
+
+def generate_acumprob_graph_casos(operation_data, variable, filters):
+    graph_layout = go.Layout(
+        plot_bgcolor="rgba(158, 149, 128, 0.2)",
+        paper_bgcolor="rgba(255,255,255,1)",
+    )
+    fig = go.Figure()
+    fig.update_layout(graph_layout)
+    if operation_data is None:
+        return fig
+    dados = pd.read_json(operation_data, orient="split")
+    estudos = dados["estudo"].unique().tolist()
+    line_shape = "hv"
+    for i, estudo in enumerate(estudos):
+        if dados is not None:
+            dados_estudo = dados.loc[dados["estudo"] == estudo]
+            if not dados_estudo.empty:
+                dados_estudo = __process_acumprob(dados_estudo)
+                fig.add_trace(
+                    go.Scatter(
+                        x=dados_estudo["cdf"] * 100,
+                        y=dados_estudo["values"],
+                        line_color=DISCRETE_COLOR_PALLETE[i],
+                        line_shape=line_shape,
+                        name=estudo,
+                    )
+                )
+
+    if variable is not None:
+        fig.update_layout(
+            title=__make_operation_plot_title(variable, filters),
+            xaxis_title="%",
+            yaxis_title=VARIABLE_UNITS.get(variable.split("_")[0], ""),
+            hovermode="x unified",
+            legend=dict(groupclick="toggleitem"),
+        )
+    return fig
+
+
 def __make_operation_plot_title(variable: str, filters: dict) -> str:
 
     variable_data = variable.split("_")
@@ -647,6 +708,9 @@ def __make_operation_plot_title(variable: str, filters: dict) -> str:
         pass
     elif full_temporal_res:
         title += f" - {full_temporal_res} {filters[TEMPORAL_RES_FILTER_NAMES[temporal_res]]}"
+
+    if "estagio" in filters:
+        title += f" - Estagio {filters['estagio']}"
 
     return title
 

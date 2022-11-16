@@ -100,13 +100,20 @@ def update_operation_data_encadeador(
 
 
 def update_operation_data_casos(
-    interval, studies, filters: dict, variable: str
+    interval,
+    studies,
+    filters: dict,
+    variable: str,
+    preprocess: str = "QUANTILE_AVERAGE",
+    needs_stage: bool = False,
 ):
     if not studies:
         return None
     if not variable:
         return None
-    req_filters = validation.validate_required_filters(variable, filters)
+    req_filters = validation.validate_required_filters(
+        variable, filters, ppq=needs_stage
+    )
     if req_filters is None:
         return None
     studies_df = pd.read_json(studies, orient="split")
@@ -114,7 +121,7 @@ def update_operation_data_casos(
     df = API.fetch_result_list(
         paths,
         variable,
-        {**req_filters, "preprocess": "QUANTILE_AVERAGE"},
+        {**req_filters, "preprocess": preprocess},
         path_part_to_name_study=-1,
     )
     if df is None:
