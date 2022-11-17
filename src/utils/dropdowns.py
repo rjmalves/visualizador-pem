@@ -4,6 +4,7 @@ from src.utils.api import API
 
 
 NOT_OPERATION_FILES = [
+    "CUSTOS",
     "COMPOSICAO_CUSTOS",
     "TEMPO",
     "CONVERGENCIA",
