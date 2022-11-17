@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+import asyncio
 from src.utils.api import API
 import src.utils.validation as validation
 from dash import ctx
@@ -64,17 +65,21 @@ def update_operation_data_encadeador(
     studies_df = pd.read_json(studies, orient="split")
     paths = studies_df["CAMINHO"].tolist()
     complete_df = pd.DataFrame()
-    newave_df = API.fetch_result_list(
-        [os.path.join(p, "NEWAVE") for p in paths],
-        variable,
-        fetch_filters,
-        path_part_to_name_study=-2,
+    newave_df = asyncio.run(
+        API.fetch_result_list(
+            [os.path.join(p, "NEWAVE") for p in paths],
+            variable,
+            fetch_filters,
+            path_part_to_name_study=-2,
+        )
     )
-    decomp_df = API.fetch_result_list(
-        [os.path.join(p, "DECOMP") for p in paths],
-        variable,
-        fetch_filters,
-        path_part_to_name_study=-2,
+    decomp_df = asyncio.run(
+        API.fetch_result_list(
+            [os.path.join(p, "DECOMP") for p in paths],
+            variable,
+            fetch_filters,
+            path_part_to_name_study=-2,
+        )
     )
     if newave_df is not None:
         cols_newave = newave_df.columns.to_list()
@@ -118,11 +123,13 @@ def update_operation_data_casos(
         return None
     studies_df = pd.read_json(studies, orient="split")
     paths = studies_df["CAMINHO"].tolist()
-    df = API.fetch_result_list(
-        paths,
-        variable,
-        {**req_filters, "preprocess": preprocess},
-        path_part_to_name_study=-1,
+    df = asyncio.run(
+        API.fetch_result_list(
+            paths,
+            variable,
+            {**req_filters, "preprocess": preprocess},
+            path_part_to_name_study=-1,
+        )
     )
     if df is None:
         return None
@@ -144,11 +151,13 @@ def update_operation_data_ppq(interval, studies, filters: dict, variable: str):
         return None
     studies_df = pd.read_json(studies, orient="split")
     paths = studies_df["CAMINHO"].tolist()
-    df = API.fetch_result_list(
-        paths,
-        variable,
-        {**req_filters, "preprocess": "AVERAGE"},
-        path_part_to_name_study=-1,
+    df = asyncio.run(
+        API.fetch_result_list(
+            paths,
+            variable,
+            {**req_filters, "preprocess": "AVERAGE"},
+            path_part_to_name_study=-1,
+        )
     )
     if df is None:
         return None

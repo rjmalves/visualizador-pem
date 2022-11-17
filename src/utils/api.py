@@ -1,5 +1,7 @@
 from typing import Optional, List
 import requests
+import aiohttp
+import asyncio
 import pandas as pd
 import base62
 import io
@@ -14,40 +16,52 @@ class API:
     session.headers.update(header_key)
 
     @classmethod
-    def fetch_available_results(cls, study_path: str) -> Optional[List[str]]:
+    async def fetch_available_results(
+        cls, session: aiohttp.ClientSession, study_path: str
+    ) -> Optional[List[str]]:
         identifier = base62.encodebytes(study_path.encode("utf-8"))
         url = f"{Settings.result_api}/{identifier}"
-        r = cls.session.get(url)
-        if r.status_code != 200:
-            return None
-        else:
-            return r.json()
+        async with session.get(url) as r:
+            if r.status != 200:
+                return None
+            else:
+                return await r.json()
 
     @classmethod
-    def fetch_available_results_list(
+    async def fetch_available_results_list(
         cls, studies_paths: List[str]
     ) -> List[str]:
-        unique_variables = set()
-        for p in studies_paths:
-            variables = cls.fetch_available_results(p)
-            if variables:
-                unique_variables = unique_variables.union(set(variables))
+        async with aiohttp.ClientSession() as session:
+            unique_variables = set()
+            ret = await asyncio.gather(
+                *[
+                    cls.fetch_available_results(session, p)
+                    for p in studies_paths
+                ]
+            )
+            for variables in ret:
+                if variables:
+                    unique_variables = unique_variables.union(set(variables))
         return list(unique_variables)
 
     @classmethod
-    def fetch_result(
-        cls, study_path: str, desired_data: str, filters: dict
+    async def fetch_result(
+        cls,
+        session: aiohttp.ClientSession,
+        study_path: str,
+        desired_data: str,
+        filters: dict,
     ) -> Optional[pd.DataFrame]:
         identifier = base62.encodebytes(study_path.encode("utf-8"))
         url = f"{Settings.result_api}/{identifier}/{desired_data}"
-        r = cls.session.get(url, params=filters)
-        if r.status_code != 200:
-            return None
-        else:
-            return pd.read_parquet(io.BytesIO(r.content))
+        async with session.get(url, params=filters) as r:
+            if r.status != 200:
+                return None
+            else:
+                return pd.read_parquet(io.BytesIO(await r.content.read()))
 
     @classmethod
-    def fetch_result_list(
+    async def fetch_result_list(
         cls,
         studies_paths: List[str],
         desired_data: str,
@@ -55,15 +69,22 @@ class API:
         path_part_to_name_study: int,
     ) -> Optional[pd.DataFrame]:
         valid_dfs: List[pd.DataFrame] = []
-        for p in studies_paths:
-            path = pathlib.Path(p)
-            study = path.parts[path_part_to_name_study]
-            df = cls.fetch_result(str(path), desired_data, filters)
-            if df is not None:
-                df_cols = df.columns.to_list()
-                df["estudo"] = study
-                df = df[["estudo"] + df_cols]
-                valid_dfs.append(df)
+        async with aiohttp.ClientSession() as session:
+            ret = await asyncio.gather(
+                *[
+                    cls.fetch_result(
+                        session, str(pathlib.Path(p)), desired_data, filters
+                    )
+                    for p in studies_paths
+                ]
+            )
+            for p, df in zip(studies_paths, ret):
+                study = pathlib.Path(p).parts[path_part_to_name_study]
+                if df is not None:
+                    df_cols = df.columns.to_list()
+                    df["estudo"] = study
+                    df = df[["estudo"] + df_cols]
+                    valid_dfs.append(df)
         if len(valid_dfs) > 0:
             complete_df = pd.concat(valid_dfs, ignore_index=True)
             return complete_df
@@ -71,27 +92,32 @@ class API:
             return None
 
     @classmethod
-    def fetch_result_options(
-        cls, study_path: str, desired_data: str
+    async def fetch_result_options(
+        cls, session: aiohttp.ClientSession, study_path: str, desired_data: str
     ) -> Optional[dict]:
         identifier = base62.encodebytes(study_path.encode("utf-8"))
         url = f"{Settings.result_api}/{identifier}/{desired_data}/options"
-        r = cls.session.get(url)
-        if r.status_code != 200:
-            return None
-        else:
-            return r.json()
+        async with session.get(url) as r:
+            if r.status != 200:
+                return None
+            else:
+                return await r.json()
 
     @classmethod
-    def fetch_result_options_list(
+    async def fetch_result_options_list(
         cls, studies_paths: List[str], desired_data: str
     ) -> Optional[dict]:
         valid_opts: List[dict] = []
-        for p in studies_paths:
-            path = pathlib.Path(p)
-            opts = cls.fetch_result_options(str(path), desired_data)
-            if opts is not None:
-                valid_opts.append(opts)
+        async with aiohttp.ClientSession() as session:
+            ret = await asyncio.gather(
+                *[
+                    cls.fetch_result_options(session, str(p), desired_data)
+                    for p in studies_paths
+                ]
+            )
+            for opts in ret:
+                if opts is not None:
+                    valid_opts.append(opts)
         if len(valid_opts) > 0:
             complete_opts = {}
             for o in valid_opts:

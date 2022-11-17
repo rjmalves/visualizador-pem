@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+import asyncio
 from src.utils.api import API
 
 
@@ -25,8 +26,8 @@ def update_operation_variables_dropdown_options_encadeador(
     for _, line in studies.iterrows():
         newave_path = os.path.join(line["CAMINHO"], "NEWAVE")
         decomp_path = os.path.join(line["CAMINHO"], "DECOMP")
-        unique_variables = API.fetch_available_results_list(
-            [newave_path, decomp_path]
+        unique_variables = asyncio.run(
+            API.fetch_available_results_list([newave_path, decomp_path])
         )
         all_variables = all_variables.union(set(unique_variables))
         all_variables = [
@@ -38,7 +39,7 @@ def update_operation_variables_dropdown_options_encadeador(
 def update_operation_variables_dropdown_options_casos(interval, studies_data):
     studies = pd.read_json(studies_data, orient="split")
     paths = studies["CAMINHO"].tolist()
-    unique_variables = API.fetch_available_results_list(paths)
+    unique_variables = asyncio.run(API.fetch_available_results_list(paths))
     unique_variables = [
         a for a in unique_variables if a not in NOT_OPERATION_FILES
     ]
@@ -53,11 +54,15 @@ def update_operation_options_encadeador(interval, studies, variable: str):
     studies_df = pd.read_json(studies, orient="split")
     paths = studies_df["CAMINHO"].tolist()
     complete_options = {}
-    newave_options = API.fetch_result_options_list(
-        [os.path.join(p, "NEWAVE") for p in paths], variable
+    newave_options = asyncio.run(
+        API.fetch_result_options_list(
+            [os.path.join(p, "NEWAVE") for p in paths], variable
+        )
     )
-    decomp_options = API.fetch_result_options_list(
-        [os.path.join(p, "DECOMP") for p in paths], variable
+    decomp_options = asyncio.run(
+        API.fetch_result_options_list(
+            [os.path.join(p, "DECOMP") for p in paths], variable
+        )
     )
     if newave_options is not None:
         complete_options = {**complete_options, **newave_options}
@@ -76,7 +81,7 @@ def update_operation_options_casos(interval, studies, variable: str):
         return None
     studies_df = pd.read_json(studies, orient="split")
     paths = studies_df["CAMINHO"].tolist()
-    options = API.fetch_result_options_list(paths, variable)
+    options = asyncio.run(API.fetch_result_options_list(paths, variable))
     if len(options) == 0:
         return None
     else:

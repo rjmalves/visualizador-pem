@@ -7,3 +7,4 @@ waitress
 pybase62
 pyarrow
 requests
+aiohttp
