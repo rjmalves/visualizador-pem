@@ -23,16 +23,23 @@ def update_operation_variables_dropdown_options_encadeador(
 ):
     studies = pd.read_json(studies_data, orient="split")
     all_variables = set()
+    newaves_paths = []
+    decomps_paths = []
     for _, line in studies.iterrows():
         newave_path = os.path.join(line["CAMINHO"], "NEWAVE")
         decomp_path = os.path.join(line["CAMINHO"], "DECOMP")
-        unique_variables = asyncio.run(
-            API.fetch_available_results_list([newave_path, decomp_path])
-        )
-        all_variables = all_variables.union(set(unique_variables))
-        all_variables = [
-            a for a in all_variables if a not in NOT_OPERATION_FILES
-        ]
+        newaves_paths.append(newave_path)
+        decomps_paths.append(decomp_path)
+    newave_variables = asyncio.run(
+        API.fetch_available_results_list(newaves_paths)
+    )
+    decomp_variables = asyncio.run(
+        API.fetch_available_results_list(decomps_paths)
+    )
+
+    all_variables = all_variables.union(set(newave_variables))
+    all_variables = all_variables.union(set(decomp_variables))
+    all_variables = [a for a in all_variables if a not in NOT_OPERATION_FILES]
     return sorted(list(all_variables))
 
 
