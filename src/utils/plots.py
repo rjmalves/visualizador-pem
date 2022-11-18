@@ -1,4 +1,5 @@
 import plotly.graph_objects as go
+import plotly.express as px
 from plotly.subplots import make_subplots
 import pandas as pd
 from typing import List
@@ -14,6 +15,19 @@ DISCRETE_COLOR_PALLETE = [
     "rgba(77, 144, 142, 1)",
     "rgba(249, 132, 74, 1)",
     "rgba(67, 170, 139, 1)",
+]
+
+DISCRETE_COLOR_PALLETE_COSTS = [
+    "rgba(249, 65, 68, 1)",
+    "rgba(144, 190, 109, 1)",
+    "rgba(243, 114, 44, 1)",
+    "rgba(249, 199, 79, 1)",
+    "rgba(249, 132, 74, 1)",
+    "rgba(39, 125, 161, 1)",
+    "rgba(67, 170, 139, 1)",
+    "rgba(248, 150, 30, 1)",
+    "rgba(77, 144, 142, 1)",
+    "rgba(87, 117, 144, 1)",
 ]
 
 DISCRETE_COLOR_PALLETE_BACKGROUND = [
@@ -688,6 +702,50 @@ def generate_acumprob_graph_casos(operation_data, variable, filters):
             yaxis_title=VARIABLE_UNITS.get(variable.split("_")[0], ""),
             hovermode="x unified",
             legend=dict(groupclick="toggleitem"),
+        )
+    return fig
+
+
+def generate_timecosts_graph_casos(time_costs, variable):
+    graph_layout = go.Layout(
+        plot_bgcolor="rgba(158, 149, 128, 0.2)",
+        paper_bgcolor="rgba(255,255,255,1)",
+    )
+    fig = go.Figure()
+    fig.update_layout(graph_layout)
+    if time_costs is None:
+        return fig
+    dados = pd.read_json(time_costs, orient="split")
+    if "etapa" in dados.columns:
+        dados = dados.loc[dados["etapa"] != "Tempo Total", :]
+        dados["tempo"] = dados["tempo"] / 3600.0
+        y_col = "tempo"
+        color_col = "etapa"
+        title = "Tempo de Execução"
+        unit = "Tempo (horas)"
+        error_y = None
+    else:
+        dados = dados.loc[dados["mean"] > 0, :]
+        y_col = "mean"
+        color_col = "parcela"
+        title = "Custos de Operação"
+        unit = "Custo ($)"
+        error_y = "std"
+
+    fig = px.bar(
+        dados,
+        x="estudo",
+        y=y_col,
+        error_y=error_y,
+        color=color_col,
+        color_discrete_sequence=DISCRETE_COLOR_PALLETE_COSTS,
+    )
+
+    fig.update_layout(graph_layout)
+    if variable is not None:
+        fig.update_layout(
+            title=title,
+            yaxis_title=unit,
         )
     return fig
 

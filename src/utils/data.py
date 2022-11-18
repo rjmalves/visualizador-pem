@@ -139,6 +139,33 @@ def update_operation_data_casos(
         return df.to_json(orient="split")
 
 
+def update_custos_tempo_data_casos(
+    interval,
+    studies,
+    variable: str,
+):
+    if not studies:
+        return None
+    if not variable:
+        return None
+    studies_df = pd.read_json(studies, orient="split")
+    paths = studies_df["CAMINHO"].tolist()
+    df = asyncio.run(
+        API.fetch_result_list(
+            paths,
+            variable,
+            {},
+            path_part_to_name_study=-1,
+        )
+    )
+    if df is None:
+        return None
+    if df.empty:
+        return None
+    else:
+        return df.to_json(orient="split")
+
+
 def update_operation_data_ppq(interval, studies, filters: dict, variable: str):
     if not studies:
         return None

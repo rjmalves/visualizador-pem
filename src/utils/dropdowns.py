@@ -4,6 +4,11 @@ import asyncio
 from src.utils.api import API
 
 
+COSTS_TIME_FILES = [
+    "CUSTOS",
+    "TEMPO",
+]
+
 NOT_OPERATION_FILES = [
     "CUSTOS",
     "COMPOSICAO_CUSTOS",
@@ -50,6 +55,14 @@ def update_operation_variables_dropdown_options_casos(interval, studies_data):
     unique_variables = [
         a for a in unique_variables if a not in NOT_OPERATION_FILES
     ]
+    return sorted(unique_variables)
+
+
+def update_costs_time_variables_dropdown_options_casos(interval, studies_data):
+    studies = pd.read_json(studies_data, orient="split")
+    paths = studies["CAMINHO"].tolist()
+    unique_variables = asyncio.run(API.fetch_available_results_list(paths))
+    unique_variables = [a for a in unique_variables if a in COSTS_TIME_FILES]
     return sorted(unique_variables)
 
 

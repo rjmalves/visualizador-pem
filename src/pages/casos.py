@@ -6,6 +6,7 @@ from src.components.newstudymodalaio import NewStudyModalAIO
 from src.components.currentstudiestableaio import CurrentStudiesTableAIO
 from src.components.casos.operationgraph import OperationGraph
 from src.components.casos.acumprobgraph import AcumProbGraph
+from src.components.casos.timecostsgraph import TimeCostsGraph
 
 import src.utils.modals as modals
 import src.utils.data as data
@@ -19,6 +20,7 @@ layout = html.Div(
         CurrentStudiesTableAIO(aio_id="casos-current-studies"),
         OperationGraph(aio_id="casos-operation-graph"),
         AcumProbGraph(aio_id="casos-permanencia-graph"),
+        TimeCostsGraph(aio_id="casos-tempo-custos-graph"),
     ],
     className="casos-app-page",
 )
@@ -84,6 +86,14 @@ def update_current_studies(studies_data):
 
 @callback(
     Output(AcumProbGraph.ids.studies("casos-permanencia-graph"), "data"),
+    Input(CurrentStudiesTableAIO.ids.data("casos-current-studies"), "data"),
+)
+def update_current_studies(studies_data):
+    return studies_data
+
+
+@callback(
+    Output(TimeCostsGraph.ids.studies("casos-tempo-custos-graph"), "data"),
     Input(CurrentStudiesTableAIO.ids.data("casos-current-studies"), "data"),
 )
 def update_current_studies(studies_data):
