@@ -109,7 +109,7 @@ def update_operation_data_casos(
     studies,
     filters: dict,
     variable: str,
-    preprocess: str = "QUANTILE_AVERAGE",
+    preprocess: str = "STATISTICS",
     needs_stage: bool = False,
 ):
     if not studies:
@@ -182,7 +182,7 @@ def update_operation_data_ppq(interval, studies, filters: dict, variable: str):
         API.fetch_result_list(
             paths,
             variable,
-            {**req_filters, "preprocess": "AVERAGE"},
+            {**req_filters, "preprocess": "STATISTICS"},
             path_part_to_name_study=-1,
         )
     )
