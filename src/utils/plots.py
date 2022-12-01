@@ -3,6 +3,7 @@ import plotly.express as px
 from plotly.subplots import make_subplots
 import pandas as pd
 from typing import List
+from datetime import timedelta
 
 DISCRETE_COLOR_PALLETE = [
     "rgba(249, 65, 68, 1)",
@@ -160,6 +161,12 @@ NOT_SCENARIO_COLUMNS = [
 ]
 
 
+def pivot_df_for_plot(df: pd.DataFrame) -> pd.DataFrame:
+    index_cols = [c for c in df.columns if c in NOT_SCENARIO_COLUMNS]
+    df_plot = df.pivot(index=index_cols, columns="cenario", values="valor")
+    return df_plot.reset_index()
+
+
 def generate_operation_graph_casos(operation_data, variable, filters):
     graph_layout = go.Layout(
         plot_bgcolor="rgba(158, 149, 128, 0.2)",
@@ -178,7 +185,9 @@ def generate_operation_graph_casos(operation_data, variable, filters):
     visibilidade_p = __background_area_visibility(estudos)
     for i, estudo in enumerate(estudos):
         if dados is not None:
-            dados_estudo = dados.loc[dados["estudo"] == estudo]
+            dados_estudo = pivot_df_for_plot(
+                dados.loc[dados["estudo"] == estudo]
+            )
             if not dados_estudo.empty:
                 dados_estudo = __add_final_date_line_to_df(dados_estudo)
                 fig.add_trace(
@@ -193,21 +202,6 @@ def generate_operation_graph_casos(operation_data, variable, filters):
                         name=estudo,
                         legendgroup="mean",
                         legendgrouptitle_text="mean",
-                    )
-                )
-                fig.add_trace(
-                    go.Scatter(
-                        x=dados_estudo["dataInicio"],
-                        y=dados_estudo["median"],
-                        line={
-                            "color": DISCRETE_COLOR_PALLETE[i],
-                            "width": 3,
-                            "dash": "dot",
-                            "shape": line_shape,
-                        },
-                        name=estudo,
-                        legendgroup="median",
-                        legendgrouptitle_text="median",
                     )
                 )
                 fig.add_trace(
@@ -307,7 +301,7 @@ def generate_operation_graph_casos_twinx(
     next_color = 0
     visibilidade_p = __background_area_visibility(estudos)
     for i, estudo in enumerate(estudos_completos):
-        dados_estudo = dados.loc[dados["estudo"] == estudo]
+        dados_estudo = pivot_df_for_plot(dados.loc[dados["estudo"] == estudo])
         dados_legend = __make_operation_plot_legend_name(
             estudos_completos, estudo, variable, filters
         )
@@ -316,6 +310,7 @@ def generate_operation_graph_casos_twinx(
         )
         if not dados_estudo.empty:
             dados_estudo = __add_final_date_line_to_df(dados_estudo)
+
             fig.add_trace(
                 go.Scatter(
                     x=dados_estudo["dataInicio"],
@@ -328,20 +323,6 @@ def generate_operation_graph_casos_twinx(
                     name="mean",
                     legendgroup=dados_legend,
                     legendgrouptitle_text=dados_legend,
-                )
-            )
-            fig.add_trace(
-                go.Scatter(
-                    x=dados_estudo["dataInicio"],
-                    y=dados_estudo["median"],
-                    line={
-                        "color": DISCRETE_COLOR_PALLETE[next_color],
-                        "width": 3,
-                        "dash": "dot",
-                        "shape": line_shape,
-                    },
-                    name="median",
-                    legendgroup=dados_legend,
                 )
             )
             fig.add_trace(
@@ -387,7 +368,9 @@ def generate_operation_graph_casos_twinx(
                 )
             next_color += 1
 
-        dados_estudo = dados_twinx.loc[dados_twinx["estudo"] == estudo]
+        dados_estudo = pivot_df_for_plot(
+            dados_twinx.loc[dados_twinx["estudo"] == estudo]
+        )
         if not dados_estudo.empty:
             dados_estudo = __add_final_date_line_to_df(dados_estudo)
             fig.add_trace(
@@ -402,21 +385,6 @@ def generate_operation_graph_casos_twinx(
                     name="mean",
                     legendgroup=dados_twinx_legend,
                     legendgrouptitle_text=dados_twinx_legend,
-                ),
-                secondary_y=True,
-            )
-            fig.add_trace(
-                go.Scatter(
-                    x=dados_estudo["dataInicio"],
-                    y=dados_estudo["median"],
-                    line={
-                        "color": DISCRETE_COLOR_PALLETE[next_color],
-                        "width": 3,
-                        "dash": "dot",
-                        "shape": line_shape,
-                    },
-                    name="median",
-                    legendgroup=dados_twinx_legend,
                 ),
                 secondary_y=True,
             )
@@ -592,7 +560,9 @@ def generate_operation_graph_ppq(operation_data, variable, filters):
 
     for i, estudo in enumerate(estudos):
         if dados is not None:
-            dados_estudo = dados.loc[dados["estudo"] == estudo]
+            dados_estudo = pivot_df_for_plot(
+                dados.loc[dados["estudo"] == estudo]
+            )
             if not dados_estudo.empty:
                 dados_estudo = dados_estudo.sort_values("iteracao")
                 fig.add_trace(
@@ -682,7 +652,9 @@ def generate_acumprob_graph_casos(operation_data, variable, filters):
     line_shape = "hv"
     for i, estudo in enumerate(estudos):
         if dados is not None:
-            dados_estudo = dados.loc[dados["estudo"] == estudo]
+            dados_estudo = pivot_df_for_plot(
+                dados.loc[dados["estudo"] == estudo]
+            )
             if not dados_estudo.empty:
                 dados_estudo = __process_acumprob(dados_estudo)
                 fig.add_trace(
@@ -719,6 +691,9 @@ def generate_timecosts_graph_casos(time_costs, variable):
     if "etapa" in dados.columns:
         dados = dados.loc[dados["etapa"] != "Tempo Total", :]
         dados["tempo"] = dados["tempo"] / 3600.0
+        dados["label"] = [
+            str(timedelta(hours=d)) for d in dados["tempo"].tolist()
+        ]
         y_col = "tempo"
         color_col = "etapa"
         title = "Tempo de Execução"
@@ -726,6 +701,7 @@ def generate_timecosts_graph_casos(time_costs, variable):
         error_y = None
     else:
         dados = dados.loc[dados["mean"] > 0, :]
+        dados["label"] = dados["mean"]
         y_col = "mean"
         color_col = "parcela"
         title = "Custos de Operação"
@@ -739,10 +715,12 @@ def generate_timecosts_graph_casos(time_costs, variable):
         error_y=error_y,
         color=color_col,
         color_discrete_sequence=DISCRETE_COLOR_PALLETE_COSTS,
+        text="label",
     )
-
     fig.update_layout(graph_layout)
     if variable is not None:
+        fig.update_traces(textposition="inside")
+        fig.update_layout(uniformtext_minsize=12, uniformtext_mode="hide")
         fig.update_layout(
             title=title,
             yaxis_title=unit,

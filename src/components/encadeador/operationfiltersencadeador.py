@@ -546,7 +546,11 @@ class OperationFiltersEncadeador(html.Div):
     def update_cenario_options(interval, options):
         if options:
             if "cenario" in options.keys():
-                return sorted(list(set(options["cenario"])))
+                cens = data.get_non_statistics_scenarios(
+                    list(set(options["cenario"]))
+                )
+                cens_numbers = [int(c) for c in cens]
+                return [str(c) for c in sorted(cens_numbers)]
         return []
 
     @callback(

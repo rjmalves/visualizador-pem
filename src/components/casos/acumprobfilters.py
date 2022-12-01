@@ -588,7 +588,7 @@ class AcumProbFilters(html.Div):
             studies,
             filters,
             variable,
-            preprocess="FULL",
+            preprocess="SCENARIO",
             needs_stage=True,
         )
 

@@ -546,9 +546,11 @@ class OperationFilters(html.Div):
     def update_cenario_options(interval, options):
         if options:
             if "cenario" in options.keys():
-                cens_str = list(set(options["cenario"]))
-                cens_i = [int(c) for c in cens_str]
-                return [str(c) for c in sorted(cens_i)]
+                cens = data.get_non_statistics_scenarios(
+                    list(set(options["cenario"]))
+                )
+                cens_numbers = [int(c) for c in cens]
+                return [str(c) for c in sorted(cens_numbers)]
         return []
 
     @callback(

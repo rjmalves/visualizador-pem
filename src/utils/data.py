@@ -2,6 +2,7 @@ import pandas as pd
 import os
 import asyncio
 from src.utils.api import API
+from typing import List
 import src.utils.validation as validation
 from dash import ctx
 
@@ -49,6 +50,22 @@ def edit_current_study_data(
             return current_studies
     else:
         return current_studies
+
+
+def get_statistics_scenarios(all_scenarios: List[str]) -> List[str]:
+    scenarios = [
+        s for s in all_scenarios if s in ["min", "max", "median", "mean"]
+    ]
+    scenarios = [s for s in scenarios if "p" in s]
+    return scenarios
+
+
+def get_non_statistics_scenarios(all_scenarios: List[str]) -> List[str]:
+    scenarios = [
+        s for s in all_scenarios if s not in ["min", "max", "median", "mean"]
+    ]
+    scenarios = [s for s in scenarios if "p" not in s]
+    return scenarios
 
 
 def update_operation_data_encadeador(
@@ -131,6 +148,7 @@ def update_operation_data_casos(
             path_part_to_name_study=-1,
         )
     )
+    print(df)
     if df is None:
         return None
     if df.empty:
