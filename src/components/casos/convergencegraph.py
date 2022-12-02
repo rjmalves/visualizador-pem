@@ -1,20 +1,19 @@
 from dash import Output, Input, State, html, dcc, callback, MATCH, ALL
-from src.components.casos.operationfilters import OperationFilters
-from src.components.casos.operationfilterstwin import OperationFiltersTwin
+from src.components.casos.convergencefilters import ConvergenceFilters
 import src.utils.plots as plots
 from src.utils.settings import Settings
 import uuid
 
 
-class OperationGraph(html.Div):
+class ConvergenceGraph(html.Div):
     class ids:
         studies = lambda aio_id: {
-            "component": "OperationGraph",
+            "component": "ConvergenceGraph",
             "subcomponent": "studies",
             "aio_id": aio_id,
         }
         graph = lambda aio_id: {
-            "component": "OperationGraph",
+            "component": "ConvergenceGraph",
             "subcomponent": "graph",
             "aio_id": aio_id,
         }
@@ -34,13 +33,12 @@ class OperationGraph(html.Div):
                 html.Div(
                     [
                         html.H4(
-                            "EVOLUÇÂO TEMPORAL",
+                            "CONVERGÊNCIA",
                             className="card-title",
                         ),
                         html.Div(
                             [
-                                OperationFilters(aio_id=aio_id),
-                                OperationFiltersTwin(aio_id=aio_id),
+                                ConvergenceFilters(aio_id=aio_id),
                             ],
                             className="card-menu",
                         ),
@@ -60,47 +58,25 @@ class OperationGraph(html.Div):
         )
 
     @callback(
-        Output(OperationFilters.ids.studies(MATCH), "data"),
+        Output(ConvergenceFilters.ids.studies(MATCH), "data"),
         Input(ids.studies(MATCH), "data"),
     )
     def update_current_studies_main(studies_data):
         return studies_data
 
     @callback(
-        Output(OperationFiltersTwin.ids.studies(MATCH), "data"),
-        Input(ids.studies(MATCH), "data"),
-    )
-    def update_current_studies_twin(studies_data):
-        return studies_data
-
-    @callback(
         Output(ids.graph(MATCH), "figure"),
-        Input(OperationFilters.ids.data(MATCH), "data"),
-        Input(OperationFiltersTwin.ids.data(MATCH), "data"),
-        State(
-            OperationFilters.ids.variable_dropdown(MATCH),
+        Input(ConvergenceFilters.ids.data(MATCH), "data"),
+        Input(
+            ConvergenceFilters.ids.studies_dropdown(MATCH),
             "value",
         ),
-        State(OperationFilters.ids.filters(MATCH), "data"),
-        State(
-            OperationFiltersTwin.ids.variable_dropdown(MATCH),
-            "value",
-        ),
-        State(OperationFiltersTwin.ids.filters(MATCH), "data"),
     )
     def generate_operation_graph(
         operation_data,
-        operation_data_twinx,
-        variable,
-        filters,
-        variable_twinx,
-        filters_twinx,
+        study,
     ):
-        return plots.generate_operation_graph_casos_twinx(
+        return plots.generate_convergence_graph_casos(
             operation_data,
-            variable,
-            filters,
-            operation_data_twinx,
-            variable_twinx,
-            filters_twinx,
+            study,
         )

@@ -3,6 +3,7 @@ import os
 import asyncio
 from src.utils.api import API
 from typing import List
+from datetime import timedelta
 import src.utils.validation as validation
 from dash import ctx
 
@@ -148,7 +149,7 @@ def update_operation_data_casos(
             path_part_to_name_study=-1,
         )
     )
-    print(df)
+
     if df is None:
         return None
     if df.empty:
@@ -182,6 +183,104 @@ def update_custos_tempo_data_casos(
         return None
     else:
         return df.to_json(orient="split")
+
+
+def update_runtime_data_casos(
+    interval,
+    studies,
+):
+    if not studies:
+        return None
+    studies_df = pd.read_json(studies, orient="split")
+    paths = studies_df["CAMINHO"].tolist()
+    df = asyncio.run(
+        API.fetch_result_list(
+            paths,
+            "TEMPO",
+            {},
+            path_part_to_name_study=-1,
+        )
+    )
+    if df is None:
+        return None
+    if df.empty:
+        return None
+    else:
+        return df.to_json(orient="split")
+
+
+def update_convergence_data_casos(
+    interval,
+    studies,
+):
+    if not studies:
+        return None
+    studies_df = pd.read_json(studies, orient="split")
+    paths = studies_df["CAMINHO"].tolist()
+    df = asyncio.run(
+        API.fetch_result_list(
+            paths,
+            "CONVERGENCIA",
+            {},
+            path_part_to_name_study=-1,
+        )
+    )
+    if df is None:
+        return None
+    if df.empty:
+        return None
+    else:
+        df["tempo"] = pd.to_timedelta(df["tempo"])
+        return df.to_json(orient="split")
+
+
+def update_job_resources_data_casos(
+    interval,
+    studies,
+):
+    if not studies:
+        return None
+    studies_df = pd.read_json(studies, orient="split")
+    paths = studies_df["CAMINHO"].tolist()
+    df_cluster = asyncio.run(
+        API.fetch_result_list(
+            paths,
+            "RECURSOS_JOB",
+            {},
+            path_part_to_name_study=-1,
+        )
+    )
+    if df_cluster is None:
+        return None
+    if df_cluster.empty:
+        return None
+
+    else:
+        return df_cluster.to_json(orient="split")
+
+
+def update_cluster_resources_data_casos(
+    interval,
+    studies,
+):
+    if not studies:
+        return None
+    studies_df = pd.read_json(studies, orient="split")
+    paths = studies_df["CAMINHO"].tolist()
+    df_job = asyncio.run(
+        API.fetch_result_list(
+            paths,
+            "RECURSOS_CLUSTER",
+            {},
+            path_part_to_name_study=-1,
+        )
+    )
+    if df_job is None:
+        return None
+    if df_job.empty:
+        return None
+    else:
+        return df_job.to_json(orient="split")
 
 
 def update_operation_data_ppq(interval, studies, filters: dict, variable: str):

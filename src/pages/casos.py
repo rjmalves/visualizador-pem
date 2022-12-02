@@ -7,6 +7,8 @@ from src.components.currentstudiestableaio import CurrentStudiesTableAIO
 from src.components.casos.operationgraph import OperationGraph
 from src.components.casos.acumprobgraph import AcumProbGraph
 from src.components.casos.timecostsgraph import TimeCostsGraph
+from src.components.casos.convergencegraph import ConvergenceGraph
+from src.components.casos.resourcesgraph import ResourcesGraph
 
 import src.utils.modals as modals
 import src.utils.data as data
@@ -21,6 +23,8 @@ layout = html.Div(
         OperationGraph(aio_id="casos-operation-graph"),
         AcumProbGraph(aio_id="casos-permanencia-graph"),
         TimeCostsGraph(aio_id="casos-tempo-custos-graph"),
+        ConvergenceGraph(aio_id="casos-convergence-graph"),
+        ResourcesGraph(aio_id="casos-resources-graph"),
     ],
     className="casos-app-page",
 )
@@ -94,6 +98,22 @@ def update_current_studies(studies_data):
 
 @callback(
     Output(TimeCostsGraph.ids.studies("casos-tempo-custos-graph"), "data"),
+    Input(CurrentStudiesTableAIO.ids.data("casos-current-studies"), "data"),
+)
+def update_current_studies(studies_data):
+    return studies_data
+
+
+@callback(
+    Output(ConvergenceGraph.ids.studies("casos-convergence-graph"), "data"),
+    Input(CurrentStudiesTableAIO.ids.data("casos-current-studies"), "data"),
+)
+def update_current_studies(studies_data):
+    return studies_data
+
+
+@callback(
+    Output(ResourcesGraph.ids.studies("casos-resources-graph"), "data"),
     Input(CurrentStudiesTableAIO.ids.data("casos-current-studies"), "data"),
 )
 def update_current_studies(studies_data):

@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 import asyncio
+import pathlib
 from src.utils.api import API
 
 
@@ -64,6 +65,12 @@ def update_costs_time_variables_dropdown_options_casos(interval, studies_data):
     unique_variables = asyncio.run(API.fetch_available_results_list(paths))
     unique_variables = [a for a in unique_variables if a in COSTS_TIME_FILES]
     return sorted(unique_variables)
+
+
+def update_studies_names_dropdown_options_casos(interval, studies_data):
+    studies = pd.read_json(studies_data, orient="split")
+    paths = studies["CAMINHO"].tolist()
+    return [pathlib.Path(p).parts[-1] for p in paths]
 
 
 def update_operation_options_encadeador(interval, studies, variable: str):

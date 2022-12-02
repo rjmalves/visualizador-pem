@@ -2,6 +2,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 from plotly.subplots import make_subplots
 import pandas as pd
+import numpy as np
 from typing import List
 from datetime import timedelta
 
@@ -725,6 +726,260 @@ def generate_timecosts_graph_casos(time_costs, variable):
             title=title,
             yaxis_title=unit,
         )
+    return fig
+
+
+def generate_convergence_graph_casos(convergence_data, study):
+    graph_layout = go.Layout(
+        plot_bgcolor="rgba(158, 149, 128, 0.2)",
+        paper_bgcolor="rgba(255,255,255,1)",
+    )
+    fig = go.Figure()
+    fig.update_layout(graph_layout)
+    if convergence_data is None:
+        return fig
+    dados = pd.read_json(convergence_data, orient="split")
+    if dados.empty:
+        return fig
+    dados["tempo"] = pd.to_timedelta(dados["tempo"], unit="ms")
+    dados["tempo"] /= timedelta(minutes=1)
+    dados = dados.loc[dados["estudo"] == study, :]
+    x_col = "iter"
+    title = "Convergência"
+    unit = "Tempo (minutos)"
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    fig.add_trace(
+        go.Bar(x=dados[x_col], y=dados["tempo"], name="tempo"),
+        secondary_y=True,
+    )
+    fig.update_traces(
+        marker_color=DISCRETE_COLOR_PALLETE_BACKGROUND[0],
+        marker_line_color=DISCRETE_COLOR_PALLETE[0],
+        marker_line_width=1.5,
+    )
+    for i, col in enumerate(["zinf", "zsup", "dZinf"], start=1):
+        fig.add_trace(
+            go.Scatter(
+                x=dados[x_col],
+                y=dados[col],
+                line_color=DISCRETE_COLOR_PALLETE[i],
+                name=col,
+            )
+        )
+    fig.update_layout(graph_layout)
+    if study is not None:
+        fig.update_layout(
+            title=f"Convergência - {study}",
+            xaxis_title="iteração",
+            hovermode="x unified",
+        )
+        fig.update_yaxes(
+            title_text=unit,
+            secondary_y=True,
+        )
+    return fig
+
+
+def generate_resources_graph_casos(
+    cluster_data, job_data, time_data, convergence_data, study
+):
+    graph_layout = go.Layout(
+        plot_bgcolor="rgba(158, 149, 128, 0.2)",
+        paper_bgcolor="rgba(255,255,255,1)",
+    )
+    fig = go.Figure()
+    fig.update_layout(graph_layout)
+    if cluster_data is None:
+        return fig
+    if job_data is None:
+        return fig
+    if time_data is None:
+        return fig
+    if convergence_data is None:
+        return fig
+    master = pd.read_json(cluster_data, orient="split")
+    master = master.loc[master["estudo"] == study, :]
+    job = pd.read_json(job_data, orient="split")
+    job = job.loc[job["estudo"] == study, :]
+    tim = pd.read_json(time_data, orient="split")
+    tim = tim.loc[tim["estudo"] == study, :]
+    conv = pd.read_json(convergence_data, orient="split")
+    conv = conv.loc[conv["estudo"] == study, :]
+    if master.empty:
+        return fig
+    if job.empty:
+        return fig
+    if tim.empty:
+        return fig
+    if conv.empty:
+        return fig
+    tim["tempo"] = pd.to_timedelta(tim["tempo"], unit="s")
+    conv["tempo"] = pd.to_timedelta(conv["tempo"], unit="ms")
+    master["timeInstant"] = pd.to_datetime(master["timeInstant"], unit="ms")
+    job["timeInstant"] = pd.to_datetime(job["timeInstant"])
+    tempo_total_job = tim.loc[tim["etapa"] == "Tempo Total", "tempo"].tolist()[
+        0
+    ]
+    tempo_antes_politica = tim.loc[
+        tim["etapa"].isin(["Leitura de Dados", "Calculos Iniciais"]), "tempo"
+    ].sum()
+    instante_inicial = job["timeInstant"].tolist()[0]
+    instante_inicial_politica = instante_inicial + tempo_antes_politica
+    instante_final = instante_inicial + tempo_total_job
+
+    job = job.drop(job.loc[job["timeInstant"] < instante_inicial].index)
+    master = master.drop(
+        master.loc[master["timeInstant"] < instante_inicial].index
+    )
+    job = job.drop(job.loc[job["timeInstant"] > instante_final].index)
+    master = master.drop(
+        master.loc[master["timeInstant"] > instante_final].index
+    )
+
+    tempos_iteracoes = conv.loc[:, ["iter", "tempo"]]
+    tempos_iteracoes["paridade"] = tempos_iteracoes["iter"] % 2
+    instante_final_politica = (
+        instante_inicial_politica + tempos_iteracoes["tempo"].sum()
+    )
+
+    tempos_iteracoes.loc[:, "timeInstant"] = tempos_iteracoes["tempo"].cumsum()
+
+    tempos_iteracoes["timeInstant"] += instante_inicial_politica
+    tempos_iteracoes_com_inicial = [
+        instante_inicial_politica
+    ] + tempos_iteracoes["timeInstant"].to_list()
+
+    job["cpuDiff"] = [0.0] + list(
+        job["cpuSeconds"].to_numpy()[1:] - job["cpuSeconds"].to_numpy()[:-1]
+    )
+    job["memDiff"] = [0.0] + list(
+        job["memoryCpuSeconds"].to_numpy()[1:]
+        - job["memoryCpuSeconds"].to_numpy()[:-1]
+    )
+    job["memoryPerCore"] = job["memDiff"] / job["cpuDiff"]
+
+    max_y = 1.1 * master["totalMem"].max()
+
+    area_calculos_iniciais_x = np.array(
+        [instante_inicial, instante_inicial_politica]
+    )
+    area_calculos_iniciais_y = np.ones_like(area_calculos_iniciais_x) * max_y
+    area_sf_x = np.array([instante_final_politica, instante_final])
+    area_sf_y = np.ones_like(area_sf_x) * max_y
+
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    fig.update_layout(graph_layout)
+    fig.add_trace(
+        go.Scatter(
+            x=master["timeInstant"],
+            y=master["totalMem"],
+            name="totalMem",
+            line={"color": "rgb(38, 70, 83)", "width": 2, "dash": "dash"},
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=master["timeInstant"],
+            y=master["cachedMem"],
+            name="cachedMem",
+            line={"color": "rgb(38, 70, 83)", "width": 2, "dash": "dot"},
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=master["timeInstant"],
+            y=master["freeMem"],
+            name="freeMem",
+            line={"color": "rgb(38, 70, 83)", "width": 2},
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=job["timeInstant"],
+            y=job["memoryPerCore"],
+            name="memoryPerCore",
+            line={"color": "rgb(231, 111, 81)", "width": 3},
+        ),
+        secondary_y=True,
+    )
+
+    fig.add_trace(
+        go.Scatter(
+            x=area_calculos_iniciais_x,
+            y=area_calculos_iniciais_y,
+            fill="tozeroy",
+            line_color="rgba(42, 157, 143, 0.5)",
+            fillcolor="rgba(42, 157, 143, 0.5)",
+            name="CI",
+        )
+    )
+
+    fig.add_trace(
+        go.Scatter(
+            x=area_sf_x,
+            y=area_sf_y,
+            fill="tozeroy",
+            line_color="rgba(42, 157, 143, 0.5)",
+            fillcolor="rgba(42, 157, 143, 0.5)",
+            name="SF",
+        )
+    )
+
+    for i in range(1, len(tempos_iteracoes_com_inicial), 2):
+        area_x = np.array(
+            [
+                tempos_iteracoes_com_inicial[i - 1],
+                tempos_iteracoes_com_inicial[i],
+            ]
+        )
+        area_y = np.ones_like(area_x) * max_y
+        fig.add_trace(
+            go.Scatter(
+                x=area_x,
+                y=area_y,
+                fill="tozeroy",
+                line_color="rgba(233, 197, 106, 0.5)",
+                fillcolor="rgba(233, 197, 106, 0.5)",
+                showlegend=i == 1,
+                name="oddIterations",
+                legendgroup="iterations",
+            )
+        )
+
+    for i in range(2, len(tempos_iteracoes_com_inicial), 2):
+        area_x = np.array(
+            [
+                tempos_iteracoes_com_inicial[i - 1],
+                tempos_iteracoes_com_inicial[i],
+            ]
+        )
+        area_y = np.ones_like(area_x) * max_y
+        fig.add_trace(
+            go.Scatter(
+                x=area_x,
+                y=area_y,
+                fill="tozeroy",
+                line_color="rgba(231, 111, 81, 0.5)",
+                fillcolor="rgba(231, 111, 81, 0.5)",
+                showlegend=i == 2,
+                name="evenIterations",
+                legendgroup="iterations",
+            )
+        )
+
+    fig.update_yaxes(
+        title_text="Memória - Master Node (GB)",
+        range=[0, 1.1 * master["totalMem"].max()],
+        secondary_y=False,
+    )
+    fig.update_yaxes(
+        title_text="Memória por Processo (GB)",
+        range=[0, 1.1 * job["memoryPerCore"].max()],
+        secondary_y=True,
+    )
+    fig.update_layout(
+        title=f"Uso de Recursos - {study}", hovermode="x unified"
+    )
     return fig
 
 
