@@ -729,33 +729,25 @@ def generate_timecosts_graph_casos(time_costs, variable):
     return fig
 
 
-def generate_convergence_graph_casos(convergence_data, study):
+def generate_convergence_graph_casos(convergence_data, variable):
     graph_layout = go.Layout(
         plot_bgcolor="rgba(158, 149, 128, 0.2)",
         paper_bgcolor="rgba(255,255,255,1)",
     )
     fig = go.Figure()
     fig.update_layout(graph_layout)
-    if convergence_data is None:
+    if convergence_data is None or variable is None:
         return fig
     dados = pd.read_json(convergence_data, orient="split")
     if dados.empty:
         return fig
     dados["tempo"] = pd.to_timedelta(dados["tempo"], unit="ms")
     dados["tempo"] /= timedelta(minutes=1)
-    dados = dados.loc[dados["estudo"] == study, :]
     x_col = "iter"
-    title = "Convergência"
-    unit = "Tempo (minutos)"
     fig = make_subplots(specs=[[{"secondary_y": True}]])
     fig.add_trace(
         go.Bar(x=dados[x_col], y=dados["tempo"], name="tempo"),
         secondary_y=True,
-    )
-    fig.update_traces(
-        marker_color=DISCRETE_COLOR_PALLETE_BACKGROUND[0],
-        marker_line_color=DISCRETE_COLOR_PALLETE[0],
-        marker_line_width=1.5,
     )
     for i, col in enumerate(["zinf", "zsup", "dZinf"], start=1):
         fig.add_trace(
@@ -767,15 +759,34 @@ def generate_convergence_graph_casos(convergence_data, study):
             )
         )
     fig.update_layout(graph_layout)
-    if study is not None:
+    if variable is not None:
+        if variable == "tempo":
+            fig = px.bar(
+                dados,
+                x=x_col,
+                y=variable,
+                color="estudo",
+                color_discrete_sequence=DISCRETE_COLOR_PALLETE,
+                barmode="group",
+            )
+            unit = "Tempo (minutos)"
+        else:
+            fig = px.line(
+                dados,
+                x=x_col,
+                y=variable,
+                color="estudo",
+                color_discrete_sequence=DISCRETE_COLOR_PALLETE,
+            )
+            unit = "" if variable != "dZinf" else "(%)"
         fig.update_layout(
-            title=f"Convergência - {study}",
+            title=f"Convergência - {variable}",
             xaxis_title="iteração",
             hovermode="x unified",
         )
+        fig.update_layout(graph_layout)
         fig.update_yaxes(
             title_text=unit,
-            secondary_y=True,
         )
     return fig
 

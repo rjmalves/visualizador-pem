@@ -38,9 +38,9 @@ class ConvergenceFilters(html.Div):
             "subcomponent": "data",
             "aio_id": aio_id,
         }
-        studies_dropdown = lambda aio_id: {
+        variables_dropdown = lambda aio_id: {
             "component": "ConvergenceFilters",
-            "subcomponent": "studies_dropdown",
+            "subcomponent": "variables_dropdown",
             "aio_id": aio_id,
         }
         download = lambda aio_id: {
@@ -64,31 +64,31 @@ class ConvergenceFilters(html.Div):
     def __init__(
         self,
         aio_id=None,
-        studies_dropdown_props=None,
+        variables_dropdown_props=None,
     ):
         if aio_id is None:
             aio_id = str(uuid.uuid4())
         pass
 
-        studies_dropdown_props = (
-            studies_dropdown_props.copy() if studies_dropdown_props else {}
+        variables_dropdown_props = (
+            variables_dropdown_props.copy() if variables_dropdown_props else {}
         )
-        if "className" not in studies_dropdown_props:
-            studies_dropdown_props["className"] = "dropdown-container"
+        if "className" not in variables_dropdown_props:
+            variables_dropdown_props["className"] = "dropdown-container"
 
-        if "children" not in studies_dropdown_props:
-            studies_dropdown_props["children"] = dcc.Dropdown(
-                id=self.ids.studies_dropdown(aio_id),
+        if "children" not in variables_dropdown_props:
+            variables_dropdown_props["children"] = dcc.Dropdown(
+                id=self.ids.variables_dropdown(aio_id),
                 options=[],
                 value=None,
-                placeholder="Estudo",
+                placeholder="Variavel",
                 className="variable-dropdown",
             )
 
         super().__init__(
             children=[
                 html.Div(
-                    **studies_dropdown_props,
+                    **variables_dropdown_props,
                 ),
                 dcc.Store(
                     id=self.ids.studies(aio_id),
@@ -113,14 +113,12 @@ class ConvergenceFilters(html.Div):
         )
 
     @callback(
-        Output(ids.studies_dropdown(MATCH), "options"),
+        Output(ids.variables_dropdown(MATCH), "options"),
         Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.studies(MATCH), "data"),
     )
-    def update_studies_dropdown_options(interval, studies_data):
-        return dropdowns.update_studies_names_dropdown_options_casos(
-            interval, studies_data
-        )
+    def update_variables_dropdown_options(interval, studies_data):
+        return ["zsup", "zinf", "dZinf", "tempo"]
 
     @callback(
         Output(ids.data(MATCH), "data"),
