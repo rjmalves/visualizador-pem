@@ -824,10 +824,19 @@ def generate_resources_graph_casos(
         return fig
     if conv.empty:
         return fig
+
     tim["tempo"] = pd.to_timedelta(tim["tempo"], unit="s")
     conv["tempo"] = pd.to_timedelta(conv["tempo"], unit="ms")
     master["timeInstant"] = pd.to_datetime(master["timeInstant"], unit="ms")
     job["timeInstant"] = pd.to_datetime(job["timeInstant"])
+
+    if "jobId" in job.columns:
+        jobIds = job["jobId"]
+        if len(jobIds.dropna()) > 0:
+            job = job.loc[
+                job["jobId"] == job.at[job["timeInstant"].idxmax(), "jobId"]
+            ]
+
     tempo_total_job = tim.loc[tim["etapa"] == "Tempo Total", "tempo"].tolist()[
         0
     ]
