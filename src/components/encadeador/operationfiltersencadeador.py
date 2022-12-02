@@ -539,21 +539,6 @@ class OperationFiltersEncadeador(html.Div):
         return []
 
     @callback(
-        Output(ids.cenario_dropdown(MATCH), "options"),
-        Input(ids.updater(MATCH), "n_intervals"),
-        Input(ids.options(MATCH), "data"),
-    )
-    def update_cenario_options(interval, options):
-        if options:
-            if "cenario" in options.keys():
-                cens = data.get_non_statistics_scenarios(
-                    list(set(options["cenario"]))
-                )
-                cens_numbers = [int(c) for c in cens]
-                return [str(c) for c in sorted(cens_numbers)]
-        return []
-
-    @callback(
         Output(ids.filters(MATCH), "data"),
         Input(ids.usina_dropdown(MATCH), "value"),
         Input(ids.ree_dropdown(MATCH), "value"),
@@ -589,8 +574,6 @@ class OperationFiltersEncadeador(html.Div):
             filtros["patamar"] = f"'{patamar}'"
         if estagio:
             filtros["estagio"] = f"{estagio}"
-        if cenario:
-            filtros["cenario"] = f"{cenario}"
         return filtros
 
     @callback(

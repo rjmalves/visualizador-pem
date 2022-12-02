@@ -231,23 +231,6 @@ def generate_operation_graph_casos(operation_data, variable, filters):
                         visible=visibilidade_p,
                     )
                 )
-                if filters.get("cenario"):
-                    cen = filters.get("cenario")
-                    fig.add_trace(
-                        go.Scatter(
-                            x=dados_estudo["dataInicio"],
-                            y=dados_estudo["cenario"],
-                            line={
-                                "color": DISCRETE_COLOR_PALLETE[i],
-                                "width": 2,
-                                "shape": line_shape,
-                                "dash": "dash",
-                            },
-                            legendgroup=f"cenario {cen}",
-                            legendgrouptitle_text=f"cenario {cen}",
-                            name=estudo,
-                        )
-                    )
 
     if variable is not None:
         fig.update_layout(
@@ -350,23 +333,6 @@ def generate_operation_graph_casos_twinx(
                     visible=visibilidade_p,
                 )
             )
-            if filters.get("cenario"):
-                cen = filters.get("cenario")
-                fig.add_trace(
-                    go.Scatter(
-                        x=dados_estudo["dataInicio"],
-                        y=dados_estudo["cenario"],
-                        line={
-                            "color": DISCRETE_COLOR_PALLETE[i],
-                            "width": 2,
-                            "shape": line_shape,
-                            "dash": "dash",
-                        },
-                        legendgroup=f"cenario {cen}",
-                        legendgrouptitle_text=f"cenario {cen}",
-                        name=estudo,
-                    )
-                )
             next_color += 1
 
         dados_estudo = pivot_df_for_plot(
@@ -415,24 +381,6 @@ def generate_operation_graph_casos_twinx(
                 ),
                 secondary_y=True,
             )
-            if filters.get("cenario"):
-                cen = filters.get("cenario")
-                fig.add_trace(
-                    go.Scatter(
-                        x=dados_estudo["dataInicio"],
-                        y=dados_estudo["cenario"],
-                        line={
-                            "color": DISCRETE_COLOR_PALLETE[i],
-                            "width": 2,
-                            "shape": line_shape,
-                            "dash": "dash",
-                        },
-                        legendgroup=f"cenario {cen}",
-                        legendgrouptitle_text=f"cenario {cen}",
-                        name=estudo,
-                    ),
-                    secondary_y=True,
-                )
             next_color += 1
 
     full_title = (
@@ -601,22 +549,6 @@ def generate_operation_graph_ppq(operation_data, variable, filters):
                         name="upper bound",
                     )
                 )
-                if filters.get("cenario"):
-                    cen = filters.get("cenario")
-                    fig.add_trace(
-                        go.Scatter(
-                            x=dados_estudo["iteracao"],
-                            y=dados_estudo["cenario"],
-                            line={
-                                "color": DISCRETE_COLOR_PALLETE[i],
-                                "width": 2,
-                                "dash": "dash",
-                            },
-                            legendgroup=f"cenario {cen}",
-                            legendgrouptitle_text=f"cenario {cen}",
-                            name=estudo,
-                        )
-                    )
 
     if variable is not None:
         fig.update_layout(
