@@ -230,7 +230,6 @@ def update_convergence_data_casos(
     if df.empty:
         return None
     else:
-        df["tempo"] = pd.to_timedelta(df["tempo"])
         return df.to_json(orient="split")
 
 

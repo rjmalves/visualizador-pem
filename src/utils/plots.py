@@ -623,7 +623,9 @@ def generate_timecosts_graph_casos(time_costs, variable):
     dados = pd.read_json(time_costs, orient="split")
     if "etapa" in dados.columns:
         dados = dados.loc[dados["etapa"] != "Tempo Total", :]
-        dados["tempo"] = dados["tempo"] / 3600.0
+        dados["tempo"] = pd.to_timedelta(dados["tempo"], unit="s") / timedelta(
+            hours=1
+        )
         dados["label"] = [
             str(timedelta(hours=d)) for d in dados["tempo"].tolist()
         ]
@@ -673,7 +675,7 @@ def generate_convergence_graph_casos(convergence_data, variable):
     dados = pd.read_json(convergence_data, orient="split")
     if dados.empty:
         return fig
-    dados["tempo"] = pd.to_timedelta(dados["tempo"], unit="ms")
+    dados["tempo"] = pd.to_timedelta(dados["tempo"], unit="s")
     dados["tempo"] /= timedelta(minutes=1)
     x_col = "iter"
     fig = make_subplots(specs=[[{"secondary_y": True}]])
@@ -756,12 +758,12 @@ def generate_resources_graph_casos(
         return fig
     if conv.empty:
         return fig
-
     tim["tempo"] = pd.to_timedelta(tim["tempo"], unit="s")
-    conv["tempo"] = pd.to_timedelta(conv["tempo"], unit="ms")
+    conv["tempo"] = pd.to_timedelta(conv["tempo"], unit="s")
     master["timeInstant"] = pd.to_datetime(master["timeInstant"], unit="ms")
     job["timeInstant"] = pd.to_datetime(job["timeInstant"])
 
+    # Regra: se tem múltiplos jobs pro caso, pega o último
     if "jobId" in job.columns:
         jobIds = job["jobId"]
         if len(jobIds.dropna()) > 0:
@@ -769,11 +771,16 @@ def generate_resources_graph_casos(
                 job["jobId"] == job.at[job["timeInstant"].idxmax(), "jobId"]
             ]
 
+    COLS_CALCULOS_INICIAIS = [
+        "Leitura de Dados",
+        "Calculos Iniciais",
+    ]
+
     tempo_total_job = tim.loc[tim["etapa"] == "Tempo Total", "tempo"].tolist()[
         0
     ]
     tempo_antes_politica = tim.loc[
-        tim["etapa"].isin(["Leitura de Dados", "Calculos Iniciais"]), "tempo"
+        tim["etapa"].isin(COLS_CALCULOS_INICIAIS), "tempo"
     ].sum()
     instante_inicial = job["timeInstant"].tolist()[0]
     instante_inicial_politica = instante_inicial + tempo_antes_politica
@@ -793,7 +800,6 @@ def generate_resources_graph_casos(
     instante_final_politica = (
         instante_inicial_politica + tempos_iteracoes["tempo"].sum()
     )
-
     tempos_iteracoes.loc[:, "timeInstant"] = tempos_iteracoes["tempo"].cumsum()
 
     tempos_iteracoes["timeInstant"] += instante_inicial_politica
