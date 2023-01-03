@@ -5,6 +5,7 @@ from src.utils.api import API
 from typing import List
 from datetime import timedelta
 import src.utils.validation as validation
+from src.utils.settings import Settings
 from dash import ctx
 
 
@@ -85,7 +86,7 @@ def update_operation_data_encadeador(
     complete_df = pd.DataFrame()
     newave_df = asyncio.run(
         API.fetch_result_list(
-            [os.path.join(p, "NEWAVE") for p in paths],
+            [os.path.join(p, Settings.synthesis_dir, "newave") for p in paths],
             variable,
             fetch_filters,
             path_part_to_name_study=-2,
@@ -93,12 +94,14 @@ def update_operation_data_encadeador(
     )
     decomp_df = asyncio.run(
         API.fetch_result_list(
-            [os.path.join(p, "DECOMP") for p in paths],
+            [os.path.join(p, Settings.synthesis_dir, "decomp") for p in paths],
             variable,
             fetch_filters,
             path_part_to_name_study=-2,
         )
     )
+    print(newave_df)
+    print(decomp_df)
     if newave_df is not None:
         cols_newave = newave_df.columns.to_list()
         newave_df["programa"] = "NEWAVE"
