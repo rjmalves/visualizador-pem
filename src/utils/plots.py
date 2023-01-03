@@ -150,6 +150,7 @@ VARIABLE_UNITS = {
 
 NOT_SCENARIO_COLUMNS = [
     "estudo",
+    "caso",
     "estagio",
     "submercado",
     "submercadoDe",
@@ -423,17 +424,20 @@ def generate_operation_graph_encadeador(
     df_newave = dados.loc[filtro_newave]
     df_decomp = dados.loc[filtro_decomp]
 
+    next_color = 0
     visibilidade_newave = __background_area_visibility(estudos)
     for i, estudo in enumerate(estudos):
         if df_decomp is not None:
-            estudo_decomp = df_decomp.loc[df_decomp["estudo"] == estudo]
+            estudo_decomp = pivot_df_for_plot(
+                df_decomp.loc[df_decomp["estudo"] == estudo]
+            )
             if not estudo_decomp.empty:
                 fig.add_trace(
                     go.Scatter(
                         x=estudo_decomp["dataInicio"],
                         y=estudo_decomp["mean"],
                         line={
-                            "color": DISCRETE_COLOR_PALLETE[i],
+                            "color": DISCRETE_COLOR_PALLETE[next_color],
                             "width": 3,
                         },
                         name=estudo,
@@ -442,14 +446,16 @@ def generate_operation_graph_encadeador(
                     )
                 )
         if df_newave is not None:
-            estudo_newave = df_newave.loc[df_newave["estudo"] == estudo]
+            estudo_newave = pivot_df_for_plot(
+                df_newave.loc[df_newave["estudo"] == estudo]
+            )
             if not estudo_newave.empty:
                 fig.add_trace(
                     go.Scatter(
                         x=estudo_newave["dataInicio"],
                         y=estudo_newave["mean"],
                         line={
-                            "color": DISCRETE_COLOR_PALLETE[i],
+                            "color": DISCRETE_COLOR_PALLETE[next_color],
                             "dash": "dot",
                             "width": 2,
                         },
@@ -463,7 +469,9 @@ def generate_operation_graph_encadeador(
                     go.Scatter(
                         x=estudo_newave["dataInicio"],
                         y=estudo_newave["p10"],
-                        line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[i],
+                        line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[
+                            next_color
+                        ],
                         legendgroup="NEWAVEp10",
                         legendgrouptitle_text="NEWAVEp10",
                         name=estudo,
@@ -474,8 +482,12 @@ def generate_operation_graph_encadeador(
                     go.Scatter(
                         x=estudo_newave["dataInicio"],
                         y=estudo_newave["p90"],
-                        line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[i],
-                        fillcolor=DISCRETE_COLOR_PALLETE_BACKGROUND[i],
+                        line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[
+                            next_color
+                        ],
+                        fillcolor=DISCRETE_COLOR_PALLETE_BACKGROUND[
+                            next_color
+                        ],
                         fill="tonexty",
                         legendgroup="NEWAVEp90",
                         legendgrouptitle_text="NEWAVEp90",
@@ -483,7 +495,7 @@ def generate_operation_graph_encadeador(
                         visible=visibilidade_newave,
                     )
                 )
-
+        next_color += 1
     if variable is not None:
         fig.update_layout(
             title=__make_operation_plot_title(variable, filters),

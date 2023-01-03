@@ -2,6 +2,7 @@ import pandas as pd
 import os
 import asyncio
 import pathlib
+from src.utils.settings import Settings
 from src.utils.api import API
 
 
@@ -12,15 +13,13 @@ COSTS_TIME_FILES = [
 
 NOT_OPERATION_FILES = [
     "CUSTOS",
-    "COMPOSICAO_CUSTOS",
     "TEMPO",
     "CONVERGENCIA",
     "PROBABILIDADES",
-    "INVIABILIDADES_CODIGO",
-    "INVIABILIDADES_LIMITE",
-    "INVIABILIDADES_PATAMAR_LIMITE",
-    "INVIABILIDADES_PATAMAR",
-    "INVIABILIDADES_SBM_PATAMAR",
+    "INVIABILIDADES",
+    "RECURSOS_CLUSTER",
+    "RECURSOS_JOB",
+    "PROGRAMA",
 ]
 
 
@@ -32,8 +31,12 @@ def update_operation_variables_dropdown_options_encadeador(
     newaves_paths = []
     decomps_paths = []
     for _, line in studies.iterrows():
-        newave_path = os.path.join(line["CAMINHO"], "NEWAVE")
-        decomp_path = os.path.join(line["CAMINHO"], "DECOMP")
+        newave_path = os.path.join(
+            line["CAMINHO"], Settings.synthesis_dir, Settings.newave_dir
+        )
+        decomp_path = os.path.join(
+            line["CAMINHO"], Settings.synthesis_dir, Settings.decomp_dir
+        )
         newaves_paths.append(newave_path)
         decomps_paths.append(decomp_path)
     newave_variables = asyncio.run(
@@ -83,12 +86,20 @@ def update_operation_options_encadeador(interval, studies, variable: str):
     complete_options = {}
     newave_options = asyncio.run(
         API.fetch_result_options_list(
-            [os.path.join(p, "NEWAVE") for p in paths], variable
+            [
+                os.path.join(p, Settings.synthesis_dir, Settings.newave_dir)
+                for p in paths
+            ],
+            variable,
         )
     )
     decomp_options = asyncio.run(
         API.fetch_result_options_list(
-            [os.path.join(p, "DECOMP") for p in paths], variable
+            [
+                os.path.join(p, Settings.synthesis_dir, Settings.decomp_dir)
+                for p in paths
+            ],
+            variable,
         )
     )
     if newave_options is not None:

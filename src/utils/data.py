@@ -86,22 +86,26 @@ def update_operation_data_encadeador(
     complete_df = pd.DataFrame()
     newave_df = asyncio.run(
         API.fetch_result_list(
-            [os.path.join(p, Settings.synthesis_dir, "newave") for p in paths],
+            [
+                os.path.join(p, Settings.synthesis_dir, Settings.newave_dir)
+                for p in paths
+            ],
             variable,
             fetch_filters,
-            path_part_to_name_study=-2,
+            path_part_to_name_study=-3,
         )
     )
     decomp_df = asyncio.run(
         API.fetch_result_list(
-            [os.path.join(p, Settings.synthesis_dir, "decomp") for p in paths],
+            [
+                os.path.join(p, Settings.synthesis_dir, Settings.decomp_dir)
+                for p in paths
+            ],
             variable,
             fetch_filters,
-            path_part_to_name_study=-2,
+            path_part_to_name_study=-3,
         )
     )
-    print(newave_df)
-    print(decomp_df)
     if newave_df is not None:
         cols_newave = newave_df.columns.to_list()
         newave_df["programa"] = "NEWAVE"
