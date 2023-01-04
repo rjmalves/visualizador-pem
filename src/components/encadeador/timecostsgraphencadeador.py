@@ -1,26 +1,21 @@
 from dash import Output, Input, State, html, dcc, callback, MATCH
-from src.components.encadeador.operationfiltersencadeador import (
-    OperationFiltersEncadeador,
+from src.components.encadeador.timecostsfiltersencadeador import (
+    TimeCostsFiltersEncadeador,
 )
 import src.utils.plots as plots
 from src.utils.settings import Settings
 import uuid
 
 
-class OperationGraphEncadeador(html.Div):
+class TimeCostsGraphEncadeador(html.Div):
     class ids:
-        filters = lambda aio_id: {
-            "component": "OperationGraphEncadeador",
-            "subcomponent": "filters",
-            "aio_id": aio_id,
-        }
         studies = lambda aio_id: {
-            "component": "OperationGraphEncadeador",
+            "component": "TimeCostsGraphEncadeador",
             "subcomponent": "studies",
             "aio_id": aio_id,
         }
         graph = lambda aio_id: {
-            "component": "OperationGraphEncadeador",
+            "component": "TimeCostsGraphEncadeador",
             "subcomponent": "graph",
             "aio_id": aio_id,
         }
@@ -40,11 +35,11 @@ class OperationGraphEncadeador(html.Div):
                 html.Div(
                     [
                         html.H4(
-                            "VARIÁVEIS DA OPERAÇÂO",
+                            "CUSTOS e TEMPO DE EXECUÇÃO",
                             className="card-title",
                         ),
                         html.Div(
-                            OperationFiltersEncadeador(aio_id=aio_id),
+                            TimeCostsFiltersEncadeador(aio_id=aio_id),
                             className="card-menu",
                         ),
                     ],
@@ -63,22 +58,29 @@ class OperationGraphEncadeador(html.Div):
         )
 
     @callback(
-        Output(OperationFiltersEncadeador.ids.studies(MATCH), "data"),
+        Output(TimeCostsFiltersEncadeador.ids.studies(MATCH), "data"),
         Input(ids.studies(MATCH), "data"),
     )
-    def update_current_studies(studies_data):
+    def update_current_studies_main(studies_data):
         return studies_data
 
     @callback(
         Output(ids.graph(MATCH), "figure"),
-        Input(OperationFiltersEncadeador.ids.data(MATCH), "data"),
+        Input(TimeCostsFiltersEncadeador.ids.data(MATCH), "data"),
         State(
-            OperationFiltersEncadeador.ids.variable_dropdown(MATCH),
+            TimeCostsFiltersEncadeador.ids.variable_dropdown(MATCH),
             "value",
         ),
-        State(OperationFiltersEncadeador.ids.filters(MATCH), "data"),
+        State(
+            TimeCostsFiltersEncadeador.ids.filters(MATCH),
+            "data",
+        ),
     )
-    def generate_operation_graph(operation_data, variable, filters):
-        return plots.generate_operation_graph_encadeador(
-            operation_data, variable, filters
+    def generate_tempo_custos_graph(
+        timecosts_data,
+        variable,
+        filters,
+    ):
+        return plots.generate_timecosts_graph_encadeador(
+            timecosts_data, variable
         )

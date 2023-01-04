@@ -623,6 +623,88 @@ def generate_acumprob_graph_casos(operation_data, variable, filters):
     return fig
 
 
+def generate_timecosts_graph_encadeador(time_costs, variable):
+    graph_layout = go.Layout(
+        plot_bgcolor="rgba(158, 149, 128, 0.2)",
+        paper_bgcolor="rgba(255,255,255,1)",
+    )
+    fig = go.Figure()
+    fig.update_layout(graph_layout)
+    if time_costs is None:
+        return fig
+    dados = pd.read_json(time_costs, orient="split")
+    ordem_estudos = dados["estudo"].unique().tolist()
+    if "etapa" in dados.columns:
+        dados = dados.loc[dados["etapa"] == "Tempo Total", :]
+        dados = (
+            dados.groupby(["estudo", "caso"])
+            .sum(numeric_only=True)
+            .reset_index()
+        )
+        dados["tempo"] = pd.to_timedelta(dados["tempo"], unit="s") / timedelta(
+            hours=1
+        )
+        dados["label"] = [
+            str(timedelta(hours=d)) for d in dados["tempo"].tolist()
+        ]
+        y_col = "tempo"
+        title = "Tempo de Execução"
+        unit = "Tempo (horas)"
+        error_y = None
+    else:
+        n_parcelas = len(dados["parcela"].unique().tolist())
+        df_plot = pd.DataFrame()
+        for estudo in ordem_estudos:
+            df_estudo = dados.loc[dados["estudo"] == estudo]
+            casos = df_estudo["caso"].unique().tolist()
+            for c in casos:
+                df_caso = df_estudo.loc[df_estudo["caso"] == c]
+                n_linhas_caso = df_caso.shape[0]
+                n_exec_caso = int(n_linhas_caso / n_parcelas)
+                indice_inicial_caso = (n_exec_caso - 1) * n_parcelas
+                indice_final = n_exec_caso * n_parcelas + 1
+                df_plot = pd.concat(
+                    [
+                        df_plot,
+                        df_caso.iloc[indice_inicial_caso:indice_final, :],
+                    ],
+                    ignore_index=True,
+                )
+
+        dados = df_plot
+        dados = dados.loc[dados["mean"] > 0, :]
+        dados = (
+            dados.groupby(["estudo", "caso"])
+            .sum(numeric_only=True)
+            .reset_index()
+        )
+        dados["label"] = dados["mean"].round(2)
+        y_col = "mean"
+        title = "Custos de Operação"
+        unit = "Custo ($)"
+        error_y = "std"
+
+    fig = px.bar(
+        dados,
+        x="caso",
+        y=y_col,
+        error_y=error_y,
+        color="estudo",
+        color_discrete_sequence=DISCRETE_COLOR_PALLETE_COSTS,
+        text="label",
+        category_orders={"estudo": ordem_estudos},
+    )
+    fig.update_layout(graph_layout)
+    if variable is not None:
+        fig.update_traces(textposition="inside")
+        fig.update_layout(uniformtext_minsize=12, uniformtext_mode="hide")
+        fig.update_layout(
+            title=title,
+            yaxis_title=unit,
+        )
+    return fig
+
+
 def generate_timecosts_graph_casos(time_costs, variable):
     graph_layout = go.Layout(
         plot_bgcolor="rgba(158, 149, 128, 0.2)",

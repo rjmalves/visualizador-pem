@@ -165,6 +165,38 @@ def update_operation_data_casos(
         return df.to_json(orient="split")
 
 
+def update_custos_tempo_data_encadeador(
+    interval,
+    studies,
+    filters: dict,
+    variable: str,
+):
+    if not studies:
+        return None
+    if not variable:
+        return None
+    programa = filters.get("programa")
+    if programa is None:
+        return None
+    studies_df = pd.read_json(studies, orient="split")
+    paths = studies_df["CAMINHO"].tolist()
+    dir = {"NEWAVE": Settings.newave_dir, "DECOMP": Settings.decomp_dir}.get(
+        programa
+    )
+    df = asyncio.run(
+        API.fetch_result_list(
+            [os.path.join(p, Settings.synthesis_dir, dir) for p in paths],
+            variable,
+            {},
+            path_part_to_name_study=-3,
+        )
+    )
+    if df.empty:
+        return None
+    else:
+        return df.to_json(orient="split")
+
+
 def update_custos_tempo_data_casos(
     interval,
     studies,
