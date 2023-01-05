@@ -92,11 +92,11 @@ class TimeCostsFilters(html.Div):
                 ),
                 dcc.Store(
                     id=self.ids.studies(aio_id),
-                    storage_type=Settings.storage,
+                    storage_type="memory",
                 ),
                 dcc.Store(
                     id=self.ids.data(aio_id),
-                    storage_type=Settings.storage,
+                    storage_type="memory",
                 ),
                 dcc.Interval(
                     id=self.ids.updater(aio_id),
@@ -139,10 +139,11 @@ class TimeCostsFilters(html.Div):
         Output(ids.download(MATCH), "data"),
         Input(ids.download_btn(MATCH), "n_clicks"),
         State(ids.data(MATCH), "data"),
+        State(ids.variable_dropdown(MATCH), "value"),
     )
-    def generate_csv(n_clicks, operation_data):
+    def generate_csv(n_clicks, operation_data, variable):
         if n_clicks is None:
             return
         if operation_data is not None:
             dados = pd.read_json(operation_data, orient="split")
-            return dcc.send_data_frame(dados.to_csv, "custos_tempo.csv")
+            return dcc.send_data_frame(dados.to_csv, f"{variable}.csv")

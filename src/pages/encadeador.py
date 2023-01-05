@@ -10,6 +10,9 @@ from src.components.encadeador.operationgraphencadeador import (
 from src.components.encadeador.timecostsgraphencadeador import (
     TimeCostsGraphEncadeador,
 )
+from src.components.encadeador.violationgraphencadeador import (
+    ViolationGraph,
+)
 
 import src.utils.modals as modals
 import src.utils.data as data
@@ -23,6 +26,7 @@ layout = html.Div(
         CurrentStudiesTableAIO(aio_id="encadeador-current-studies"),
         OperationGraphEncadeador(aio_id="encadeador-operation-graph"),
         TimeCostsGraphEncadeador(aio_id="encadeador-tempo-custos-graph"),
+        ViolationGraph(aio_id="encadeador-inviabs-graph"),
     ],
     className="encadeador-app-page",
 )
@@ -106,6 +110,19 @@ def update_current_studies(studies_data):
 @callback(
     Output(
         TimeCostsGraphEncadeador.ids.studies("encadeador-tempo-custos-graph"),
+        "data",
+    ),
+    Input(
+        CurrentStudiesTableAIO.ids.data("encadeador-current-studies"), "data"
+    ),
+)
+def update_current_studies(studies_data):
+    return studies_data
+
+
+@callback(
+    Output(
+        ViolationGraph.ids.studies("encadeador-inviabs-graph"),
         "data",
     ),
     Input(

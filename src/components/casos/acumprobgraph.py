@@ -51,7 +51,7 @@ class AcumProbGraph(html.Div):
                 ),
                 dcc.Store(
                     id=self.ids.studies(aio_id),
-                    storage_type=Settings.storage,
+                    storage_type="memory",
                 ),
             ],
             className="card",

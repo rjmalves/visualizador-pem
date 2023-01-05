@@ -1,19 +1,21 @@
 from dash import Output, Input, State, html, dcc, callback, MATCH
-from src.components.casos.timecostsfilters import TimeCostsFilters
+from src.components.encadeador.violationfiltersencadeador import (
+    ViolationFilters,
+)
 import src.utils.plots as plots
 from src.utils.settings import Settings
 import uuid
 
 
-class ViolationsGraphEncadeador(html.Div):
+class ViolationGraph(html.Div):
     class ids:
         studies = lambda aio_id: {
-            "component": "ViolationsGraphEncadeador",
+            "component": "ViolationGraph",
             "subcomponent": "studies",
             "aio_id": aio_id,
         }
         graph = lambda aio_id: {
-            "component": "ViolationsGraphEncadeador",
+            "component": "ViolationGraph",
             "subcomponent": "graph",
             "aio_id": aio_id,
         }
@@ -33,11 +35,11 @@ class ViolationsGraphEncadeador(html.Div):
                 html.Div(
                     [
                         html.H4(
-                            "CUSTOS e TEMPO DE EXECUÇÃO",
+                            "INVIABILIDADES",
                             className="card-title",
                         ),
                         html.Div(
-                            [TimeCostsFilters(aio_id=aio_id)],
+                            ViolationFilters(aio_id=aio_id),
                             className="card-menu",
                         ),
                     ],
@@ -49,14 +51,14 @@ class ViolationsGraphEncadeador(html.Div):
                 ),
                 dcc.Store(
                     id=self.ids.studies(aio_id),
-                    storage_type=Settings.storage,
+                    storage_type="memory",
                 ),
             ],
             className="card",
         )
 
     @callback(
-        Output(TimeCostsFilters.ids.studies(MATCH), "data"),
+        Output(ViolationFilters.ids.studies(MATCH), "data"),
         Input(ids.studies(MATCH), "data"),
     )
     def update_current_studies_main(studies_data):
@@ -64,14 +66,21 @@ class ViolationsGraphEncadeador(html.Div):
 
     @callback(
         Output(ids.graph(MATCH), "figure"),
-        Input(TimeCostsFilters.ids.data(MATCH), "data"),
+        Input(ViolationFilters.ids.data(MATCH), "data"),
         State(
-            TimeCostsFilters.ids.variable_dropdown(MATCH),
+            ViolationFilters.ids.violation_dropdown(MATCH),
             "value",
+        ),
+        State(
+            ViolationFilters.ids.filters(MATCH),
+            "data",
         ),
     )
     def generate_tempo_custos_graph(
-        timecosts_data,
-        variable,
+        violation_data,
+        violation,
+        filters,
     ):
-        return plots.generate_timecosts_graph_casos(timecosts_data, variable)
+        return plots.generate_violation_graph_encadeador(
+            violation_data, violation
+        )

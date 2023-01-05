@@ -322,19 +322,19 @@ class OperationFilters(html.Div):
                 ),
                 dcc.Store(
                     id=self.ids.studies(aio_id),
-                    storage_type=Settings.storage,
+                    storage_type="memory",
                 ),
                 dcc.Store(
                     id=self.ids.data(aio_id),
-                    storage_type=Settings.storage,
+                    storage_type="memory",
                 ),
                 dcc.Store(
                     id=self.ids.options(aio_id),
-                    storage_type=Settings.storage,
+                    storage_type="memory",
                 ),
                 dcc.Store(
                     id=self.ids.filters(aio_id),
-                    storage_type=Settings.storage,
+                    storage_type="memory",
                 ),
                 dcc.Interval(
                     id=self.ids.updater(aio_id),
@@ -581,8 +581,9 @@ class OperationFilters(html.Div):
         Output(ids.download(MATCH), "data"),
         Input(ids.download_btn(MATCH), "n_clicks"),
         State(ids.data(MATCH), "data"),
+        State(ids.variable_dropdown(MATCH), "value"),
     )
-    def generate_csv(n_clicks, operation_data):
+    def generate_csv(n_clicks, operation_data, variable):
         if n_clicks is None:
             return
         if operation_data is not None:
@@ -591,4 +592,4 @@ class OperationFilters(html.Div):
                 dados["dataInicio"], unit="ms"
             )
             dados["dataFim"] = pd.to_datetime(dados["dataFim"], unit="ms")
-            return dcc.send_data_frame(dados.to_csv, "operacao.csv")
+            return dcc.send_data_frame(dados.to_csv, f"{variable}.csv")

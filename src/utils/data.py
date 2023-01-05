@@ -197,6 +197,42 @@ def update_custos_tempo_data_encadeador(
         return df.to_json(orient="split")
 
 
+def update_violation_data_encadeador(
+    interval,
+    studies,
+    filters: dict,
+    violation: str,
+):
+    if not studies:
+        return None
+    if not violation:
+        return None
+    programa = filters.get("programa")
+    if programa is None:
+        return None
+    studies_df = pd.read_json(studies, orient="split")
+    paths = studies_df["CAMINHO"].tolist()
+    dir = {"NEWAVE": Settings.newave_dir, "DECOMP": Settings.decomp_dir}.get(
+        programa
+    )
+
+    df = asyncio.run(
+        API.fetch_result_list(
+            [os.path.join(p, Settings.synthesis_dir, dir) for p in paths],
+            "INVIABILIDADES",
+            {"iteracao": -1, "tipo": f"'{violation}'", "preprocess": "FULL"},
+            path_part_to_name_study=-3,
+        )
+    )
+    if df is None:
+        return None
+    if df.empty:
+        return None
+    else:
+        df = df[["estudo", "caso", "unidade", "violacao"]]
+        return df.to_json(orient="split")
+
+
 def update_custos_tempo_data_casos(
     interval,
     studies,

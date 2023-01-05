@@ -186,6 +186,10 @@ def generate_operation_graph_casos(operation_data, variable, filters):
 
     visibilidade_p = __background_area_visibility(estudos)
     for i, estudo in enumerate(estudos):
+        cor = DISCRETE_COLOR_PALLETE[i % len(DISCRETE_COLOR_PALLETE)]
+        cor_fundo = DISCRETE_COLOR_PALLETE_BACKGROUND[
+            i % len(DISCRETE_COLOR_PALLETE_BACKGROUND)
+        ]
         if dados is not None:
             dados_estudo = pivot_df_for_plot(
                 dados.loc[dados["estudo"] == estudo]
@@ -197,7 +201,7 @@ def generate_operation_graph_casos(operation_data, variable, filters):
                         x=dados_estudo["dataInicio"],
                         y=dados_estudo["mean"],
                         line={
-                            "color": DISCRETE_COLOR_PALLETE[i],
+                            "color": cor,
                             "width": 3,
                             "shape": line_shape,
                         },
@@ -210,7 +214,7 @@ def generate_operation_graph_casos(operation_data, variable, filters):
                     go.Scatter(
                         x=dados_estudo["dataInicio"],
                         y=dados_estudo["p10"],
-                        line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[i],
+                        line_color=cor_fundo,
                         line_shape=line_shape,
                         legendgroup="p10",
                         legendgrouptitle_text="p10",
@@ -222,8 +226,8 @@ def generate_operation_graph_casos(operation_data, variable, filters):
                     go.Scatter(
                         x=dados_estudo["dataInicio"],
                         y=dados_estudo["p90"],
-                        line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[i],
-                        fillcolor=DISCRETE_COLOR_PALLETE_BACKGROUND[i],
+                        line_color=cor_fundo,
+                        fillcolor=cor_fundo,
                         line_shape=line_shape,
                         fill="tonexty",
                         legendgroup="p90",
@@ -424,9 +428,12 @@ def generate_operation_graph_encadeador(
     df_newave = dados.loc[filtro_newave]
     df_decomp = dados.loc[filtro_decomp]
 
-    next_color = 0
     visibilidade_newave = __background_area_visibility(estudos)
     for i, estudo in enumerate(estudos):
+        cor = DISCRETE_COLOR_PALLETE[i % len(DISCRETE_COLOR_PALLETE)]
+        cor_fundo = DISCRETE_COLOR_PALLETE_BACKGROUND[
+            i % len(DISCRETE_COLOR_PALLETE_BACKGROUND)
+        ]
         if df_decomp is not None:
             estudo_decomp = pivot_df_for_plot(
                 df_decomp.loc[df_decomp["estudo"] == estudo]
@@ -437,7 +444,7 @@ def generate_operation_graph_encadeador(
                         x=estudo_decomp["dataInicio"],
                         y=estudo_decomp["mean"],
                         line={
-                            "color": DISCRETE_COLOR_PALLETE[next_color],
+                            "color": cor,
                             "width": 3,
                         },
                         name=estudo,
@@ -455,10 +462,11 @@ def generate_operation_graph_encadeador(
                         x=estudo_newave["dataInicio"],
                         y=estudo_newave["mean"],
                         line={
-                            "color": DISCRETE_COLOR_PALLETE[next_color],
+                            "color": cor,
                             "dash": "dot",
                             "width": 2,
                         },
+                        mode="lines",
                         name=estudo,
                         legendgroup="NEWAVEm",
                         legendgrouptitle_text="NEWAVEm",
@@ -469,9 +477,8 @@ def generate_operation_graph_encadeador(
                     go.Scatter(
                         x=estudo_newave["dataInicio"],
                         y=estudo_newave["p10"],
-                        line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[
-                            next_color
-                        ],
+                        line_color=cor_fundo,
+                        mode="lines",
                         legendgroup="NEWAVEp10",
                         legendgrouptitle_text="NEWAVEp10",
                         name=estudo,
@@ -482,12 +489,9 @@ def generate_operation_graph_encadeador(
                     go.Scatter(
                         x=estudo_newave["dataInicio"],
                         y=estudo_newave["p90"],
-                        line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[
-                            next_color
-                        ],
-                        fillcolor=DISCRETE_COLOR_PALLETE_BACKGROUND[
-                            next_color
-                        ],
+                        line_color=cor_fundo,
+                        fillcolor=cor_fundo,
+                        mode="lines",
                         fill="tonexty",
                         legendgroup="NEWAVEp90",
                         legendgrouptitle_text="NEWAVEp90",
@@ -495,7 +499,6 @@ def generate_operation_graph_encadeador(
                         visible=visibilidade_newave,
                     )
                 )
-        next_color += 1
     if variable is not None:
         fig.update_layout(
             title=__make_operation_plot_title(variable, filters),
@@ -520,6 +523,10 @@ def generate_operation_graph_ppq(operation_data, variable, filters):
     estudos = dados["estudo"].unique().tolist()
 
     for i, estudo in enumerate(estudos):
+        cor = DISCRETE_COLOR_PALLETE[i % len(DISCRETE_COLOR_PALLETE)]
+        cor_fundo = DISCRETE_COLOR_PALLETE_BACKGROUND[
+            i % len(DISCRETE_COLOR_PALLETE_BACKGROUND)
+        ]
         if dados is not None:
             dados_estudo = pivot_df_for_plot(
                 dados.loc[dados["estudo"] == estudo]
@@ -531,7 +538,7 @@ def generate_operation_graph_ppq(operation_data, variable, filters):
                         x=dados_estudo["iteracao"],
                         y=dados_estudo["mean"],
                         line={
-                            "color": DISCRETE_COLOR_PALLETE[i],
+                            "color": cor,
                             "dash": "dot",
                             "width": 2,
                         },
@@ -544,8 +551,8 @@ def generate_operation_graph_ppq(operation_data, variable, filters):
                     go.Scatter(
                         x=dados_estudo["iteracao"],
                         y=dados_estudo["mean"] - dados_estudo["std"],
-                        line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[i],
-                        fillcolor=DISCRETE_COLOR_PALLETE_BACKGROUND[i],
+                        line_color=cor_fundo,
+                        fillcolor=cor_fundo,
                         legendgroup=estudo,
                         name="lower bound",
                     )
@@ -554,7 +561,7 @@ def generate_operation_graph_ppq(operation_data, variable, filters):
                     go.Scatter(
                         x=dados_estudo["iteracao"],
                         y=dados_estudo["mean"] + dados_estudo["std"],
-                        line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[i],
+                        line_color=cor_fundo,
                         fill="tonexty",
                         legendgroup=estudo,
                         legendgrouptitle_text=estudo,
@@ -748,6 +755,58 @@ def generate_timecosts_graph_casos(time_costs, variable):
     )
     fig.update_layout(graph_layout)
     if variable is not None:
+        fig.update_traces(textposition="inside")
+        fig.update_layout(uniformtext_minsize=12, uniformtext_mode="hide")
+        fig.update_layout(
+            title=title,
+            yaxis_title=unit,
+        )
+    return fig
+
+
+def generate_violation_graph_encadeador(violation_data, violation):
+    graph_layout = go.Layout(
+        plot_bgcolor="rgba(158, 149, 128, 0.2)",
+        paper_bgcolor="rgba(255,255,255,1)",
+    )
+    fig = go.Figure()
+    fig.update_layout(graph_layout)
+    if violation_data is None:
+        return fig
+    dados = pd.read_json(violation_data, orient="split")
+
+    ordem_estudos = dados["estudo"].unique().tolist()
+    if violation in ["TI", "RHQ", "RE", "RHE", "RHV"]:
+        unit = str(dados["unidade"].tolist()[0])
+        error_y = None
+        # Grafico com montantes
+        dados = (
+            dados.groupby(["estudo", "caso"])
+            .sum(numeric_only=True)
+            .reset_index()
+        )
+        y_col = "violacao"
+        title = f"Montante de Violação - {violation}"
+    else:
+        # Grafico com contagens
+        unit = "Núm. Inviabilidades"
+        error_y = None
+        # Grafico com montantes
+        dados = dados.groupby(["estudo", "caso"]).count().reset_index()
+        y_col = "violacao"
+        title = f"Número de Violações - {violation}"
+
+    fig = px.bar(
+        dados,
+        x="caso",
+        y=y_col,
+        error_y=error_y,
+        color="estudo",
+        color_discrete_sequence=DISCRETE_COLOR_PALLETE_COSTS,
+        category_orders={"estudo": ordem_estudos},
+    )
+    fig.update_layout(graph_layout)
+    if violation is not None:
         fig.update_traces(textposition="inside")
         fig.update_layout(uniformtext_minsize=12, uniformtext_mode="hide")
         fig.update_layout(

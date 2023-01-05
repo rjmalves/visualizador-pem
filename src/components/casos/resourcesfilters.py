@@ -107,23 +107,23 @@ class ResourcesFilters(html.Div):
                 ),
                 dcc.Store(
                     id=self.ids.studies(aio_id),
-                    storage_type=Settings.storage,
+                    storage_type="memory",
                 ),
                 dcc.Store(
                     id=self.ids.clusterData(aio_id),
-                    storage_type=Settings.storage,
+                    storage_type="memory",
                 ),
                 dcc.Store(
                     id=self.ids.jobData(aio_id),
-                    storage_type=Settings.storage,
+                    storage_type="memory",
                 ),
                 dcc.Store(
                     id=self.ids.convergenceData(aio_id),
-                    storage_type=Settings.storage,
+                    storage_type="memory",
                 ),
                 dcc.Store(
                     id=self.ids.timeData(aio_id),
-                    storage_type=Settings.storage,
+                    storage_type="memory",
                 ),
                 dcc.Interval(
                     id=self.ids.updater(aio_id),
