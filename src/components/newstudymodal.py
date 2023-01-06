@@ -22,6 +22,11 @@ class NewStudyModal(html.Div):
             "subcomponent": "new_study_name",
             "aio_id": aio_id,
         }
+        new_study_label = lambda aio_id: {
+            "component": "NewStudyModal",
+            "subcomponent": "new_study_label",
+            "aio_id": aio_id,
+        }
         confirm_study_btn = lambda aio_id: {
             "component": "NewStudyModal",
             "subcomponent": "confirm_study_btn",
@@ -65,16 +70,29 @@ class NewStudyModal(html.Div):
                                 ),
                                 dbc.ModalBody(
                                     [
+                                        dbc.Label(
+                                            "Caminho",
+                                            className="modal-form-comment",
+                                        ),
                                         dbc.Input(
-                                            placeholder="Insira o caminho...",
+                                            placeholder="Insira o caminho. Deve ser um caminho absoluto UNIX válido (/home/...)",
                                             id=self.ids.new_study_name(aio_id),
                                             className="modal-input-field",
                                             type="text",
                                         ),
-                                        dbc.FormText(
-                                            "Deve ser um caminho absoluto UNIX válido (/home/...)",
+                                        dbc.Label(
+                                            "Nome",
                                             className="modal-form-comment",
                                         ),
+                                        dbc.Input(
+                                            placeholder="Insira um nome... (opcional, o default é o nome do diretório mais interno)",
+                                            id=self.ids.new_study_label(
+                                                aio_id
+                                            ),
+                                            className="modal-input-field",
+                                            type="text",
+                                        ),
+                                        # TODO - adicionar color picker
                                         # dbc.Input(
                                         #     type="color",
                                         #     id="modal-color-picker",

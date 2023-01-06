@@ -64,9 +64,9 @@ class API:
     async def fetch_result_list(
         cls,
         studies_paths: List[str],
+        studies_labels: List[str],
         desired_data: str,
         filters: dict,
-        path_part_to_name_study: int,
     ) -> Optional[pd.DataFrame]:
         valid_dfs: List[pd.DataFrame] = []
         async with aiohttp.ClientSession() as session:
@@ -78,8 +78,7 @@ class API:
                     for p in studies_paths
                 ]
             )
-            for p, df in zip(studies_paths, ret):
-                study = pathlib.Path(p).parts[path_part_to_name_study]
+            for study, df in zip(studies_labels, ret):
                 if df is not None:
                     df_cols = df.columns.to_list()
                     df["estudo"] = study

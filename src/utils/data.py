@@ -1,4 +1,5 @@
 import pandas as pd
+import pathlib
 import os
 import asyncio
 from src.utils.api import API
@@ -13,6 +14,7 @@ def edit_current_study_data(
     add_study_button_clicks,
     remove_study_button_clicks,
     new_study_id,
+    new_study_label,
     selected_study,
     current_studies,
     add_trigger,
@@ -30,10 +32,15 @@ def edit_current_study_data(
             else:
                 current_ids = current_data["id"].to_list()
                 last_id = 0 if len(current_ids) == 0 else int(current_ids[-1])
+                if new_study_label is None:
+                    label = pathlib.Path(new_study_id).parts[-1]
+                else:
+                    label = new_study_label
                 new_data = pd.DataFrame(
                     data={
                         "id": [str(last_id + 1)],
                         "CAMINHO": [new_study_id],
+                        "NOME": [label],
                     }
                 )
                 return pd.concat(
@@ -83,6 +90,7 @@ def update_operation_data_encadeador(
     fetch_filters = {**req_filters, "estagio": 1}
     studies_df = pd.read_json(studies, orient="split")
     paths = studies_df["CAMINHO"].tolist()
+    labels = studies_df["NOME"].tolist()
     complete_df = pd.DataFrame()
     newave_df = asyncio.run(
         API.fetch_result_list(
@@ -90,9 +98,9 @@ def update_operation_data_encadeador(
                 os.path.join(p, Settings.synthesis_dir, Settings.newave_dir)
                 for p in paths
             ],
+            labels,
             variable,
             fetch_filters,
-            path_part_to_name_study=-3,
         )
     )
     decomp_df = asyncio.run(
@@ -101,9 +109,9 @@ def update_operation_data_encadeador(
                 os.path.join(p, Settings.synthesis_dir, Settings.decomp_dir)
                 for p in paths
             ],
+            labels,
             variable,
             fetch_filters,
-            path_part_to_name_study=-3,
         )
     )
     if newave_df is not None:
@@ -148,12 +156,13 @@ def update_operation_data_casos(
         return None
     studies_df = pd.read_json(studies, orient="split")
     paths = studies_df["CAMINHO"].tolist()
+    labels = studies_df["NOME"].tolist()
     df = asyncio.run(
         API.fetch_result_list(
             paths,
+            labels,
             variable,
             {**req_filters, "preprocess": preprocess},
-            path_part_to_name_study=-1,
         )
     )
 
@@ -180,15 +189,16 @@ def update_custos_tempo_data_encadeador(
         return None
     studies_df = pd.read_json(studies, orient="split")
     paths = studies_df["CAMINHO"].tolist()
+    labels = studies_df["NOME"].tolist()
     dir = {"NEWAVE": Settings.newave_dir, "DECOMP": Settings.decomp_dir}.get(
         programa
     )
     df = asyncio.run(
         API.fetch_result_list(
             [os.path.join(p, Settings.synthesis_dir, dir) for p in paths],
+            labels,
             variable,
             {},
-            path_part_to_name_study=-3,
         )
     )
     if df.empty:
@@ -212,6 +222,7 @@ def update_violation_data_encadeador(
         return None
     studies_df = pd.read_json(studies, orient="split")
     paths = studies_df["CAMINHO"].tolist()
+    labels = studies_df["NOME"].tolist()
     dir = {"NEWAVE": Settings.newave_dir, "DECOMP": Settings.decomp_dir}.get(
         programa
     )
@@ -219,9 +230,9 @@ def update_violation_data_encadeador(
     df = asyncio.run(
         API.fetch_result_list(
             [os.path.join(p, Settings.synthesis_dir, dir) for p in paths],
+            labels,
             "INVIABILIDADES",
             {"iteracao": -1, "tipo": f"'{violation}'", "preprocess": "FULL"},
-            path_part_to_name_study=-3,
         )
     )
     if df is None:
@@ -244,12 +255,13 @@ def update_custos_tempo_data_casos(
         return None
     studies_df = pd.read_json(studies, orient="split")
     paths = studies_df["CAMINHO"].tolist()
+    labels = studies_df["NOME"].tolist()
     df = asyncio.run(
         API.fetch_result_list(
             paths,
+            labels,
             variable,
             {},
-            path_part_to_name_study=-1,
         )
     )
     if df is None:
@@ -268,12 +280,13 @@ def update_runtime_data_casos(
         return None
     studies_df = pd.read_json(studies, orient="split")
     paths = studies_df["CAMINHO"].tolist()
+    labels = studies_df["NOME"].tolist()
     df = asyncio.run(
         API.fetch_result_list(
             paths,
+            labels,
             "TEMPO",
             {},
-            path_part_to_name_study=-1,
         )
     )
     if df is None:
@@ -292,12 +305,13 @@ def update_convergence_data_casos(
         return None
     studies_df = pd.read_json(studies, orient="split")
     paths = studies_df["CAMINHO"].tolist()
+    labels = studies_df["NOME"].tolist()
     df = asyncio.run(
         API.fetch_result_list(
             paths,
+            labels,
             "CONVERGENCIA",
             {},
-            path_part_to_name_study=-1,
         )
     )
     if df is None:
@@ -316,12 +330,13 @@ def update_job_resources_data_casos(
         return None
     studies_df = pd.read_json(studies, orient="split")
     paths = studies_df["CAMINHO"].tolist()
+    labels = studies_df["NOME"].tolist()
     df_cluster = asyncio.run(
         API.fetch_result_list(
             paths,
+            labels,
             "RECURSOS_JOB",
             {},
-            path_part_to_name_study=-1,
         )
     )
     if df_cluster is None:
@@ -341,12 +356,13 @@ def update_cluster_resources_data_casos(
         return None
     studies_df = pd.read_json(studies, orient="split")
     paths = studies_df["CAMINHO"].tolist()
+    labels = studies_df["NOME"].tolist()
     df_job = asyncio.run(
         API.fetch_result_list(
             paths,
+            labels,
             "RECURSOS_CLUSTER",
             {},
-            path_part_to_name_study=-1,
         )
     )
     if df_job is None:
@@ -369,12 +385,13 @@ def update_operation_data_ppq(interval, studies, filters: dict, variable: str):
         return None
     studies_df = pd.read_json(studies, orient="split")
     paths = studies_df["CAMINHO"].tolist()
+    labels = studies_df["NOME"].tolist()
     df = asyncio.run(
         API.fetch_result_list(
             paths,
+            labels,
             variable,
             {**req_filters, "preprocess": "STATISTICS"},
-            path_part_to_name_study=-1,
         )
     )
     if df is None:

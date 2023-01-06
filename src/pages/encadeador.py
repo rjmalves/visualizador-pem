@@ -60,6 +60,7 @@ def toggle_encadeador_modal(src1, src2, is_open):
         "n_clicks",
     ),
     State(NewStudyModal.ids.new_study_name("encadeador-modal"), "value"),
+    State(NewStudyModal.ids.new_study_label("encadeador-modal"), "value"),
     State(
         CurrentStudiesTable.ids.selected("encadeador-current-studies"),
         "data",
@@ -70,6 +71,7 @@ def edit_current_encadeador_study_data(
     add_study_button_clicks,
     remove_study_button_clicks,
     new_study_id,
+    new_study_label,
     selected_study,
     current_studies,
 ):
@@ -77,6 +79,7 @@ def edit_current_encadeador_study_data(
         add_study_button_clicks,
         remove_study_button_clicks,
         new_study_id,
+        new_study_label,
         selected_study,
         current_studies,
         NewStudyModal.ids.confirm_study_btn("encadeador-modal"),

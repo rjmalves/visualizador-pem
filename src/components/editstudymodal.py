@@ -17,9 +17,14 @@ import uuid
 
 class EditStudyModal(html.Div):
     class ids:
-        new_study_name = lambda aio_id: {
+        edit_study_name = lambda aio_id: {
             "component": "EditStudyModal",
-            "subcomponent": "new_study_name",
+            "subcomponent": "edit_study_name",
+            "aio_id": aio_id,
+        }
+        edit_study_label = lambda aio_id: {
+            "component": "EditStudyModal",
+            "subcomponent": "edit_study_label",
             "aio_id": aio_id,
         }
         confirm_study_btn = lambda aio_id: {
@@ -55,29 +60,57 @@ class EditStudyModal(html.Div):
             [
                 dbc.Modal(
                     [
-                        dbc.ModalHeader(
-                            dbc.ModalTitle(
-                                "EDITE UM ESTUDO EXISTENTE",
-                                className="card-title",
-                            )
-                        ),
-                        dbc.ModalBody(
+                        dbc.Form(
                             [
-                                dcc.Input(
-                                    placeholder="Insira o ID do estudo a ser visualizado...",
-                                    id=self.ids.new_study_name(aio_id),
-                                    className="modal-input-field",
-                                    type="text",
-                                )
+                                dbc.ModalHeader(
+                                    dbc.ModalTitle(
+                                        "EDITE UM ESTUDO EXISTENTE",
+                                        className="card-title",
+                                    )
+                                ),
+                                dbc.ModalBody(
+                                    [
+                                        dbc.Label(
+                                            "Caminho",
+                                            className="modal-form-comment",
+                                        ),
+                                        dbc.Input(
+                                            placeholder="Insira o caminho. Deve ser um caminho absoluto UNIX válido (/home/...)",
+                                            id=self.ids.edit_study_name(
+                                                aio_id
+                                            ),
+                                            className="modal-input-field",
+                                            type="text",
+                                        ),
+                                        dbc.Label(
+                                            "Nome",
+                                            className="modal-form-comment",
+                                        ),
+                                        dbc.Input(
+                                            placeholder="Insira um nome... (opcional, o default é o nome do diretório mais interno)",
+                                            id=self.ids.edit_study_label(
+                                                aio_id
+                                            ),
+                                            className="modal-input-field",
+                                            type="text",
+                                        ),
+                                        # TODO - adicionar color picker
+                                        # dbc.Input(
+                                        #     type="color",
+                                        #     id="modal-color-picker",
+                                        #     value="#000000",
+                                        # ),
+                                    ]
+                                ),
+                                dbc.ModalFooter(
+                                    dbc.Button(
+                                        "Confirmar",
+                                        id=self.ids.confirm_study_btn(aio_id),
+                                        className="modal-button",
+                                    )
+                                ),
                             ]
-                        ),
-                        dbc.ModalFooter(
-                            html.Button(
-                                "Confirmar",
-                                id=self.ids.confirm_study_btn(aio_id),
-                                className="modal-button",
-                            )
-                        ),
+                        )
                     ],
                     id=self.ids.modal(aio_id),
                     is_open=False,
