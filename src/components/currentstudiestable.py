@@ -25,6 +25,11 @@ class CurrentStudiesTable(html.Div):
             "subcomponent": "add_study_btn",
             "aio_id": aio_id,
         }
+        edit_study_btn = lambda aio_id: {
+            "component": "CurrentStudiesTable",
+            "subcomponent": "edit_study_btn",
+            "aio_id": aio_id,
+        }
         remove_study_btn = lambda aio_id: {
             "component": "CurrentStudiesTable",
             "subcomponent": "remove_study_btn",
@@ -71,6 +76,10 @@ class CurrentStudiesTable(html.Div):
                                         html.Button(
                                             "Adicionar",
                                             id=self.ids.add_study_btn(aio_id),
+                                        ),
+                                        html.Button(
+                                            "Editar",
+                                            id=self.ids.edit_study_btn(aio_id),
                                         ),
                                         html.Button(
                                             "Remover",

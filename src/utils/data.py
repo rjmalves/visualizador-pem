@@ -13,12 +13,17 @@ from dash import ctx
 
 def edit_current_study_data(
     add_study_button_clicks,
+    edit_study_button_clicks,
     remove_study_button_clicks,
     new_study_id,
     new_study_label,
+    edit_study_id,
+    edit_study_path,
+    edit_study_name,
     selected_study,
     current_studies,
     add_trigger,
+    edit_trigger,
     remove_trigger,
 ):
     if ctx.triggered_id == add_trigger:
@@ -49,6 +54,16 @@ def edit_current_study_data(
                 ).to_json(orient="split")
         else:
             return current_studies
+    elif ctx.triggered_id == edit_trigger:
+        if edit_study_button_clicks:
+            current_data = pd.read_json(current_studies, orient="split")
+            current_data.loc[
+                current_data["id"] == edit_study_id, "CAMINHO"
+            ] = edit_study_path
+            current_data.loc[
+                current_data["id"] == edit_study_id, "NOME"
+            ] = edit_study_name
+            return current_data.to_json(orient="split")
     elif ctx.triggered_id == remove_trigger:
         if remove_study_button_clicks:
             current_data = pd.read_json(current_studies, orient="split")
@@ -60,6 +75,28 @@ def edit_current_study_data(
             return current_studies
     else:
         return current_studies
+
+
+def extract_selected_study_data(
+    selected_study,
+    current_studies,
+) -> dict:
+    current_data = pd.read_json(current_studies, orient="split")
+    if selected_study is None:
+        return None
+    elif len(selected_study) == 0:
+        return None
+    else:
+        study_id = selected_study[0]
+        return {
+            "id": study_id,
+            "CAMINHO": current_data.loc[
+                current_data["id"] == study_id, "CAMINHO"
+            ].tolist()[0],
+            "NOME": current_data.loc[
+                current_data["id"] == study_id, "NOME"
+            ].tolist()[0],
+        }
 
 
 def get_statistics_scenarios(all_scenarios: List[str]) -> List[str]:

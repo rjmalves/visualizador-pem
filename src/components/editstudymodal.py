@@ -17,14 +17,19 @@ import uuid
 
 class EditStudyModal(html.Div):
     class ids:
+        edit_study_id = lambda aio_id: {
+            "component": "EditStudyModal",
+            "subcomponent": "edit_study_id",
+            "aio_id": aio_id,
+        }
+        edit_study_path = lambda aio_id: {
+            "component": "EditStudyModal",
+            "subcomponent": "edit_study_path",
+            "aio_id": aio_id,
+        }
         edit_study_name = lambda aio_id: {
             "component": "EditStudyModal",
             "subcomponent": "edit_study_name",
-            "aio_id": aio_id,
-        }
-        edit_study_label = lambda aio_id: {
-            "component": "EditStudyModal",
-            "subcomponent": "edit_study_label",
             "aio_id": aio_id,
         }
         confirm_study_btn = lambda aio_id: {
@@ -64,7 +69,7 @@ class EditStudyModal(html.Div):
                             [
                                 dbc.ModalHeader(
                                     dbc.ModalTitle(
-                                        "EDITE UM ESTUDO EXISTENTE",
+                                        "EDITANDO ESTUDO",
                                         className="card-title",
                                     )
                                 ),
@@ -76,7 +81,7 @@ class EditStudyModal(html.Div):
                                         ),
                                         dbc.Input(
                                             placeholder="Insira o caminho. Deve ser um caminho absoluto UNIX válido (/home/...)",
-                                            id=self.ids.edit_study_name(
+                                            id=self.ids.edit_study_path(
                                                 aio_id
                                             ),
                                             className="modal-input-field",
@@ -88,11 +93,15 @@ class EditStudyModal(html.Div):
                                         ),
                                         dbc.Input(
                                             placeholder="Insira um nome... (opcional, o default é o nome do diretório mais interno)",
-                                            id=self.ids.edit_study_label(
+                                            id=self.ids.edit_study_name(
                                                 aio_id
                                             ),
                                             className="modal-input-field",
                                             type="text",
+                                        ),
+                                        dcc.Store(
+                                            id=self.ids.edit_study_id(aio_id),
+                                            storage_type="memory",
                                         ),
                                         # TODO - adicionar color picker
                                         # dbc.Input(
