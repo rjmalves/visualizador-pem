@@ -38,11 +38,17 @@ class OperationGraphPPQ(html.Div):
                 html.Div(
                     [
                         html.H4(
-                            "VARIÁVEIS DA OPERAÇÂO",
+                            "ESTABILIDADE DAS VARIÁVEIS",
                             className="card-title",
                         ),
                         html.Div(
-                            [OperationFiltersPPQ(aio_id=aio_id)],
+                            dcc.Loading(
+                                id="loading-operation-ppq",
+                                children=OperationFiltersPPQ(aio_id=aio_id),
+                                type="default",
+                                className="loading-spinner",
+                                color="rgba(204,213,207,1)",
+                            ),
                             className="card-menu",
                         ),
                     ],

@@ -38,10 +38,16 @@ class OperationGraph(html.Div):
                             className="card-title",
                         ),
                         html.Div(
-                            [
-                                OperationFilters(aio_id=aio_id),
-                                OperationFiltersTwin(aio_id=aio_id),
-                            ],
+                            dcc.Loading(
+                                id="loading-operation-casos",
+                                children=[
+                                    OperationFilters(aio_id=aio_id),
+                                    OperationFiltersTwin(aio_id=aio_id),
+                                ],
+                                type="default",
+                                className="loading-spinner",
+                                color="rgba(204,213,207,1)",
+                            ),
                             className="card-menu",
                         ),
                     ],

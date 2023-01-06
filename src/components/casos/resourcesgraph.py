@@ -37,9 +37,13 @@ class ResourcesGraph(html.Div):
                             className="card-title",
                         ),
                         html.Div(
-                            [
-                                ResourcesFilters(aio_id=aio_id),
-                            ],
+                            dcc.Loading(
+                                id="loading-resources-casos",
+                                children=ResourcesFilters(aio_id=aio_id),
+                                type="default",
+                                className="loading-spinner",
+                                color="rgba(204,213,207,1)",
+                            ),
                             className="card-menu",
                         ),
                     ],
