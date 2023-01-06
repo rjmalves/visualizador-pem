@@ -112,7 +112,6 @@ def update_studies_names_dropdown_options_casos(interval, studies_data):
 
 
 def update_operation_options_encadeador(interval, studies, variable: str):
-    print(studies)
     if not studies:
         return None
     if not variable:

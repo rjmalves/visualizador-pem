@@ -2,6 +2,7 @@ import pandas as pd
 import pathlib
 import os
 import asyncio
+from datetime import timedelta
 from src.utils.api import API
 from typing import List
 from datetime import timedelta
@@ -75,6 +76,89 @@ def get_non_statistics_scenarios(all_scenarios: List[str]) -> List[str]:
     ]
     scenarios = [s for s in scenarios if "p" not in s]
     return scenarios
+
+
+def strfdelta(tdelta: timedelta) -> str:
+    days = tdelta.days
+    hours, rem = divmod(tdelta.seconds, 3600)
+    minutes, seconds = divmod(rem, 60)
+    return (
+        f"{str(days).zfill(2)}:{str(hours).zfill(2)}"
+        + f":{str(minutes).zfill(2)}:{str(seconds).zfill(2)}"
+    )
+
+
+def update_status_data_encadeador(interval, studies):
+    if not studies:
+        return None
+
+    studies_df = pd.read_json(studies, orient="split")
+    paths = studies_df["CAMINHO"].tolist()
+    labels = studies_df["NOME"].tolist()
+    study_df = asyncio.run(
+        API.fetch_result_list(
+            paths,
+            labels,
+            "ESTUDO",
+            {"preprocess": "FULL"},
+        )
+    )
+    cases_df = asyncio.run(
+        API.fetch_result_list(
+            paths,
+            labels,
+            "CASOS",
+            {"preprocess": "FULL"},
+        )
+    )
+    runs_df = asyncio.run(
+        API.fetch_result_list(
+            paths,
+            labels,
+            "RODADAS",
+            {"preprocess": "FULL"},
+        )
+    )
+    names = []
+    times = []
+    progress = []
+    current = []
+    status = []
+    for label in labels:
+        names.append(label)
+        study_cases = cases_df.loc[cases_df["estudo"] == label]
+        total_seconds = study_cases["tempo_execucao"].sum()
+        times.append(strfdelta(timedelta(seconds=total_seconds)))
+        n_total = study_cases.shape[0]
+        n_concluidos = study_cases.loc[
+            study_cases["estado"] == "CONCLUIDO"
+        ].shape[0]
+        progress.append(int(n_concluidos * 100 / n_total))
+        current_data = study_cases.loc[study_cases["estado"] != "CONCLUIDO"]
+        if current_data.shape[0] == 0:
+            current_name = "-"
+            current_status = "CONCLUIDO"
+        else:
+            program = current_data["programa"].tolist()[0]
+            year = current_data["ano"].tolist()[0]
+            month = current_data["mes"].tolist()[0]
+            rv = current_data["revisao"].tolist()[0]
+            stat = current_data["estado"].tolist()[0]
+            current_name = f"{program} - {year}_{str(month).zfill(2)}_rv{rv}"
+            current_status = stat
+        current.append(current_name)
+        status.append(current_status)
+
+    status_df = pd.DataFrame(
+        data={
+            "NOME": names,
+            "TEMPO DE EXECUCAO": times,
+            "PROGRESSO (%)": progress,
+            "CASO ATUAL": current,
+            "ESTADO": status,
+        }
+    )
+    return status_df.to_json(orient="split")
 
 
 def update_operation_data_encadeador(

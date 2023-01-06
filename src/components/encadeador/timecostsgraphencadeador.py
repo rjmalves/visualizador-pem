@@ -3,7 +3,6 @@ from src.components.encadeador.timecostsfiltersencadeador import (
     TimeCostsFiltersEncadeador,
 )
 import src.utils.plots as plots
-from src.utils.settings import Settings
 import uuid
 
 

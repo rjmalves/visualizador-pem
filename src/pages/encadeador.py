@@ -13,6 +13,9 @@ from src.components.encadeador.timecostsgraphencadeador import (
 from src.components.encadeador.violationgraphencadeador import (
     ViolationGraph,
 )
+from src.components.encadeador.statustableencadeador import (
+    StatusTable,
+)
 
 import src.utils.modals as modals
 import src.utils.data as data
@@ -24,6 +27,7 @@ layout = html.Div(
     [
         NewStudyModal(aio_id="encadeador-modal"),
         CurrentStudiesTable(aio_id="encadeador-current-studies"),
+        StatusTable(aio_id="encadeador-status-table"),
         OperationGraphEncadeador(aio_id="encadeador-operation-graph"),
         TimeCostsGraphEncadeador(aio_id="encadeador-tempo-custos-graph"),
         ViolationGraph(aio_id="encadeador-inviabs-graph"),
@@ -89,12 +93,23 @@ def edit_current_encadeador_study_data(
 
 @callback(
     Output(
+        StatusTable.ids.studies("encadeador-status-table"),
+        "data",
+    ),
+    Input(CurrentStudiesTable.ids.data("encadeador-current-studies"), "data"),
+)
+def update_current_studies_status_table(studies_data):
+    return studies_data
+
+
+@callback(
+    Output(
         OperationGraphEncadeador.ids.studies("encadeador-operation-graph"),
         "data",
     ),
     Input(CurrentStudiesTable.ids.data("encadeador-current-studies"), "data"),
 )
-def update_current_studies(studies_data):
+def update_current_studies_operation_graph(studies_data):
     return studies_data
 
 
@@ -105,7 +120,7 @@ def update_current_studies(studies_data):
     ),
     Input(CurrentStudiesTable.ids.data("encadeador-current-studies"), "data"),
 )
-def update_current_studies(studies_data):
+def update_current_studies_timecosts_graph(studies_data):
     return studies_data
 
 
@@ -116,5 +131,5 @@ def update_current_studies(studies_data):
     ),
     Input(CurrentStudiesTable.ids.data("encadeador-current-studies"), "data"),
 )
-def update_current_studies(studies_data):
+def update_current_studies_violation_graph(studies_data):
     return studies_data
