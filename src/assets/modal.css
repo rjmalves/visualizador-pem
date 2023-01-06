@@ -1,4 +1,11 @@
 
+.modal-form-comment {
+  font-weight: 500;
+  font-size: 16px;
+  color: var(--card-header-text-color);
+  text-decoration: none;
+}
+
 .modal-button {
   padding: 9px 25px;
   margin: 0px 0px 0px 10px;

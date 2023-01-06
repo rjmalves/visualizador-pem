@@ -50,7 +50,13 @@ class TimeCostsGraph(html.Div):
                     className="card-header",
                 ),
                 html.Div(
-                    dcc.Graph(id=self.ids.graph(aio_id)),
+                    dcc.Loading(
+                        id="loading-timecosts-graph",
+                        children=dcc.Graph(id=self.ids.graph(aio_id)),
+                        type="default",
+                        className="loading-spinner",
+                        color="rgba(204,213,207,1)",
+                    ),
                     className="card-content",
                 ),
                 dcc.Store(

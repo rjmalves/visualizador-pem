@@ -18,30 +18,30 @@ from src.utils.settings import Settings
 df = pd.DataFrame(columns=["id", "CAMINHO"])
 
 
-class CurrentStudiesTableAIO(html.Div):
+class CurrentStudiesTable(html.Div):
     class ids:
         add_study_btn = lambda aio_id: {
-            "component": "CurrentStudiesTableAIO",
+            "component": "CurrentStudiesTable",
             "subcomponent": "add_study_btn",
             "aio_id": aio_id,
         }
         remove_study_btn = lambda aio_id: {
-            "component": "CurrentStudiesTableAIO",
+            "component": "CurrentStudiesTable",
             "subcomponent": "remove_study_btn",
             "aio_id": aio_id,
         }
         table = lambda aio_id: {
-            "component": "CurrentStudiesTableAIO",
+            "component": "CurrentStudiesTable",
             "subcomponent": "table",
             "aio_id": aio_id,
         }
         data = lambda aio_id: {
-            "component": "CurrentStudiesTableAIO",
+            "component": "CurrentStudiesTable",
             "subcomponent": "data",
             "aio_id": aio_id,
         }
         selected = lambda aio_id: {
-            "component": "CurrentStudiesTableAIO",
+            "component": "CurrentStudiesTable",
             "subcomponent": "selected",
             "aio_id": aio_id,
         }

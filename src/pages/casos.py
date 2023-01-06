@@ -2,8 +2,8 @@
 import dash
 from dash import html, callback, Input, Output, State
 
-from src.components.newstudymodalaio import NewStudyModalAIO
-from src.components.currentstudiestableaio import CurrentStudiesTableAIO
+from src.components.newstudymodal import NewStudyModal
+from src.components.currentstudiestable import CurrentStudiesTable
 from src.components.casos.operationgraph import OperationGraph
 from src.components.casos.acumprobgraph import AcumProbGraph
 from src.components.casos.timecostsgraph import TimeCostsGraph
@@ -18,8 +18,8 @@ dash.register_page(__name__, path="/", redirect_from=["/casos"], title="Casos")
 
 layout = html.Div(
     [
-        NewStudyModalAIO(aio_id="casos-modal"),
-        CurrentStudiesTableAIO(aio_id="casos-current-studies"),
+        NewStudyModal(aio_id="casos-modal"),
+        CurrentStudiesTable(aio_id="casos-current-studies"),
         OperationGraph(aio_id="casos-operation-graph"),
         AcumProbGraph(aio_id="casos-permanencia-graph"),
         TimeCostsGraph(aio_id="casos-tempo-custos-graph"),
@@ -31,36 +31,36 @@ layout = html.Div(
 
 
 @callback(
-    Output(NewStudyModalAIO.ids.modal("casos-modal"), "is_open"),
+    Output(NewStudyModal.ids.modal("casos-modal"), "is_open"),
     [
         Input(
-            CurrentStudiesTableAIO.ids.add_study_btn("casos-current-studies"),
+            CurrentStudiesTable.ids.add_study_btn("casos-current-studies"),
             "n_clicks",
         ),
         Input(
-            NewStudyModalAIO.ids.confirm_study_btn("casos-modal"),
+            NewStudyModal.ids.confirm_study_btn("casos-modal"),
             "n_clicks",
         ),
     ],
-    [State(NewStudyModalAIO.ids.modal("casos-modal"), "is_open")],
+    [State(NewStudyModal.ids.modal("casos-modal"), "is_open")],
 )
 def toggle_casos_modal(src1, src2, is_open):
     return modals.toggle_modal(src1, src2, is_open)
 
 
 @callback(
-    Output(CurrentStudiesTableAIO.ids.data("casos-current-studies"), "data"),
-    Input(NewStudyModalAIO.ids.confirm_study_btn("casos-modal"), "n_clicks"),
+    Output(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
+    Input(NewStudyModal.ids.confirm_study_btn("casos-modal"), "n_clicks"),
     Input(
-        CurrentStudiesTableAIO.ids.remove_study_btn("casos-current-studies"),
+        CurrentStudiesTable.ids.remove_study_btn("casos-current-studies"),
         "n_clicks",
     ),
-    State(NewStudyModalAIO.ids.new_study_name("casos-modal"), "value"),
+    State(NewStudyModal.ids.new_study_name("casos-modal"), "value"),
     State(
-        CurrentStudiesTableAIO.ids.selected("casos-current-studies"),
+        CurrentStudiesTable.ids.selected("casos-current-studies"),
         "data",
     ),
-    State(CurrentStudiesTableAIO.ids.data("casos-current-studies"), "data"),
+    State(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
 )
 def edit_current_casos_study_data(
     add_study_button_clicks,
@@ -75,14 +75,14 @@ def edit_current_casos_study_data(
         new_study_id,
         selected_study,
         current_studies,
-        NewStudyModalAIO.ids.confirm_study_btn("casos-modal"),
-        CurrentStudiesTableAIO.ids.remove_study_btn("casos-current-studies"),
+        NewStudyModal.ids.confirm_study_btn("casos-modal"),
+        CurrentStudiesTable.ids.remove_study_btn("casos-current-studies"),
     )
 
 
 @callback(
     Output(OperationGraph.ids.studies("casos-operation-graph"), "data"),
-    Input(CurrentStudiesTableAIO.ids.data("casos-current-studies"), "data"),
+    Input(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
 )
 def update_current_studies(studies_data):
     return studies_data
@@ -90,7 +90,7 @@ def update_current_studies(studies_data):
 
 @callback(
     Output(AcumProbGraph.ids.studies("casos-permanencia-graph"), "data"),
-    Input(CurrentStudiesTableAIO.ids.data("casos-current-studies"), "data"),
+    Input(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
 )
 def update_current_studies(studies_data):
     return studies_data
@@ -98,7 +98,7 @@ def update_current_studies(studies_data):
 
 @callback(
     Output(TimeCostsGraph.ids.studies("casos-tempo-custos-graph"), "data"),
-    Input(CurrentStudiesTableAIO.ids.data("casos-current-studies"), "data"),
+    Input(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
 )
 def update_current_studies(studies_data):
     return studies_data
@@ -106,7 +106,7 @@ def update_current_studies(studies_data):
 
 @callback(
     Output(ConvergenceGraph.ids.studies("casos-convergence-graph"), "data"),
-    Input(CurrentStudiesTableAIO.ids.data("casos-current-studies"), "data"),
+    Input(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
 )
 def update_current_studies(studies_data):
     return studies_data
@@ -114,7 +114,7 @@ def update_current_studies(studies_data):
 
 @callback(
     Output(ResourcesGraph.ids.studies("casos-resources-graph"), "data"),
-    Input(CurrentStudiesTableAIO.ids.data("casos-current-studies"), "data"),
+    Input(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
 )
 def update_current_studies(studies_data):
     return studies_data

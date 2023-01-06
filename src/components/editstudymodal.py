@@ -15,25 +15,25 @@ import pandas as pd
 import uuid
 
 
-class NewStudyModalAIO(html.Div):
+class EditStudyModal(html.Div):
     class ids:
         new_study_name = lambda aio_id: {
-            "component": "CurrentStudiesTableAIO",
+            "component": "EditStudyModal",
             "subcomponent": "new_study_name",
             "aio_id": aio_id,
         }
         confirm_study_btn = lambda aio_id: {
-            "component": "CurrentStudiesTableAIO",
+            "component": "EditStudyModal",
             "subcomponent": "confirm_study_btn",
             "aio_id": aio_id,
         }
         modal = lambda aio_id: {
-            "component": "CurrentStudiesTableAIO",
+            "component": "EditStudyModal",
             "subcomponent": "modal",
             "aio_id": aio_id,
         }
         modal_container = lambda aio_id: {
-            "component": "CurrentStudiesTableAIO",
+            "component": "EditStudyModal",
             "subcomponent": "modal_container",
             "aio_id": aio_id,
         }
@@ -57,7 +57,7 @@ class NewStudyModalAIO(html.Div):
                     [
                         dbc.ModalHeader(
                             dbc.ModalTitle(
-                                "ADICIONE UM NOVO ESTUDO",
+                                "EDITE UM ESTUDO EXISTENTE",
                                 className="card-title",
                             )
                         ),
@@ -73,7 +73,7 @@ class NewStudyModalAIO(html.Div):
                         ),
                         dbc.ModalFooter(
                             html.Button(
-                                "Adicionar",
+                                "Confirmar",
                                 id=self.ids.confirm_study_btn(aio_id),
                                 className="modal-button",
                             )
