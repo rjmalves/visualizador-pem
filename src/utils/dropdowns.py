@@ -101,14 +101,14 @@ def update_costs_time_variables_dropdown_options_casos(interval, studies_data):
 
 def update_studies_names_dropdown_options_encadeador(interval, studies_data):
     studies = pd.read_json(studies_data, orient="split")
-    paths = studies["CAMINHO"].tolist()
-    return [pathlib.Path(p).parts[-1] for p in paths]
+    labels = studies["NOME"].tolist()
+    return labels
 
 
 def update_studies_names_dropdown_options_casos(interval, studies_data):
     studies = pd.read_json(studies_data, orient="split")
-    paths = studies["CAMINHO"].tolist()
-    return [pathlib.Path(p).parts[-1] for p in paths]
+    labels = studies["NOME"].tolist()
+    return labels
 
 
 def update_operation_options_encadeador(interval, studies, variable: str):
