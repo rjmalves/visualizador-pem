@@ -5,6 +5,7 @@ import pathlib
 from src.utils.settings import Settings
 from src.utils.api import API
 
+SYSTEM_FILES = ["PAT", "EST", "SIN", "SBM", "REE", "UHE", "UTE", "PEE", "UEE"]
 
 COSTS_TIME_FILES = [
     "CUSTOS",
@@ -20,7 +21,7 @@ NOT_OPERATION_FILES = [
     "RECURSOS_CLUSTER",
     "RECURSOS_JOB",
     "PROGRAMA",
-]
+] + SYSTEM_FILES
 
 
 def update_operation_variables_dropdown_options_encadeador(
