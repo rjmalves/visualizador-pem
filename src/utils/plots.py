@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 from typing import List
 from datetime import timedelta
+from src.utils.log import Log
 
 DISCRETE_COLOR_PALLETE = [
     "rgba(249, 65, 68, 1)",
@@ -410,6 +411,7 @@ def generate_operation_graph_casos_twinx(
 def generate_operation_graph_encadeador(
     operation_data, variable: str, filters
 ):
+    Log.log().info("começou")
     graph_layout = go.Layout(
         plot_bgcolor="rgba(158, 149, 128, 0.2)",
         paper_bgcolor="rgba(255,255,255,1)",
@@ -429,12 +431,15 @@ def generate_operation_graph_encadeador(
     df_decomp = dados.loc[filtro_decomp]
 
     visibilidade_newave = __background_area_visibility(estudos)
+    Log.log().info("plot")
     for i, estudo in enumerate(estudos):
+        Log.log().info(estudo)
         cor = DISCRETE_COLOR_PALLETE[i % len(DISCRETE_COLOR_PALLETE)]
         cor_fundo = DISCRETE_COLOR_PALLETE_BACKGROUND[
             i % len(DISCRETE_COLOR_PALLETE_BACKGROUND)
         ]
         if df_decomp is not None:
+            Log.log().info("decomp")
             estudo_decomp = pivot_df_for_plot(
                 df_decomp.loc[df_decomp["estudo"] == estudo]
             )
@@ -453,6 +458,7 @@ def generate_operation_graph_encadeador(
                     )
                 )
         if df_newave is not None:
+            Log.log().info("newave")
             estudo_newave = pivot_df_for_plot(
                 df_newave.loc[df_newave["estudo"] == estudo]
             )
@@ -500,6 +506,7 @@ def generate_operation_graph_encadeador(
                     )
                 )
     if variable is not None:
+        Log.log().info("update layout")
         fig.update_layout(
             title=__make_operation_plot_title(variable, filters),
             xaxis_title="Data",

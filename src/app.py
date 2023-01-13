@@ -42,4 +42,9 @@ class App:
         if Settings.mode == "DEV":
             self.__app.run(host="0.0.0.0", port=str(Settings.port), debug=True)
         elif Settings.mode == "PROD":
-            serve(self.__app.server, host="0.0.0.0", port=str(Settings.port))
+            serve(
+                self.__app.server,
+                host="0.0.0.0",
+                port=str(Settings.port),
+                threads=8,
+            )
