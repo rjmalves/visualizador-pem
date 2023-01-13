@@ -46,5 +46,5 @@ class App:
                 self.__app.server,
                 host="0.0.0.0",
                 port=str(Settings.port),
-                threads=8,
+                threads=2,
             )

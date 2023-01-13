@@ -3,6 +3,8 @@ import logging.handlers
 
 from src.utils.singleton import Singleton
 
+logging.getLogger("waitress.queue").setLevel(logging.ERROR)
+
 
 class Log(metaclass=Singleton):
     LOGGER = None
