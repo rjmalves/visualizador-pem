@@ -411,7 +411,6 @@ def generate_operation_graph_casos_twinx(
 def generate_operation_graph_encadeador(
     operation_data, variable: str, filters
 ):
-    Log.log().info("começou")
     graph_layout = go.Layout(
         plot_bgcolor="rgba(158, 149, 128, 0.2)",
         paper_bgcolor="rgba(255,255,255,1)",
@@ -420,6 +419,7 @@ def generate_operation_graph_encadeador(
     fig.update_layout(graph_layout)
     if operation_data is None:
         return fig
+    Log.log().info(f"Plotando gráfico - ENCADEADOR ({variable}, {filters})")
     dados = pd.read_json(operation_data, orient="split")
     dados["dataInicio"] = pd.to_datetime(dados["dataInicio"], unit="ms")
     dados["dataFim"] = pd.to_datetime(dados["dataFim"], unit="ms")
@@ -431,15 +431,12 @@ def generate_operation_graph_encadeador(
     df_decomp = dados.loc[filtro_decomp]
 
     visibilidade_newave = __background_area_visibility(estudos)
-    Log.log().info("plot")
     for i, estudo in enumerate(estudos):
-        Log.log().info(estudo)
         cor = DISCRETE_COLOR_PALLETE[i % len(DISCRETE_COLOR_PALLETE)]
         cor_fundo = DISCRETE_COLOR_PALLETE_BACKGROUND[
             i % len(DISCRETE_COLOR_PALLETE_BACKGROUND)
         ]
         if df_decomp is not None:
-            Log.log().info("decomp")
             estudo_decomp = pivot_df_for_plot(
                 df_decomp.loc[df_decomp["estudo"] == estudo]
             )
@@ -458,7 +455,6 @@ def generate_operation_graph_encadeador(
                     )
                 )
         if df_newave is not None:
-            Log.log().info("newave")
             estudo_newave = pivot_df_for_plot(
                 df_newave.loc[df_newave["estudo"] == estudo]
             )
@@ -506,7 +502,6 @@ def generate_operation_graph_encadeador(
                     )
                 )
     if variable is not None:
-        Log.log().info("update layout")
         fig.update_layout(
             title=__make_operation_plot_title(variable, filters),
             xaxis_title="Data",
@@ -514,6 +509,7 @@ def generate_operation_graph_encadeador(
             hovermode="x unified",
             legend=dict(groupclick="toggleitem"),
         )
+    Log.log().info(f"Gráfico plotado - ENCADEADOR ({variable}, {filters})")
     return fig
 
 
@@ -646,6 +642,7 @@ def generate_timecosts_graph_encadeador(time_costs, variable):
     fig.update_layout(graph_layout)
     if time_costs is None:
         return fig
+    Log.log().info(f"Plotando gráfico - ENCADEADOR ({variable})")
     dados = pd.read_json(time_costs, orient="split")
     ordem_estudos = dados["estudo"].unique().tolist()
     if "etapa" in dados.columns:
@@ -716,6 +713,7 @@ def generate_timecosts_graph_encadeador(time_costs, variable):
             title=title,
             yaxis_title=unit,
         )
+    Log.log().info(f"Gráfico plotado - ENCADEADOR ({variable})")
     return fig
 
 
@@ -728,6 +726,7 @@ def generate_timecosts_graph_casos(time_costs, variable):
     fig.update_layout(graph_layout)
     if time_costs is None:
         return fig
+    Log.log().info(f"Plotando gráfico - ENCADEADOR ({variable})")
     dados = pd.read_json(time_costs, orient="split")
     if "etapa" in dados.columns:
         dados = dados.loc[dados["etapa"] != "Tempo Total", :]
@@ -768,6 +767,7 @@ def generate_timecosts_graph_casos(time_costs, variable):
             title=title,
             yaxis_title=unit,
         )
+    Log.log().info(f"Gráfico plotado - ENCADEADOR ({variable})")
     return fig
 
 
@@ -780,6 +780,8 @@ def generate_violation_graph_encadeador(violation_data, violation):
     fig.update_layout(graph_layout)
     if violation_data is None:
         return fig
+
+    Log.log().info(f"Plotando gráfico - ENCADEADOR ({violation})")
     dados = pd.read_json(violation_data, orient="split")
 
     ordem_estudos = dados["estudo"].unique().tolist()
@@ -820,6 +822,7 @@ def generate_violation_graph_encadeador(violation_data, violation):
             title=title,
             yaxis_title=unit,
         )
+    Log.log().info(f"Gráfico plotado - ENCADEADOR ({violation})")
     return fig
 
 

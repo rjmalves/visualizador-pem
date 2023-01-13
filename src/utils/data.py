@@ -204,13 +204,12 @@ def update_operation_data_encadeador(
     req_filters = validation.validate_required_filters(variable, filters)
     if req_filters is None:
         return None
-    Log.log().info("dados operacao")
+    Log.log().info(f"Obtendo dados - ENCADEADOR ({variable}, {filters})")
     fetch_filters = {**req_filters, "estagio": 1}
     studies_df = pd.read_json(studies, orient="split")
     paths = studies_df["CAMINHO"].tolist()
     labels = studies_df["NOME"].tolist()
     complete_df = pd.DataFrame()
-    Log.log().info("newave operacao")
     newave_df = API.fetch_result_list(
         [
             os.path.join(p, Settings.synthesis_dir, Settings.newave_dir)
@@ -220,7 +219,6 @@ def update_operation_data_encadeador(
         variable,
         fetch_filters,
     )
-    Log.log().info("decomp operacao")
     decomp_df = API.fetch_result_list(
         [
             os.path.join(p, Settings.synthesis_dir, Settings.decomp_dir)
@@ -230,7 +228,6 @@ def update_operation_data_encadeador(
         variable,
         fetch_filters,
     )
-    Log.log().info("formatando")
     if newave_df is not None:
         cols_newave = newave_df.columns.to_list()
         newave_df["programa"] = "NEWAVE"
@@ -248,7 +245,7 @@ def update_operation_data_encadeador(
             ],
             ignore_index=True,
         )
-    Log.log().info("fim")
+    Log.log().info(f"Dados obtidos - ENCADEADOR ({variable}, {filters})")
     if complete_df.empty:
         return None
     else:
@@ -303,6 +300,7 @@ def update_custos_tempo_data_encadeador(
     programa = filters.get("programa")
     if programa is None:
         return None
+    Log.log().info(f"Obtendo dados - ENCADEADOR ({variable}, {filters})")
     studies_df = pd.read_json(studies, orient="split")
     paths = studies_df["CAMINHO"].tolist()
     labels = studies_df["NOME"].tolist()
@@ -315,6 +313,7 @@ def update_custos_tempo_data_encadeador(
         variable,
         {},
     )
+    Log.log().info(f"Dados obtidos - ENCADEADOR ({variable}, {filters})")
     if df.empty:
         return None
     else:
@@ -334,6 +333,7 @@ def update_violation_data_encadeador(
     programa = filters.get("programa")
     if programa is None:
         return None
+    Log.log().info(f"Obtendo dados - ENCADEADOR ({violation}, {filters})")
     studies_df = pd.read_json(studies, orient="split")
     paths = studies_df["CAMINHO"].tolist()
     labels = studies_df["NOME"].tolist()
@@ -347,6 +347,7 @@ def update_violation_data_encadeador(
         "INVIABILIDADES",
         {"iteracao": -1, "tipo": f"'{violation}'", "preprocess": "FULL"},
     )
+    Log.log().info(f"Dados obtidos - ENCADEADOR ({violation}, {filters})")
     if df is None:
         return None
     if df.empty:
