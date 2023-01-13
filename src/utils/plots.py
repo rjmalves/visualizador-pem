@@ -443,7 +443,7 @@ def generate_operation_graph_encadeador(
             if not estudo_decomp.empty:
                 fig.add_trace(
                     go.Scatter(
-                        x=estudo_decomp["dataInicio"],
+                        x=estudo_decomp["dataFim"],
                         y=estudo_decomp["mean"],
                         line={
                             "color": cor,
@@ -461,7 +461,7 @@ def generate_operation_graph_encadeador(
             if not estudo_newave.empty:
                 fig.add_trace(
                     go.Scatter(
-                        x=estudo_newave["dataInicio"],
+                        x=estudo_newave["dataFim"],
                         y=estudo_newave["mean"],
                         line={
                             "color": cor,
@@ -477,7 +477,7 @@ def generate_operation_graph_encadeador(
                 )
                 fig.add_trace(
                     go.Scatter(
-                        x=estudo_newave["dataInicio"],
+                        x=estudo_newave["dataFim"],
                         y=estudo_newave["p10"],
                         line_color=cor_fundo,
                         mode="lines",
@@ -489,7 +489,7 @@ def generate_operation_graph_encadeador(
                 )
                 fig.add_trace(
                     go.Scatter(
-                        x=estudo_newave["dataInicio"],
+                        x=estudo_newave["dataFim"],
                         y=estudo_newave["p90"],
                         line_color=cor_fundo,
                         fillcolor=cor_fundo,
