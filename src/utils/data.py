@@ -205,7 +205,7 @@ def update_operation_data_encadeador(
     if req_filters is None:
         return None
     Log.log().info(f"Obtendo dados - ENCADEADOR ({variable}, {filters})")
-    fetch_filters = {**req_filters, "estagio": 1}
+    fetch_filters = {**req_filters, "estagio": 1, "preprocess": "STATISTICS"}
     studies_df = pd.read_json(studies, orient="split")
     paths = studies_df["CAMINHO"].tolist()
     labels = studies_df["NOME"].tolist()
