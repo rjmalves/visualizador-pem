@@ -68,6 +68,16 @@ class OperationFilters(html.Div):
             "subcomponent": "ree_dropdown_container",
             "aio_id": aio_id,
         }
+        pee_dropdown = lambda aio_id: {
+            "component": "OperationFilters",
+            "subcomponent": "pee_dropdown",
+            "aio_id": aio_id,
+        }
+        pee_dropdown_container = lambda aio_id: {
+            "component": "OperationFilters",
+            "subcomponent": "pee_dropdown_container",
+            "aio_id": aio_id,
+        }
         submercado_dropdown = lambda aio_id: {
             "component": "OperationFilters",
             "subcomponent": "submercado_dropdown",
@@ -146,6 +156,7 @@ class OperationFilters(html.Div):
         aio_id=None,
         usina_dropdown_props=None,
         ree_dropdown_props=None,
+        pee_dropdown_props=None,
         submercado_dropdown_props=None,
         submercadoDe_dropdown_props=None,
         submercadoPara_dropdown_props=None,
@@ -162,6 +173,9 @@ class OperationFilters(html.Div):
         )
         ree_dropdown_props = (
             ree_dropdown_props.copy() if ree_dropdown_props else {}
+        )
+        pee_dropdown_props = (
+            pee_dropdown_props.copy() if pee_dropdown_props else {}
         )
         submercado_dropdown_props = (
             submercado_dropdown_props.copy()
@@ -192,6 +206,8 @@ class OperationFilters(html.Div):
             usina_dropdown_props["style"] = {"display": "none"}
         if "style" not in ree_dropdown_props:
             ree_dropdown_props["style"] = {"display": "none"}
+        if "style" not in pee_dropdown_props:
+            pee_dropdown_props["style"] = {"display": "none"}
         if "style" not in submercado_dropdown_props:
             submercado_dropdown_props["style"] = {"display": "none"}
         if "style" not in submercadoDe_dropdown_props:
@@ -209,6 +225,8 @@ class OperationFilters(html.Div):
             usina_dropdown_props["className"] = "dropdown-container"
         if "className" not in ree_dropdown_props:
             ree_dropdown_props["className"] = "dropdown-container"
+        if "className" not in pee_dropdown_props:
+            pee_dropdown_props["className"] = "dropdown-container"
         if "className" not in submercado_dropdown_props:
             submercado_dropdown_props["className"] = "dropdown-container"
         if "className" not in submercadoDe_dropdown_props:
@@ -236,6 +254,14 @@ class OperationFilters(html.Div):
                 options=[],
                 value=None,
                 placeholder="REE",
+                className="variable-dropdown",
+            )
+        if "children" not in pee_dropdown_props:
+            pee_dropdown_props["children"] = dcc.Dropdown(
+                id=self.ids.pee_dropdown(aio_id),
+                options=[],
+                value=None,
+                placeholder="PEE",
                 className="variable-dropdown",
             )
         if "children" not in submercado_dropdown_props:
@@ -300,6 +326,10 @@ class OperationFilters(html.Div):
                 html.Div(
                     id=self.ids.ree_dropdown_container(aio_id),
                     **ree_dropdown_props,
+                ),
+                html.Div(
+                    id=self.ids.pee_dropdown_container(aio_id),
+                    **pee_dropdown_props,
                 ),
                 html.Div(
                     id=self.ids.submercado_dropdown_container(aio_id),
@@ -375,6 +405,18 @@ class OperationFilters(html.Div):
         )
 
     @callback(
+        Output(ids.pee_dropdown_container(MATCH), "style"),
+        Input(ids.variable_dropdown(MATCH), "value"),
+    )
+    def update_display_pee_dropdown(variavel: str):
+        agregacao_espacial = variavel.split("_")[1] if variavel else ""
+        return (
+            {"display": "flex"}
+            if agregacao_espacial == "PEE"
+            else {"display": "none"}
+        )
+
+    @callback(
         Output(ids.submercado_dropdown_container(MATCH), "style"),
         Input(ids.variable_dropdown(MATCH), "value"),
     )
@@ -445,6 +487,17 @@ class OperationFilters(html.Div):
         return []
 
     @callback(
+        Output(ids.pee_dropdown(MATCH), "options"),
+        Input(ids.updater(MATCH), "n_intervals"),
+        Input(ids.options(MATCH), "data"),
+    )
+    def update_pee_options(interval, options):
+        if options:
+            if "pee" in options.keys():
+                return sorted(list(set(options["pee"])))
+        return []
+
+    @callback(
         Output(ids.submercado_dropdown(MATCH), "options"),
         Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.options(MATCH), "data"),
@@ -512,6 +565,7 @@ class OperationFilters(html.Div):
         Output(ids.filters(MATCH), "data"),
         Input(ids.usina_dropdown(MATCH), "value"),
         Input(ids.ree_dropdown(MATCH), "value"),
+        Input(ids.pee_dropdown(MATCH), "value"),
         Input(ids.submercado_dropdown(MATCH), "value"),
         Input(ids.submercadoDe_dropdown(MATCH), "value"),
         Input(ids.submercadoPara_dropdown(MATCH), "value"),
@@ -521,6 +575,7 @@ class OperationFilters(html.Div):
     def update_filters(
         usina: str,
         ree: str,
+        pee: str,
         submercado: str,
         submercado_de: str,
         submercado_para: str,
@@ -532,6 +587,8 @@ class OperationFilters(html.Div):
             filtros["usina"] = f"'{usina}'"
         if ree:
             filtros["ree"] = f"'{ree}'"
+        if pee:
+            filtros["pee"] = f"'{pee}'"
         if submercado:
             filtros["submercado"] = NOMES_SUBMERCADOS.get(submercado)
         if submercado_de:

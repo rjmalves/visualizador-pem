@@ -5,6 +5,7 @@ REQUIRED_FILTERS = {
     "SBM": ["submercado"],
     "SBP": ["submercadoDe", "submercadoPara"],
     "REE": ["ree"],
+    "PEE": ["pee"],
     "UHE": ["usina"],
     "UTE": ["usina"],
     "UEE": ["usina"],
