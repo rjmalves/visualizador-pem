@@ -40,6 +40,11 @@
   border: 8px solid var(--modal-form-input-border-color);
 }
 
+.modal-input-field[type=color] {
+  margin: 8px 24px;
+}
+
+
 /* The below styles were copied from bootstrap */
 
 .modal-open {

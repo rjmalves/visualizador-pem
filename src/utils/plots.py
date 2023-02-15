@@ -7,19 +7,6 @@ from typing import List
 from datetime import timedelta
 from src.utils.log import Log
 
-DISCRETE_COLOR_PALLETE = [
-    "rgba(249, 65, 68, 1)",
-    "rgba(39, 125, 161, 1)",
-    "rgba(144, 190, 109, 1)",
-    "rgba(243, 114, 44, 1)",
-    "rgba(87, 117, 144, 1)",
-    "rgba(249, 199, 79, 1)",
-    "rgba(248, 150, 30, 1)",
-    "rgba(77, 144, 142, 1)",
-    "rgba(249, 132, 74, 1)",
-    "rgba(67, 170, 139, 1)",
-]
-
 DISCRETE_COLOR_PALLETE_COSTS = [
     "rgba(249, 65, 68, 1)",
     "rgba(144, 190, 109, 1)",
@@ -33,18 +20,6 @@ DISCRETE_COLOR_PALLETE_COSTS = [
     "rgba(87, 117, 144, 1)",
 ]
 
-DISCRETE_COLOR_PALLETE_BACKGROUND = [
-    "rgba(249, 65, 68, 0.3)",
-    "rgba(39, 125, 161, 0.3)",
-    "rgba(144, 190, 109, 0.3)",
-    "rgba(243, 114, 44, 0.3)",
-    "rgba(87, 117, 144, 0.3)",
-    "rgba(249, 199, 79, 0.3)",
-    "rgba(248, 150, 30, 0.3)",
-    "rgba(77, 144, 142, 0.3)",
-    "rgba(249, 132, 74, 0.3)",
-    "rgba(67, 170, 139, 0.3)",
-]
 
 VARIABLE_NAMES = {
     "COP": "Custo de Operação",
@@ -175,7 +150,17 @@ def pivot_df_for_plot(df: pd.DataFrame) -> pd.DataFrame:
     return df_plot.reset_index()
 
 
-def generate_operation_graph_casos(operation_data, variable, filters):
+def hex_to_rgb(value):
+    value = value.lstrip("#")
+    lv = len(value)
+    return tuple(
+        int(value[i : i + lv // 3], 16) for i in range(0, lv, lv // 3)
+    )
+
+
+def generate_operation_graph_casos(
+    operation_data, variable, filters, studies_data
+):
     graph_layout = go.Layout(
         plot_bgcolor="rgba(158, 149, 128, 0.2)",
         paper_bgcolor="rgba(255,255,255,1)",
@@ -187,15 +172,16 @@ def generate_operation_graph_casos(operation_data, variable, filters):
     dados = pd.read_json(operation_data, orient="split")
     dados["dataInicio"] = pd.to_datetime(dados["dataInicio"], unit="ms")
     dados["dataFim"] = pd.to_datetime(dados["dataFim"], unit="ms")
-    estudos = dados["estudo"].unique().tolist()
+    df_estudos = pd.read_json(studies_data, orient="split")
+
     line_shape = "hv"
 
-    visibilidade_p = __background_area_visibility(estudos)
-    for i, estudo in enumerate(estudos):
-        cor = DISCRETE_COLOR_PALLETE[i % len(DISCRETE_COLOR_PALLETE)]
-        cor_fundo = DISCRETE_COLOR_PALLETE_BACKGROUND[
-            i % len(DISCRETE_COLOR_PALLETE_BACKGROUND)
-        ]
+    visibilidade_p = __background_area_visibility(df_estudos["NOME"])
+    for _, linha_df in df_estudos.iterrows():
+        estudo = linha_df["NOME"]
+        rgb = hex_to_rgb(linha_df["COR"])
+        cor = f"rgba({rgb[0]},{rgb[1]},{rgb[2]}, 1.0)"
+        cor_fundo = f"rgba({rgb[0]},{rgb[1]},{rgb[2]}, 0.3)"
         if dados is not None:
             dados_estudo = pivot_df_for_plot(
                 dados.loc[dados["estudo"] == estudo]
@@ -261,6 +247,7 @@ def generate_operation_graph_casos_twinx(
     operation_data_twinx,
     variable_twinx,
     filters_twinx,
+    studies_data,
 ):
 
     graph_layout = go.Layout(
@@ -273,35 +260,36 @@ def generate_operation_graph_casos_twinx(
         return fig
     if operation_data is not None and operation_data_twinx is None:
         return generate_operation_graph_casos(
-            operation_data, variable, filters
+            operation_data, variable, filters, studies_data
         )
     elif operation_data is None and operation_data_twinx is not None:
         return generate_operation_graph_casos(
-            operation_data_twinx, variable_twinx, filters_twinx
+            operation_data_twinx, variable_twinx, filters_twinx, studies_data
         )
 
     dados = pd.read_json(operation_data, orient="split")
     dados["dataInicio"] = pd.to_datetime(dados["dataInicio"], unit="ms")
     dados["dataFim"] = pd.to_datetime(dados["dataFim"], unit="ms")
-    estudos = dados["estudo"].unique().tolist()
     dados_twinx = pd.read_json(operation_data_twinx, orient="split")
     dados_twinx["dataInicio"] = pd.to_datetime(
         dados_twinx["dataInicio"], unit="ms"
     )
     dados_twinx["dataFim"] = pd.to_datetime(dados_twinx["dataFim"], unit="ms")
-    estudos_twinx = dados_twinx["estudo"].unique().tolist()
-    estudos_completos = list(set(estudos).union(set(estudos_twinx)))
+    df_estudos = pd.read_json(studies_data, orient="split")
 
     line_shape = "hv"
-    next_color = 0
-    visibilidade_p = __background_area_visibility(estudos)
-    for i, estudo in enumerate(estudos_completos):
+    visibilidade_p = __background_area_visibility(df_estudos["NOME"])
+    for _, linha_df in df_estudos.iterrows():
+        estudo = linha_df["NOME"]
+        rgb = hex_to_rgb(linha_df["COR"])
+        cor = f"rgba({rgb[0]},{rgb[1]},{rgb[2]}, 1.0)"
+        cor_fundo = f"rgba({rgb[0]},{rgb[1]},{rgb[2]}, 0.3)"
         dados_estudo = pivot_df_for_plot(dados.loc[dados["estudo"] == estudo])
         dados_legend = __make_operation_plot_legend_name(
-            estudos_completos, estudo, variable, filters
+            df_estudos["NOME"].tolist(), estudo, variable, filters
         )
         dados_twinx_legend = __make_operation_plot_legend_name(
-            estudos_completos, estudo, variable_twinx, filters_twinx
+            df_estudos["NOME"].tolist(), estudo, variable_twinx, filters_twinx
         )
         if not dados_estudo.empty:
             dados_estudo = __add_final_date_line_to_df(dados_estudo)
@@ -311,7 +299,7 @@ def generate_operation_graph_casos_twinx(
                     x=dados_estudo["dataInicio"],
                     y=dados_estudo["mean"],
                     line={
-                        "color": DISCRETE_COLOR_PALLETE[next_color],
+                        "color": cor,
                         "width": 3,
                         "shape": line_shape,
                     },
@@ -324,7 +312,7 @@ def generate_operation_graph_casos_twinx(
                 go.Scatter(
                     x=dados_estudo["dataInicio"],
                     y=dados_estudo["p10"],
-                    line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[next_color],
+                    line_color=cor_fundo,
                     line_shape=line_shape,
                     name="p10",
                     legendgroup=dados_legend,
@@ -335,8 +323,8 @@ def generate_operation_graph_casos_twinx(
                 go.Scatter(
                     x=dados_estudo["dataInicio"],
                     y=dados_estudo["p90"],
-                    line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[next_color],
-                    fillcolor=DISCRETE_COLOR_PALLETE_BACKGROUND[next_color],
+                    line_color=cor_fundo,
+                    fillcolor=cor_fundo,
                     line_shape=line_shape,
                     fill="tonexty",
                     name="p90",
@@ -356,9 +344,10 @@ def generate_operation_graph_casos_twinx(
                     x=dados_estudo["dataInicio"],
                     y=dados_estudo["mean"],
                     line={
-                        "color": DISCRETE_COLOR_PALLETE[next_color],
+                        "color": cor,
                         "width": 3,
                         "shape": line_shape,
+                        "dash": "dash",
                     },
                     name="mean",
                     legendgroup=dados_twinx_legend,
@@ -370,7 +359,7 @@ def generate_operation_graph_casos_twinx(
                 go.Scatter(
                     x=dados_estudo["dataInicio"],
                     y=dados_estudo["p10"],
-                    line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[next_color],
+                    line_color=cor_fundo,
                     line_shape=line_shape,
                     name="p10",
                     legendgroup=dados_twinx_legend,
@@ -382,10 +371,13 @@ def generate_operation_graph_casos_twinx(
                 go.Scatter(
                     x=dados_estudo["dataInicio"],
                     y=dados_estudo["p90"],
-                    line_color=DISCRETE_COLOR_PALLETE_BACKGROUND[next_color],
-                    fillcolor=DISCRETE_COLOR_PALLETE_BACKGROUND[next_color],
+                    line_color=cor_fundo,
+                    fillcolor=cor_fundo,
                     line_shape=line_shape,
                     fill="tonexty",
+                    fillpattern=go.scatter.Fillpattern(
+                        bgcolor=cor_fundo, shape="."
+                    ),
                     name="p90",
                     legendgroup=dados_twinx_legend,
                     visible=visibilidade_p,
@@ -414,11 +406,11 @@ def generate_operation_graph_casos_twinx(
 
 
 def generate_operation_graph_encadeador(
-    operation_data, variable: str, filters
+    operation_data, variable: str, filters: dict, studies_data
 ):
     graph_layout = go.Layout(
         plot_bgcolor="rgba(158, 149, 128, 0.2)",
-        paper_bgcolor="rgba(255,255,255,1)",
+        paper_bgcolor="rgba(255, 255, 255, 1)",
     )
     fig = go.Figure()
     fig.update_layout(graph_layout)
@@ -428,19 +420,19 @@ def generate_operation_graph_encadeador(
     dados = pd.read_json(operation_data, orient="split")
     dados["dataInicio"] = pd.to_datetime(dados["dataInicio"], unit="ms")
     dados["dataFim"] = pd.to_datetime(dados["dataFim"], unit="ms")
-    estudos = dados["estudo"].unique().tolist()
+    df_estudos = pd.read_json(studies_data, orient="split")
 
     filtro_newave = dados["programa"] == "NEWAVE"
     filtro_decomp = dados["programa"] == "DECOMP"
     df_newave = dados.loc[filtro_newave]
     df_decomp = dados.loc[filtro_decomp]
 
-    visibilidade_newave = __background_area_visibility(estudos)
-    for i, estudo in enumerate(estudos):
-        cor = DISCRETE_COLOR_PALLETE[i % len(DISCRETE_COLOR_PALLETE)]
-        cor_fundo = DISCRETE_COLOR_PALLETE_BACKGROUND[
-            i % len(DISCRETE_COLOR_PALLETE_BACKGROUND)
-        ]
+    visibilidade_newave = __background_area_visibility(df_estudos["NOME"])
+    for _, linha_df in df_estudos.iterrows():
+        estudo = linha_df["NOME"]
+        rgb = hex_to_rgb(linha_df["COR"])
+        cor = f"rgba({rgb[0]},{rgb[1]},{rgb[2]}, 1.0)"
+        cor_fundo = f"rgba({rgb[0]},{rgb[1]},{rgb[2]}, 0.3)"
         if df_decomp is not None:
             estudo_decomp = pivot_df_for_plot(
                 df_decomp.loc[df_decomp["estudo"] == estudo]
@@ -518,7 +510,9 @@ def generate_operation_graph_encadeador(
     return fig
 
 
-def generate_operation_graph_ppq(operation_data, variable, filters):
+def generate_operation_graph_ppq(
+    operation_data, variable, filters, studies_data
+):
     graph_layout = go.Layout(
         plot_bgcolor="rgba(158, 149, 128, 0.2)",
         paper_bgcolor="rgba(255,255,255,1)",
@@ -528,13 +522,13 @@ def generate_operation_graph_ppq(operation_data, variable, filters):
     if operation_data is None:
         return fig
     dados = pd.read_json(operation_data, orient="split")
-    estudos = dados["estudo"].unique().tolist()
+    df_estudos = pd.read_json(studies_data, orient="split")
 
-    for i, estudo in enumerate(estudos):
-        cor = DISCRETE_COLOR_PALLETE[i % len(DISCRETE_COLOR_PALLETE)]
-        cor_fundo = DISCRETE_COLOR_PALLETE_BACKGROUND[
-            i % len(DISCRETE_COLOR_PALLETE_BACKGROUND)
-        ]
+    for _, linha_df in df_estudos.iterrows():
+        estudo = linha_df["NOME"]
+        rgb = hex_to_rgb(linha_df["COR"])
+        cor = f"rgba({rgb[0]},{rgb[1]},{rgb[2]}, 1.0)"
+        cor_fundo = f"rgba({rgb[0]},{rgb[1]},{rgb[2]}, 0.3)"
         if dados is not None:
             dados_estudo = pivot_df_for_plot(
                 dados.loc[dados["estudo"] == estudo]
@@ -598,7 +592,9 @@ def __process_acumprob(operation_data: pd.DataFrame) -> pd.DataFrame:
     return df.sort_values("values")
 
 
-def generate_acumprob_graph_casos(operation_data, variable, filters):
+def generate_acumprob_graph_casos(
+    operation_data, variable, filters, studies_data
+):
     graph_layout = go.Layout(
         plot_bgcolor="rgba(158, 149, 128, 0.2)",
         paper_bgcolor="rgba(255,255,255,1)",
@@ -608,9 +604,12 @@ def generate_acumprob_graph_casos(operation_data, variable, filters):
     if operation_data is None:
         return fig
     dados = pd.read_json(operation_data, orient="split")
-    estudos = dados["estudo"].unique().tolist()
+    df_estudos = pd.read_json(studies_data, orient="split")
     line_shape = "hv"
-    for i, estudo in enumerate(estudos):
+    for _, linha_df in df_estudos.iterrows():
+        estudo = linha_df["NOME"]
+        rgb = hex_to_rgb(linha_df["COR"])
+        cor = f"rgba({rgb[0]},{rgb[1]},{rgb[2]}, 1.0)"
         if dados is not None:
             dados_estudo = pivot_df_for_plot(
                 dados.loc[dados["estudo"] == estudo]
@@ -621,7 +620,7 @@ def generate_acumprob_graph_casos(operation_data, variable, filters):
                     go.Scatter(
                         x=dados_estudo["cdf"] * 100,
                         y=dados_estudo["values"],
-                        line_color=DISCRETE_COLOR_PALLETE[i],
+                        line_color=cor,
                         line_shape=line_shape,
                         name=estudo,
                     )

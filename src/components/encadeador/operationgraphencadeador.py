@@ -91,8 +91,9 @@ class OperationGraphEncadeador(html.Div):
             "value",
         ),
         State(OperationFiltersEncadeador.ids.filters(MATCH), "data"),
+        State(ids.studies(MATCH), "data"),
     )
-    def generate_operation_graph(operation_data, variable, filters):
+    def generate_operation_graph(operation_data, variable, filters, studies):
         return plots.generate_operation_graph_encadeador(
-            operation_data, variable, filters
+            operation_data, variable, filters, studies
         )

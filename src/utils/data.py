@@ -10,6 +10,19 @@ from src.utils.settings import Settings
 from dash import ctx
 from src.utils.log import Log
 
+DISCRETE_COLOR_PALLETE = [
+    "#f94144",
+    "#277da1",
+    "#90be6d",
+    "#f3722c",
+    "#577590",
+    "#f9c74f",
+    "#f8961e",
+    "#4d908e",
+    "#f9844a",
+    "#43aa8b",
+]
+
 
 def edit_current_study_data(
     add_study_button_clicks,
@@ -17,9 +30,11 @@ def edit_current_study_data(
     remove_study_button_clicks,
     new_study_id,
     new_study_label,
+    new_study_color,
     edit_study_id,
     edit_study_path,
     edit_study_name,
+    edit_study_color,
     selected_study,
     current_studies,
     add_trigger,
@@ -42,11 +57,18 @@ def edit_current_study_data(
                     label = pathlib.Path(new_study_id).parts[-1]
                 else:
                     label = new_study_label
+                if new_study_color == "#ffffff":
+                    color = DISCRETE_COLOR_PALLETE[
+                        last_id % len(DISCRETE_COLOR_PALLETE)
+                    ]
+                else:
+                    color = new_study_color
                 new_data = pd.DataFrame(
                     data={
                         "id": [str(last_id + 1)],
                         "CAMINHO": [new_study_id],
                         "NOME": [label],
+                        "COR": [color],
                     }
                 )
                 return pd.concat(
@@ -63,6 +85,9 @@ def edit_current_study_data(
             current_data.loc[
                 current_data["id"] == edit_study_id, "NOME"
             ] = edit_study_name
+            current_data.loc[
+                current_data["id"] == edit_study_id, "COR"
+            ] = edit_study_color
             return current_data.to_json(orient="split")
     elif ctx.triggered_id == remove_trigger:
         if remove_study_button_clicks:
@@ -95,6 +120,9 @@ def extract_selected_study_data(
             ].tolist()[0],
             "NOME": current_data.loc[
                 current_data["id"] == study_id, "NOME"
+            ].tolist()[0],
+            "COR": current_data.loc[
+                current_data["id"] == study_id, "COR"
             ].tolist()[0],
         }
 

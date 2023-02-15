@@ -82,14 +82,14 @@ class AcumProbGraph(html.Div):
             "value",
         ),
         State(AcumProbFilters.ids.filters(MATCH), "data"),
+        State(ids.studies(MATCH), "data"),
     )
     def generate_operation_graph(
         operation_data,
         variable,
         filters,
+        studies,
     ):
         return plots.generate_acumprob_graph_casos(
-            operation_data,
-            variable,
-            filters,
+            operation_data, variable, filters, studies
         )

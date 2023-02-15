@@ -15,7 +15,7 @@ import uuid
 from src.utils.settings import Settings
 
 
-df = pd.DataFrame(columns=["id", "CAMINHO", "NOME"])
+df = pd.DataFrame(columns=["id", "CAMINHO", "NOME", "COR"])
 
 
 class CurrentStudiesTable(html.Div):

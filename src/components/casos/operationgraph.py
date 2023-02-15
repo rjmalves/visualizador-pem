@@ -99,6 +99,7 @@ class OperationGraph(html.Div):
             "value",
         ),
         State(OperationFiltersTwin.ids.filters(MATCH), "data"),
+        State(ids.studies(MATCH), "data"),
     )
     def generate_operation_graph(
         operation_data,
@@ -107,6 +108,7 @@ class OperationGraph(html.Div):
         filters,
         variable_twinx,
         filters_twinx,
+        studies,
     ):
         return plots.generate_operation_graph_casos_twinx(
             operation_data,
@@ -115,4 +117,5 @@ class OperationGraph(html.Div):
             operation_data_twinx,
             variable_twinx,
             filters_twinx,
+            studies,
         )

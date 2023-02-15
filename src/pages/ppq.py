@@ -83,9 +83,11 @@ def toggle_ppq_modal(src1, src2, is_open, selected):
     ),
     State(NewStudyModal.ids.new_study_name("ppq-modal"), "value"),
     State(NewStudyModal.ids.new_study_label("ppq-modal"), "value"),
+    State(NewStudyModal.ids.new_study_color("ppq-modal"), "value"),
     State(EditStudyModal.ids.edit_study_id("ppq-edit-modal"), "data"),
     State(EditStudyModal.ids.edit_study_path("ppq-edit-modal"), "value"),
     State(EditStudyModal.ids.edit_study_name("ppq-edit-modal"), "value"),
+    State(EditStudyModal.ids.edit_study_color("ppq-edit-modal"), "value"),
     State(
         CurrentStudiesTable.ids.selected("ppq-current-studies"),
         "data",
@@ -98,9 +100,11 @@ def edit_current_ppq_study_data(
     remove_study_button_clicks,
     new_study_id,
     new_study_label,
+    new_study_color,
     edit_study_id,
     edit_study_path,
     edit_study_name,
+    edit_study_color,
     selected_study,
     current_studies,
 ):
@@ -110,9 +114,11 @@ def edit_current_ppq_study_data(
         remove_study_button_clicks,
         new_study_id,
         new_study_label,
+        new_study_color,
         edit_study_id,
         edit_study_path,
         edit_study_name,
+        edit_study_color,
         selected_study,
         current_studies,
         NewStudyModal.ids.confirm_study_btn("ppq-modal"),
@@ -157,6 +163,26 @@ def update_edit_study_modal_path(selected_study, current_studies):
         return None
     else:
         return dados["CAMINHO"]
+
+
+@callback(
+    Output(EditStudyModal.ids.edit_study_color("ppq-edit-modal"), "value"),
+    Input(
+        CurrentStudiesTable.ids.selected("ppq-current-studies"),
+        "data",
+    ),
+    State(CurrentStudiesTable.ids.data("ppq-current-studies"), "data"),
+)
+def update_edit_study_modal_color(selected_study, current_studies):
+    dados = data.extract_selected_study_data(
+        selected_study,
+        current_studies,
+    )
+
+    if dados is None:
+        return None
+    else:
+        return dados["COR"]
 
 
 @callback(

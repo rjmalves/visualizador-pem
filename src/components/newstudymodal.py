@@ -27,6 +27,11 @@ class NewStudyModal(html.Div):
             "subcomponent": "new_study_label",
             "aio_id": aio_id,
         }
+        new_study_color = lambda aio_id: {
+            "component": "NewStudyModal",
+            "subcomponent": "new_study_color",
+            "aio_id": aio_id,
+        }
         confirm_study_btn = lambda aio_id: {
             "component": "NewStudyModal",
             "subcomponent": "confirm_study_btn",
@@ -92,12 +97,18 @@ class NewStudyModal(html.Div):
                                             className="modal-input-field",
                                             type="text",
                                         ),
-                                        # TODO - adicionar color picker
-                                        # dbc.Input(
-                                        #     type="color",
-                                        #     id="modal-color-picker",
-                                        #     value="#000000",
-                                        # ),
+                                        dbc.Label(
+                                            "Cor",
+                                            className="modal-form-comment",
+                                        ),
+                                        dbc.Input(
+                                            type="color",
+                                            id=self.ids.new_study_color(
+                                                aio_id
+                                            ),
+                                            className="modal-input-field",
+                                            value="#ffffff",
+                                        ),
                                     ]
                                 ),
                                 dbc.ModalFooter(

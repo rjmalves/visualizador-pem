@@ -32,6 +32,11 @@ class EditStudyModal(html.Div):
             "subcomponent": "edit_study_name",
             "aio_id": aio_id,
         }
+        edit_study_color = lambda aio_id: {
+            "component": "EditStudyModal",
+            "subcomponent": "edit_study_color",
+            "aio_id": aio_id,
+        }
         confirm_study_btn = lambda aio_id: {
             "component": "EditStudyModal",
             "subcomponent": "confirm_study_btn",
@@ -99,16 +104,21 @@ class EditStudyModal(html.Div):
                                             className="modal-input-field",
                                             type="text",
                                         ),
+                                        dbc.Label(
+                                            "Cor",
+                                            className="modal-form-comment",
+                                        ),
+                                        dbc.Input(
+                                            type="color",
+                                            id=self.ids.edit_study_color(
+                                                aio_id
+                                            ),
+                                            className="modal-input-field",
+                                        ),
                                         dcc.Store(
                                             id=self.ids.edit_study_id(aio_id),
                                             storage_type="memory",
                                         ),
-                                        # TODO - adicionar color picker
-                                        # dbc.Input(
-                                        #     type="color",
-                                        #     id="modal-color-picker",
-                                        #     value="#000000",
-                                        # ),
                                     ]
                                 ),
                                 dbc.ModalFooter(
