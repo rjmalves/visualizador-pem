@@ -93,6 +93,13 @@ logged_out_info = (
     ),
 )
 
+logout_card = (
+    html.Div(
+        html.H2("Você foi desconectado. Por favor, faça login novamente"),
+        className="card-header",
+    ),
+)
+
 
 @callback(
     Output("user-status-header", "children"), Input("url-login", "pathname")
