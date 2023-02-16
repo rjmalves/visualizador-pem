@@ -9,9 +9,12 @@ import dash
 from dash import html
 import dash_bootstrap_components as dbc
 from waitress import serve
+from flask_login import LoginManager
 
 # local imports
 from src.components import footer, navbar
+from src.components.login import User
+
 from src.utils.settings import Settings
 
 
@@ -36,6 +39,19 @@ class App:
             update_title="Carregando...",
             url_base_pathname=Settings.url_prefix,
         )
+        self.__app.server.config.update(SECRET_KEY=Settings.secret_key)
+
+        self.__login_manager = LoginManager()
+        self.__login_manager.init_app(self.__app.server)
+
+        @self.__login_manager.user_loader
+        def load_user(username):
+            """This function loads the user by user id. Typically this looks up the user from a user database.
+            We won't be registering or looking up users in this example, since we'll just login using LDAP server.
+            So we'll simply return a User object with the passed in username.
+            """
+            return User(username)
+
         self.__app.layout = serve_layout
 
     def serve(self):

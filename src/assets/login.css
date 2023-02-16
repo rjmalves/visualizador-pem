@@ -1,0 +1,59 @@
+
+.login-form-comment {
+  font-weight: 500;
+  font-size: 16px;
+  color: var(--card-header-text-color);
+  text-decoration: none;
+}
+
+.login-button {
+  padding: 9px 25px;
+  margin: 0px 0px 0px 10px;
+  font-weight: 500;
+  font-size: 16px;
+  color: var(--card-header-text-color);
+  text-decoration: none;
+  background-color: var(--button-background-color);
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease 0s;
+}
+
+.login-button:hover  {
+  transition: all 0.3s ease 0s;
+  background-color: var(--button-background-color-hover);
+  color: var(--card-header-text-color);
+}
+
+.login-input-field[type=text] {
+    width: 100%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    border: 8px solid var(--card-border-color);
+    transition: all 0.3s ease 0s;
+    box-sizing: border-box;
+}
+
+.login-input-field[type=text]:focus {
+  transition: all 0.3s ease 0s;
+  border: 8px solid var(--modal-form-input-border-color);
+}
+
+.login-input-field[type=password] {
+    width: 100%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    border: 8px solid var(--card-border-color);
+    transition: all 0.3s ease 0s;
+    box-sizing: border-box;
+}
+
+.login-input-field[type=password]:focus {
+  transition: all 0.3s ease 0s;
+  border: 8px solid var(--modal-form-input-border-color);
+}
+
+.login-input-field[type=color] {
+  margin: 8px 24px;
+}

@@ -1,6 +1,7 @@
 from dash import html, dcc, callback, Input, Output
 import os
 from src.utils.settings import Settings
+from src.components.login import login_info, login_location
 
 navbar = html.Header(
     [
@@ -44,7 +45,8 @@ navbar = html.Header(
                         className="navbar-links",
                     ),
                 ),
-                html.A(html.Button("Login"), href="/login", className="login"),
+                html.Div(login_info),
+                login_location,
                 dcc.Location(id="url"),
             ],
             className="navbar",

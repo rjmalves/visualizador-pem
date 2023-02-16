@@ -33,6 +33,7 @@ class Settings:
     synthesis_dir = os.getenv("SYNTHESIS_DIR", "sintese")
     newave_dir = os.getenv("NEWAVE_DIR", "NEWAVE")
     decomp_dir = os.getenv("DECOMP_DIR", "DECOMP")
+    secret_key = os.getenv("SECRET_KEY", "test")
 
     @classmethod
     def read_environments(cls):
@@ -54,3 +55,4 @@ class Settings:
         cls.synthesis_dir = os.getenv("SYNTHESIS_DIR", "sintese")
         cls.newave_dir = os.getenv("NEWAVE_DIR", "NEWAVE")
         cls.decomp_dir = os.getenv("DECOMP_DIR", "DECOMP")
+        cls.secret_key = os.getenv("SECRET_KEY", "test")
