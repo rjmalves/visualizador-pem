@@ -81,9 +81,9 @@ class TimeCostsGraph(html.Div):
             TimeCostsFilters.ids.variable_dropdown(MATCH),
             "value",
         ),
+        State(ids.studies(MATCH), "data"),
     )
-    def generate_tempo_custos_graph(
-        timecosts_data,
-        variable,
-    ):
-        return plots.generate_timecosts_graph_casos(timecosts_data, variable)
+    def generate_tempo_custos_graph(timecosts_data, variable, studies):
+        return plots.generate_timecosts_graph_casos(
+            timecosts_data, variable, studies
+        )

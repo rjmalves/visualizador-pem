@@ -332,7 +332,6 @@ def generate_operation_graph_casos_twinx(
                     visible=visibilidade_p,
                 )
             )
-            next_color += 1
 
         dados_estudo = pivot_df_for_plot(
             dados_twinx.loc[dados_twinx["estudo"] == estudo]
@@ -637,7 +636,7 @@ def generate_acumprob_graph_casos(
     return fig
 
 
-def generate_timecosts_graph_encadeador(time_costs, variable):
+def generate_timecosts_graph_encadeador(time_costs, variable, studies_data):
     graph_layout = go.Layout(
         plot_bgcolor="rgba(158, 149, 128, 0.2)",
         paper_bgcolor="rgba(255,255,255,1)",
@@ -649,6 +648,10 @@ def generate_timecosts_graph_encadeador(time_costs, variable):
     Log.log().info(f"Plotando gráfico - ENCADEADOR ({variable})")
     dados = pd.read_json(time_costs, orient="split")
     ordem_estudos = dados["estudo"].unique().tolist()
+    df_estudos = pd.read_json(studies_data, orient="split")
+    mapa_cor = {
+        linha["NOME"]: linha["COR"] for _, linha in df_estudos.iterrows()
+    }
     if "etapa" in dados.columns:
         dados = dados.loc[dados["etapa"] == "Tempo Total", :]
         dados = (
@@ -705,7 +708,7 @@ def generate_timecosts_graph_encadeador(time_costs, variable):
         y=y_col,
         error_y=error_y,
         color="estudo",
-        color_discrete_sequence=DISCRETE_COLOR_PALLETE_COSTS,
+        color_discrete_map=mapa_cor,
         text="label",
         category_orders={"estudo": ordem_estudos},
     )
@@ -721,7 +724,7 @@ def generate_timecosts_graph_encadeador(time_costs, variable):
     return fig
 
 
-def generate_timecosts_graph_casos(time_costs, variable):
+def generate_timecosts_graph_casos(time_costs, variable, studies_data):
     graph_layout = go.Layout(
         plot_bgcolor="rgba(158, 149, 128, 0.2)",
         paper_bgcolor="rgba(255,255,255,1)",
@@ -732,6 +735,10 @@ def generate_timecosts_graph_casos(time_costs, variable):
         return fig
     Log.log().info(f"Plotando gráfico - ENCADEADOR ({variable})")
     dados = pd.read_json(time_costs, orient="split")
+    df_estudos = pd.read_json(studies_data, orient="split")
+    mapa_cor = {
+        linha["NOME"]: linha["COR"] for _, linha in df_estudos.iterrows()
+    }
     if "etapa" in dados.columns:
         dados = dados.loc[dados["etapa"] != "Tempo Total", :]
         dados["tempo"] = pd.to_timedelta(dados["tempo"], unit="s") / timedelta(
@@ -760,7 +767,7 @@ def generate_timecosts_graph_casos(time_costs, variable):
         y=y_col,
         error_y=error_y,
         color=color_col,
-        color_discrete_sequence=DISCRETE_COLOR_PALLETE_COSTS,
+        color_discrete_map=mapa_cor,
         text="label",
     )
     fig.update_layout(graph_layout)
@@ -775,7 +782,9 @@ def generate_timecosts_graph_casos(time_costs, variable):
     return fig
 
 
-def generate_violation_graph_encadeador(violation_data, violation):
+def generate_violation_graph_encadeador(
+    violation_data, violation, studies_data
+):
     graph_layout = go.Layout(
         plot_bgcolor="rgba(158, 149, 128, 0.2)",
         paper_bgcolor="rgba(255,255,255,1)",
@@ -787,6 +796,11 @@ def generate_violation_graph_encadeador(violation_data, violation):
 
     Log.log().info(f"Plotando gráfico - ENCADEADOR ({violation})")
     dados = pd.read_json(violation_data, orient="split")
+
+    df_estudos = pd.read_json(studies_data, orient="split")
+    mapa_cor = {
+        linha["NOME"]: linha["COR"] for _, linha in df_estudos.iterrows()
+    }
 
     ordem_estudos = dados["estudo"].unique().tolist()
     if violation in ["TI", "RHQ", "RE", "RHE", "RHV"]:
@@ -815,7 +829,7 @@ def generate_violation_graph_encadeador(violation_data, violation):
         y=y_col,
         error_y=error_y,
         color="estudo",
-        color_discrete_sequence=DISCRETE_COLOR_PALLETE_COSTS,
+        color_discrete_sequence=mapa_cor,
         category_orders={"estudo": ordem_estudos},
     )
     fig.update_layout(graph_layout)
@@ -830,7 +844,7 @@ def generate_violation_graph_encadeador(violation_data, violation):
     return fig
 
 
-def generate_convergence_graph_casos(convergence_data, variable):
+def generate_convergence_graph_casos(convergence_data, variable, studies_data):
     graph_layout = go.Layout(
         plot_bgcolor="rgba(158, 149, 128, 0.2)",
         paper_bgcolor="rgba(255,255,255,1)",
@@ -850,15 +864,10 @@ def generate_convergence_graph_casos(convergence_data, variable):
         go.Bar(x=dados[x_col], y=dados["tempo"], name="tempo"),
         secondary_y=True,
     )
-    for i, col in enumerate(["zinf", "zsup", "dZinf"], start=1):
-        fig.add_trace(
-            go.Scatter(
-                x=dados[x_col],
-                y=dados[col],
-                line_color=DISCRETE_COLOR_PALLETE[i],
-                name=col,
-            )
-        )
+    df_estudos = pd.read_json(studies_data, orient="split")
+    mapa_cor = {
+        linha["NOME"]: linha["COR"] for _, linha in df_estudos.iterrows()
+    }
     fig.update_layout(graph_layout)
     if variable is not None:
         if variable == "tempo":
@@ -867,7 +876,7 @@ def generate_convergence_graph_casos(convergence_data, variable):
                 x=x_col,
                 y=variable,
                 color="estudo",
-                color_discrete_sequence=DISCRETE_COLOR_PALLETE,
+                color_discrete_map=mapa_cor,
                 barmode="group",
             )
             unit = "Tempo (minutos)"
@@ -877,7 +886,7 @@ def generate_convergence_graph_casos(convergence_data, variable):
                 x=x_col,
                 y=variable,
                 color="estudo",
-                color_discrete_sequence=DISCRETE_COLOR_PALLETE,
+                color_discrete_map=mapa_cor,
             )
             unit = "" if variable != "dZinf" else "(%)"
         fig.update_layout(

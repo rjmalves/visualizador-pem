@@ -81,12 +81,9 @@ class ConvergenceGraph(html.Div):
             ConvergenceFilters.ids.variables_dropdown(MATCH),
             "value",
         ),
+        State(ids.studies(MATCH), "data"),
     )
-    def generate_operation_graph(
-        operation_data,
-        variable,
-    ):
+    def generate_operation_graph(operation_data, variable, studies):
         return plots.generate_convergence_graph_casos(
-            operation_data,
-            variable,
+            operation_data, variable, studies
         )

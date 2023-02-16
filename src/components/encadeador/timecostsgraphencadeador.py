@@ -88,12 +88,11 @@ class TimeCostsGraphEncadeador(html.Div):
             TimeCostsFiltersEncadeador.ids.filters(MATCH),
             "data",
         ),
+        State(ids.studies(MATCH), "data"),
     )
     def generate_tempo_custos_graph(
-        timecosts_data,
-        variable,
-        filters,
+        timecosts_data, variable, filters, studies
     ):
         return plots.generate_timecosts_graph_encadeador(
-            timecosts_data, variable
+            timecosts_data, variable, studies
         )

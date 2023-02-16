@@ -87,12 +87,11 @@ class ViolationGraph(html.Div):
             ViolationFilters.ids.filters(MATCH),
             "data",
         ),
+        State(ids.studies(MATCH), "data"),
     )
     def generate_tempo_custos_graph(
-        violation_data,
-        violation,
-        filters,
+        violation_data, violation, filters, studies
     ):
         return plots.generate_violation_graph_encadeador(
-            violation_data, violation
+            violation_data, violation, studies
         )
