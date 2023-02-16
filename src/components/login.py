@@ -121,7 +121,7 @@ def login_button_click(n_clicks, username, password, pathname):
     if n_clicks is None:
         raise PreventUpdate
     if n_clicks > 0:
-        if username == "test" and password == "test":
+        if username == Settings.user and password == Settings.password:
             login_user(User(username))
             return Settings.url_prefix
         return pathname

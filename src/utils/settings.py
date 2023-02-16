@@ -34,6 +34,8 @@ class Settings:
     newave_dir = os.getenv("NEWAVE_DIR", "NEWAVE")
     decomp_dir = os.getenv("DECOMP_DIR", "DECOMP")
     secret_key = os.getenv("SECRET_KEY", "test")
+    user = os.getenv("USER")
+    password = os.getenv("PASSWORD")
 
     @classmethod
     def read_environments(cls):
@@ -56,3 +58,5 @@ class Settings:
         cls.newave_dir = os.getenv("NEWAVE_DIR", "NEWAVE")
         cls.decomp_dir = os.getenv("DECOMP_DIR", "DECOMP")
         cls.secret_key = os.getenv("SECRET_KEY", "test")
+        cls.user = os.getenv("USER")
+        cls.password = os.getenv("PASSWORD")
