@@ -383,7 +383,6 @@ def generate_operation_graph_casos_twinx(
                 ),
                 secondary_y=True,
             )
-            next_color += 1
 
     full_title = (
         f"{__make_operation_plot_title(variable, filters)}"
