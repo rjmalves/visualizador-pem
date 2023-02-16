@@ -14,6 +14,7 @@ from dash import (
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 from src.utils.settings import Settings
+from src.utils.log import Log
 
 
 class User(UserMixin):
@@ -95,18 +96,24 @@ logged_out_info = (
 
 logout_card = (
     html.Div(
-        html.H2("Você foi desconectado. Por favor, faça login novamente"),
-        className="card-header",
+        html.H2(
+            "Você foi desconectado. Por favor, faça login novamente",
+            className="logout-message",
+        ),
+        className="logout-body",
     ),
 )
 
 
 @callback(
-    Output("user-status-header", "children"), Input("url-login", "pathname")
+    Output("user-status-header", "children"),
+    Input("url-login", "pathname"),
 )
 def update_authentication_status(path):
     logged_in = current_user.is_authenticated
-    if path == Settings.url_prefix + "logout" and logged_in:
+    Log.log().info(f"AUTH: {logged_in} - {path}")
+    if path == (Settings.url_prefix + "logout") and logged_in:
+        Log.log().info("LOGOUT: Sucesso")
         logout_user()
         child = logged_out_info
     elif logged_in:
@@ -125,10 +132,13 @@ def update_authentication_status(path):
     prevent_initial_call=True,
 )
 def login_button_click(n_clicks, username, password, pathname):
-    if n_clicks is None:
-        raise PreventUpdate
-    if n_clicks > 0:
-        if username == Settings.user and password == Settings.password:
-            login_user(User(username))
-            return Settings.url_prefix
-        return pathname
+    if n_clicks is not None:
+        if n_clicks > 0:
+            if username == Settings.user and password == Settings.password:
+                login_user(User(username))
+                Log.log().info(
+                    f"LOGIN: Sucesso. Usuario: {username} - {pathname}"
+                )
+                return Settings.url_prefix
+            return pathname
+    raise PreventUpdate

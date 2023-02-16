@@ -57,3 +57,18 @@
 .login-input-field[type=color] {
   margin: 8px 24px;
 }
+
+.logout-body {
+  display: grid;
+  align-items:center;
+  justify-content:center;
+}
+
+.logout-message {
+  padding: 12px 20px;
+  margin: 8px 0;
+  border: 8px solid var(--card-border-color);
+  background-color: var(--button-background-color);
+  border-radius: 50px;
+  color: var(--modal-form-input-border-color);
+}
