@@ -118,16 +118,6 @@ class OperationFiltersPPQ(html.Div):
             "subcomponent": "estagio_dropdown_container",
             "aio_id": aio_id,
         }
-        cenario_dropdown = lambda aio_id: {
-            "component": "OperationFiltersPPQ",
-            "subcomponent": "cenario_dropdown",
-            "aio_id": aio_id,
-        }
-        cenario_dropdown_container = lambda aio_id: {
-            "component": "OperationFiltersPPQ",
-            "subcomponent": "cenario_dropdown_container",
-            "aio_id": aio_id,
-        }
         variable_dropdown = lambda aio_id: {
             "component": "OperationFiltersPPQ",
             "subcomponent": "variable_dropdown",
@@ -161,7 +151,6 @@ class OperationFiltersPPQ(html.Div):
         submercadoPara_dropdown_props=None,
         patamar_dropdown_props=None,
         estagio_dropdown_props=None,
-        cenario_dropdown_props=None,
         variable_dropdown_props=None,
     ):
         if aio_id is None:
@@ -195,9 +184,6 @@ class OperationFiltersPPQ(html.Div):
         estagio_dropdown_props = (
             estagio_dropdown_props.copy() if estagio_dropdown_props else {}
         )
-        cenario_dropdown_props = (
-            cenario_dropdown_props.copy() if cenario_dropdown_props else {}
-        )
         variable_dropdown_props = (
             variable_dropdown_props.copy() if variable_dropdown_props else {}
         )
@@ -216,8 +202,6 @@ class OperationFiltersPPQ(html.Div):
             patamar_dropdown_props["style"] = {"display": "none"}
         if "style" not in estagio_dropdown_props:
             estagio_dropdown_props["style"] = {"display": "none"}
-        # if "style" not in cenario_dropdown_props:
-        #     cenario_dropdown_props["style"] = {"display": "none"}
         # if "style" not in variable_dropdown_props:
         #     variable_dropdown_props["style"] = {"display": "none"}
 
@@ -235,8 +219,6 @@ class OperationFiltersPPQ(html.Div):
             patamar_dropdown_props["className"] = "dropdown-container"
         if "className" not in estagio_dropdown_props:
             estagio_dropdown_props["className"] = "dropdown-container"
-        if "className" not in cenario_dropdown_props:
-            cenario_dropdown_props["className"] = "dropdown-container"
         if "className" not in variable_dropdown_props:
             variable_dropdown_props["className"] = "dropdown-container"
 
@@ -296,14 +278,6 @@ class OperationFiltersPPQ(html.Div):
                 placeholder="Estagio",
                 className="variable-dropdown",
             )
-        if "children" not in cenario_dropdown_props:
-            cenario_dropdown_props["children"] = dcc.Dropdown(
-                id=self.ids.cenario_dropdown(aio_id),
-                options=[],
-                value=None,
-                placeholder="Cenario",
-                className="variable-dropdown",
-            )
         if "children" not in variable_dropdown_props:
             variable_dropdown_props["children"] = dcc.Dropdown(
                 id=self.ids.variable_dropdown(aio_id),
@@ -318,10 +292,6 @@ class OperationFiltersPPQ(html.Div):
                 html.Div(
                     id=self.ids.estagio_dropdown_container(aio_id),
                     **estagio_dropdown_props,
-                ),
-                html.Div(
-                    id=self.ids.cenario_dropdown_container(aio_id),
-                    **cenario_dropdown_props,
                 ),
                 html.Div(
                     id=self.ids.usina_dropdown_container(aio_id),
@@ -547,7 +517,6 @@ class OperationFiltersPPQ(html.Div):
         Input(ids.submercadoPara_dropdown(MATCH), "value"),
         Input(ids.patamar_dropdown(MATCH), "value"),
         Input(ids.estagio_dropdown(MATCH), "value"),
-        Input(ids.cenario_dropdown(MATCH), "value"),
     )
     def update_filters(
         usina: str,
@@ -557,7 +526,6 @@ class OperationFiltersPPQ(html.Div):
         submercado_para: str,
         patamar: str,
         estagio: str,
-        cenario: str,
     ):
         filtros = {}
         if usina:

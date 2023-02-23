@@ -129,6 +129,7 @@ VARIABLE_UNITS = {
 }
 
 NOT_SCENARIO_COLUMNS = [
+    "iteracao",
     "estudo",
     "caso",
     "estagio",
@@ -528,6 +529,7 @@ def generate_operation_graph_ppq(
         cor = f"rgba({rgb[0]},{rgb[1]},{rgb[2]}, 1.0)"
         cor_fundo = f"rgba({rgb[0]},{rgb[1]},{rgb[2]}, 0.3)"
         if dados is not None:
+            print(dados)
             dados_estudo = pivot_df_for_plot(
                 dados.loc[dados["estudo"] == estudo]
             )
@@ -550,22 +552,22 @@ def generate_operation_graph_ppq(
                 fig.add_trace(
                     go.Scatter(
                         x=dados_estudo["iteracao"],
-                        y=dados_estudo["mean"] - dados_estudo["std"],
+                        y=dados_estudo["p10"],
                         line_color=cor_fundo,
                         fillcolor=cor_fundo,
                         legendgroup=estudo,
-                        name="lower bound",
+                        name="p10",
                     )
                 )
                 fig.add_trace(
                     go.Scatter(
                         x=dados_estudo["iteracao"],
-                        y=dados_estudo["mean"] + dados_estudo["std"],
+                        y=dados_estudo["p90"],
                         line_color=cor_fundo,
                         fill="tonexty",
                         legendgroup=estudo,
                         legendgrouptitle_text=estudo,
-                        name="upper bound",
+                        name="p90",
                     )
                 )
 
