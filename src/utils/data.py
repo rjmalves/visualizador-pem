@@ -523,7 +523,7 @@ def update_operation_data_ppq(interval, studies, filters: dict, variable: str):
         paths,
         labels,
         variable,
-        {**req_filters, "preprocess": "STATISTICS"},
+        {**req_filters, "preprocess": "FULL"},
     )
 
     if df is None:

@@ -522,63 +522,27 @@ def generate_operation_graph_ppq(
         return fig
     dados = pd.read_json(operation_data, orient="split")
     df_estudos = pd.read_json(studies_data, orient="split")
+    mapa_cor = {
+        linha["NOME"]: linha["COR"] for _, linha in df_estudos.iterrows()
+    }
+    ordem_estudos = dados["estudo"].unique().tolist()
+    fig = px.box(
+        dados,
+        x="iteracao",
+        y="valor",
+        color="estudo",
+        color_discrete_map=mapa_cor,
+        category_orders={"estudo": ordem_estudos},
+    )
+    fig.update_layout(graph_layout)
+    fig.update_layout(
+        title=__make_operation_plot_title(variable, filters),
+        xaxis_title="Iteracao",
+        yaxis_title=VARIABLE_UNITS.get(variable.split("_")[0], ""),
+        hovermode="x unified",
+        legend=dict(groupclick="toggleitem"),
+    )
 
-    for _, linha_df in df_estudos.iterrows():
-        estudo = linha_df["NOME"]
-        rgb = hex_to_rgb(linha_df["COR"])
-        cor = f"rgba({rgb[0]},{rgb[1]},{rgb[2]}, 1.0)"
-        cor_fundo = f"rgba({rgb[0]},{rgb[1]},{rgb[2]}, 0.3)"
-        if dados is not None:
-            print(dados)
-            dados_estudo = pivot_df_for_plot(
-                dados.loc[dados["estudo"] == estudo]
-            )
-            if not dados_estudo.empty:
-                dados_estudo = dados_estudo.sort_values("iteracao")
-                fig.add_trace(
-                    go.Scatter(
-                        x=dados_estudo["iteracao"],
-                        y=dados_estudo["mean"],
-                        line={
-                            "color": cor,
-                            "dash": "dot",
-                            "width": 2,
-                        },
-                        name="mean",
-                        legendgroup=estudo,
-                        legendgrouptitle_text=estudo,
-                    )
-                )
-                fig.add_trace(
-                    go.Scatter(
-                        x=dados_estudo["iteracao"],
-                        y=dados_estudo["p10"],
-                        line_color=cor_fundo,
-                        fillcolor=cor_fundo,
-                        legendgroup=estudo,
-                        name="p10",
-                    )
-                )
-                fig.add_trace(
-                    go.Scatter(
-                        x=dados_estudo["iteracao"],
-                        y=dados_estudo["p90"],
-                        line_color=cor_fundo,
-                        fill="tonexty",
-                        legendgroup=estudo,
-                        legendgrouptitle_text=estudo,
-                        name="p90",
-                    )
-                )
-
-    if variable is not None:
-        fig.update_layout(
-            title=__make_operation_plot_title(variable, filters),
-            xaxis_title="Iteracao",
-            yaxis_title=VARIABLE_UNITS.get(variable.split("_")[0], ""),
-            hovermode="x unified",
-            legend=dict(groupclick="toggleitem"),
-        )
     return fig
 
 
@@ -586,7 +550,17 @@ def __process_acumprob(operation_data: pd.DataFrame) -> pd.DataFrame:
     cols_scenarios = [
         c for c in operation_data.columns if c not in NOT_SCENARIO_COLUMNS
     ]
-    vals = operation_data[cols_scenarios].to_numpy().flatten()
+    all_scenarios = operation_data["cenario"].unique().tolist()
+    stats_scenarios = ["mean", "min", "max", "median"] + [
+        c for c in all_scenarios if "p" in c
+    ]
+    vals = (
+        operation_data.loc[
+            ~operation_data["cenario"].isin(stats_scenarios), cols_scenarios
+        ]
+        .to_numpy()
+        .flatten()
+    )
     df = pd.DataFrame(data={"values": vals})
     df["cdf"] = df.rank(method="average", pct=True)
     return df.sort_values("values")
