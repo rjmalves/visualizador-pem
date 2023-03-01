@@ -26,110 +26,115 @@ GRUPOS_SUBMERCADOS = {
 }
 
 
-class OperationFiltersPPQ(html.Div):
+class DistributionFiltersPPQ(html.Div):
     class ids:
         studies = lambda aio_id: {
-            "component": "OperationFiltersPPQ",
+            "component": "DistributionFiltersPPQ",
             "subcomponent": "studies",
             "aio_id": aio_id,
         }
         data = lambda aio_id: {
-            "component": "OperationFiltersPPQ",
+            "component": "DistributionFiltersPPQ",
             "subcomponent": "data",
             "aio_id": aio_id,
         }
         options = lambda aio_id: {
-            "component": "OperationFiltersPPQ",
+            "component": "DistributionFiltersPPQ",
             "subcomponent": "options",
             "aio_id": aio_id,
         }
         filters = lambda aio_id: {
-            "component": "OperationFiltersPPQ",
+            "component": "DistributionFiltersPPQ",
             "subcomponent": "filters",
             "aio_id": aio_id,
         }
         usina_dropdown = lambda aio_id: {
-            "component": "OperationFiltersPPQ",
+            "component": "DistributionFiltersPPQ",
             "subcomponent": "usina_dropdown",
             "aio_id": aio_id,
         }
         usina_dropdown_container = lambda aio_id: {
-            "component": "OperationFiltersPPQ",
+            "component": "DistributionFiltersPPQ",
             "subcomponent": "usina_dropdown_container",
             "aio_id": aio_id,
         }
         ree_dropdown = lambda aio_id: {
-            "component": "OperationFiltersPPQ",
+            "component": "DistributionFiltersPPQ",
             "subcomponent": "ree_dropdown",
             "aio_id": aio_id,
         }
         ree_dropdown_container = lambda aio_id: {
-            "component": "OperationFiltersPPQ",
+            "component": "DistributionFiltersPPQ",
             "subcomponent": "ree_dropdown_container",
             "aio_id": aio_id,
         }
         submercado_dropdown = lambda aio_id: {
-            "component": "OperationFiltersPPQ",
+            "component": "DistributionFiltersPPQ",
             "subcomponent": "submercado_dropdown",
             "aio_id": aio_id,
         }
         submercado_dropdown_container = lambda aio_id: {
-            "component": "OperationFiltersPPQ",
+            "component": "DistributionFiltersPPQ",
             "subcomponent": "submercado_dropdown_container",
             "aio_id": aio_id,
         }
         submercadoDe_dropdown = lambda aio_id: {
-            "component": "OperationFiltersPPQ",
+            "component": "DistributionFiltersPPQ",
             "subcomponent": "submercadoDe_dropdown",
             "aio_id": aio_id,
         }
         submercadoDe_dropdown_container = lambda aio_id: {
-            "component": "OperationFiltersPPQ",
+            "component": "DistributionFiltersPPQ",
             "subcomponent": "submercadoDe_dropdown_container",
             "aio_id": aio_id,
         }
         submercadoPara_dropdown = lambda aio_id: {
-            "component": "OperationFiltersPPQ",
+            "component": "DistributionFiltersPPQ",
             "subcomponent": "submercadoPara_dropdown",
             "aio_id": aio_id,
         }
         submercadoPara_dropdown_container = lambda aio_id: {
-            "component": "OperationFiltersPPQ",
+            "component": "DistributionFiltersPPQ",
             "subcomponent": "submercadoPara_dropdown_container",
             "aio_id": aio_id,
         }
         patamar_dropdown = lambda aio_id: {
-            "component": "OperationFiltersPPQ",
+            "component": "DistributionFiltersPPQ",
             "subcomponent": "patamar_dropdown",
             "aio_id": aio_id,
         }
         patamar_dropdown_container = lambda aio_id: {
-            "component": "OperationFiltersPPQ",
+            "component": "DistributionFiltersPPQ",
             "subcomponent": "patamar_dropdown_container",
             "aio_id": aio_id,
         }
+        estagio_dropdown = lambda aio_id: {
+            "component": "DistributionFiltersPPQ",
+            "subcomponent": "estagio_dropdown",
+            "aio_id": aio_id,
+        }
+        estagio_dropdown_container = lambda aio_id: {
+            "component": "DistributionFiltersPPQ",
+            "subcomponent": "estagio_dropdown_container",
+            "aio_id": aio_id,
+        }
         variable_dropdown = lambda aio_id: {
-            "component": "OperationFiltersPPQ",
+            "component": "DistributionFiltersPPQ",
             "subcomponent": "variable_dropdown",
             "aio_id": aio_id,
         }
-        studies_dropdown = lambda aio_id: {
-            "component": "OperationFiltersPPQ",
-            "subcomponent": "studies_dropdown",
-            "aio_id": aio_id,
-        }
         download = lambda aio_id: {
-            "component": "OperationFiltersPPQ",
+            "component": "DistributionFiltersPPQ",
             "subcomponent": "download",
             "aio_id": aio_id,
         }
         download_btn = lambda aio_id: {
-            "component": "OperationFiltersPPQ",
+            "component": "DistributionFiltersPPQ",
             "subcomponent": "download_btn",
             "aio_id": aio_id,
         }
         updater = lambda aio_id: {
-            "component": "OperationFiltersPPQ",
+            "component": "DistributionFiltersPPQ",
             "subcomponent": "updater",
             "aio_id": aio_id,
         }
@@ -145,8 +150,8 @@ class OperationFiltersPPQ(html.Div):
         submercadoDe_dropdown_props=None,
         submercadoPara_dropdown_props=None,
         patamar_dropdown_props=None,
+        estagio_dropdown_props=None,
         variable_dropdown_props=None,
-        studies_dropdown_props=None,
     ):
         if aio_id is None:
             aio_id = str(uuid.uuid4())
@@ -176,12 +181,11 @@ class OperationFiltersPPQ(html.Div):
         patamar_dropdown_props = (
             patamar_dropdown_props.copy() if patamar_dropdown_props else {}
         )
+        estagio_dropdown_props = (
+            estagio_dropdown_props.copy() if estagio_dropdown_props else {}
+        )
         variable_dropdown_props = (
             variable_dropdown_props.copy() if variable_dropdown_props else {}
-        )
-
-        studies_dropdown_props = (
-            studies_dropdown_props.copy() if studies_dropdown_props else {}
         )
 
         if "style" not in usina_dropdown_props:
@@ -196,6 +200,8 @@ class OperationFiltersPPQ(html.Div):
             submercadoPara_dropdown_props["style"] = {"display": "none"}
         if "style" not in patamar_dropdown_props:
             patamar_dropdown_props["style"] = {"display": "none"}
+        if "style" not in estagio_dropdown_props:
+            estagio_dropdown_props["style"] = {"display": "none"}
         # if "style" not in variable_dropdown_props:
         #     variable_dropdown_props["style"] = {"display": "none"}
 
@@ -211,10 +217,10 @@ class OperationFiltersPPQ(html.Div):
             submercadoPara_dropdown_props["className"] = "dropdown-container"
         if "className" not in patamar_dropdown_props:
             patamar_dropdown_props["className"] = "dropdown-container"
+        if "className" not in estagio_dropdown_props:
+            estagio_dropdown_props["className"] = "dropdown-container"
         if "className" not in variable_dropdown_props:
             variable_dropdown_props["className"] = "dropdown-container"
-        if "className" not in studies_dropdown_props:
-            studies_dropdown_props["className"] = "dropdown-container"
 
         if "children" not in usina_dropdown_props:
             usina_dropdown_props["children"] = dcc.Dropdown(
@@ -264,6 +270,14 @@ class OperationFiltersPPQ(html.Div):
                 placeholder="Patamar",
                 className="variable-dropdown",
             )
+        if "children" not in estagio_dropdown_props:
+            estagio_dropdown_props["children"] = dcc.Dropdown(
+                id=self.ids.estagio_dropdown(aio_id),
+                options=[],
+                value=None,
+                placeholder="Estagio",
+                className="variable-dropdown",
+            )
         if "children" not in variable_dropdown_props:
             variable_dropdown_props["children"] = dcc.Dropdown(
                 id=self.ids.variable_dropdown(aio_id),
@@ -272,17 +286,13 @@ class OperationFiltersPPQ(html.Div):
                 placeholder="Variavel",
                 className="variable-dropdown",
             )
-        if "children" not in studies_dropdown_props:
-            studies_dropdown_props["children"] = dcc.Dropdown(
-                id=self.ids.studies_dropdown(aio_id),
-                options=[],
-                value=None,
-                placeholder="Estudo",
-                className="variable-dropdown",
-            )
 
         super().__init__(
             children=[
+                html.Div(
+                    id=self.ids.estagio_dropdown_container(aio_id),
+                    **estagio_dropdown_props,
+                ),
                 html.Div(
                     id=self.ids.usina_dropdown_container(aio_id),
                     **usina_dropdown_props,
@@ -309,9 +319,6 @@ class OperationFiltersPPQ(html.Div):
                 ),
                 html.Div(
                     **variable_dropdown_props,
-                ),
-                html.Div(
-                    **studies_dropdown_props,
                 ),
                 dcc.Store(
                     id=self.ids.studies(aio_id),
@@ -491,14 +498,15 @@ class OperationFiltersPPQ(html.Div):
         return []
 
     @callback(
-        Output(ids.studies_dropdown(MATCH), "options"),
+        Output(ids.estagio_dropdown(MATCH), "options"),
         Input(ids.updater(MATCH), "n_intervals"),
-        Input(ids.studies(MATCH), "data"),
+        Input(ids.options(MATCH), "data"),
     )
-    def update_studies_dropdown_options(interval, studies_data):
-        return dropdowns.update_studies_names_dropdown_options_casos(
-            interval, studies_data
-        )
+    def update_estagio_options(interval, options):
+        if options:
+            if "estagio" in options.keys():
+                return sorted(list(set(options["estagio"])))
+        return []
 
     @callback(
         Output(ids.filters(MATCH), "data"),
@@ -508,7 +516,7 @@ class OperationFiltersPPQ(html.Div):
         Input(ids.submercadoDe_dropdown(MATCH), "value"),
         Input(ids.submercadoPara_dropdown(MATCH), "value"),
         Input(ids.patamar_dropdown(MATCH), "value"),
-        Input(ids.studies_dropdown(MATCH), "value"),
+        Input(ids.estagio_dropdown(MATCH), "value"),
     )
     def update_filters(
         usina: str,
@@ -517,7 +525,7 @@ class OperationFiltersPPQ(html.Div):
         submercado_de: str,
         submercado_para: str,
         patamar: str,
-        estudo: str,
+        estagio: str,
     ):
         filtros = {}
         if usina:
@@ -532,8 +540,8 @@ class OperationFiltersPPQ(html.Div):
             filtros["submercadoPara"] = NOMES_SUBMERCADOS.get(submercado_para)
         if patamar:
             filtros["patamar"] = f"'{patamar}'"
-        if estudo:
-            filtros["estudo"] = f"{estudo}"
+        if estagio:
+            filtros["estagio"] = f"{estagio}"
         return filtros
 
     @callback(
@@ -563,13 +571,10 @@ class OperationFiltersPPQ(html.Div):
         Input(ids.studies(MATCH), "data"),
         Input(ids.filters(MATCH), "data"),
         Input(ids.variable_dropdown(MATCH), "value"),
-        Input(ids.studies_dropdown(MATCH), "value"),
     )
-    def update_data(
-        interval, studies, filters: dict, variable: str, study: str
-    ):
-        return data.update_operation_data_ppq(
-            interval, studies, filters, variable, study
+    def update_data(interval, studies, filters: dict, variable: str):
+        return data.update_distribution_data_ppq(
+            interval, studies, filters, variable
         )
 
     @callback(

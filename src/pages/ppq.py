@@ -6,6 +6,7 @@ from dash import html, callback, Input, Output, State
 from src.components.newstudymodal import NewStudyModal
 from src.components.editstudymodal import EditStudyModal
 from src.components.currentstudiestable import CurrentStudiesTable
+from src.components.ppquente.distributionsgraphppq import DistributionsGraphPPQ
 from src.components.ppquente.operationgraphppq import OperationGraphPPQ
 
 import src.utils.modals as modals
@@ -20,6 +21,7 @@ layout = html.Div(
         EditStudyModal(aio_id="ppq-edit-modal"),
         CurrentStudiesTable(aio_id="ppq-current-studies"),
         OperationGraphPPQ(aio_id="ppq-operation-graph"),
+        DistributionsGraphPPQ(aio_id="ppq-distribution-graph"),
     ],
     className="ppq-app-page",
 )
@@ -203,6 +205,16 @@ def update_edit_study_modal_name(selected_study, current_studies):
         return None
     else:
         return dados["NOME"]
+
+
+@callback(
+    Output(
+        DistributionsGraphPPQ.ids.studies("ppq-distribution-graph"), "data"
+    ),
+    Input(CurrentStudiesTable.ids.data("ppq-current-studies"), "data"),
+)
+def update_current_studies(studies_data):
+    return studies_data
 
 
 @callback(

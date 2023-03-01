@@ -6,6 +6,7 @@ import numpy as np
 from typing import List
 from datetime import timedelta
 from src.utils.log import Log
+from src.utils.data import DISCRETE_COLOR_PALLETE
 
 DISCRETE_COLOR_PALLETE_COSTS = [
     "rgba(249, 65, 68, 1)",
@@ -510,6 +511,91 @@ def generate_operation_graph_encadeador(
 
 
 def generate_operation_graph_ppq(
+    operation_data, variable, filters, studies_data
+):
+    graph_layout = go.Layout(
+        plot_bgcolor="rgba(158, 149, 128, 0.2)",
+        paper_bgcolor="rgba(255,255,255,1)",
+    )
+    fig = go.Figure()
+    fig.update_layout(graph_layout)
+    if operation_data is None:
+        return fig
+    dados = pd.read_json(operation_data, orient="split")
+    dados["dataInicio"] = pd.to_datetime(dados["dataInicio"], unit="ms")
+    dados["dataFim"] = pd.to_datetime(dados["dataFim"], unit="ms")
+
+    line_shape = "linear"
+
+    dados = dados.loc[dados["estudo"] == filters["estudo"]]
+
+    if dados is not None:
+        iteracoes = sorted(dados["iteracao"].unique().tolist())
+        visibilidade_p = "legendonly" if len(iteracoes) > 2 else None
+        for i, iteracao in enumerate(iteracoes):
+            rgb = hex_to_rgb(
+                DISCRETE_COLOR_PALLETE[i % len(DISCRETE_COLOR_PALLETE)]
+            )
+            cor = f"rgba({rgb[0]},{rgb[1]},{rgb[2]}, 1.0)"
+            cor_fundo = f"rgba({rgb[0]},{rgb[1]},{rgb[2]}, 0.3)"
+            dados_estudo = pivot_df_for_plot(
+                dados.loc[dados["iteracao"] == iteracao]
+            )
+            nome = f"it {iteracao}"
+            if not dados_estudo.empty:
+                fig.add_trace(
+                    go.Scatter(
+                        x=dados_estudo["dataInicio"],
+                        y=dados_estudo["mean"],
+                        line={
+                            "color": cor,
+                            "width": 3,
+                            "shape": line_shape,
+                        },
+                        name=nome,
+                        legendgroup="mean",
+                        legendgrouptitle_text="mean",
+                    )
+                )
+                fig.add_trace(
+                    go.Scatter(
+                        x=dados_estudo["dataInicio"],
+                        y=dados_estudo["p10"],
+                        line_color=cor_fundo,
+                        line_shape=line_shape,
+                        legendgroup="p10",
+                        legendgrouptitle_text="p10",
+                        name=nome,
+                        visible=visibilidade_p,
+                    )
+                )
+                fig.add_trace(
+                    go.Scatter(
+                        x=dados_estudo["dataInicio"],
+                        y=dados_estudo["p90"],
+                        line_color=cor_fundo,
+                        fillcolor=cor_fundo,
+                        line_shape=line_shape,
+                        fill="tonexty",
+                        legendgroup="p90",
+                        legendgrouptitle_text="p90",
+                        name=nome,
+                        visible=visibilidade_p,
+                    )
+                )
+
+    if variable is not None:
+        fig.update_layout(
+            title=__make_operation_plot_title(variable, filters),
+            xaxis_title="Data",
+            yaxis_title=VARIABLE_UNITS.get(variable.split("_")[0], ""),
+            hovermode="x unified",
+            legend=dict(groupclick="toggleitem"),
+        )
+    return fig
+
+
+def generate_distribution_graph_ppq(
     operation_data, variable, filters, studies_data
 ):
     graph_layout = go.Layout(

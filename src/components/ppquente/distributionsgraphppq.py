@@ -1,26 +1,26 @@
 from dash import Output, Input, State, html, dcc, callback, MATCH
-from src.components.ppquente.operationfiltersppq import (
-    OperationFiltersPPQ,
+from src.components.ppquente.distributionfiltersppq import (
+    DistributionFiltersPPQ,
 )
 import src.utils.plots as plots
 from src.utils.settings import Settings
 import uuid
 
 
-class OperationGraphPPQ(html.Div):
+class DistributionsGraphPPQ(html.Div):
     class ids:
         filters = lambda aio_id: {
-            "component": "OperationGraphPPQ",
+            "component": "DistributionsGraphPPQ",
             "subcomponent": "filters",
             "aio_id": aio_id,
         }
         studies = lambda aio_id: {
-            "component": "OperationGraphPPQ",
+            "component": "DistributionsGraphPPQ",
             "subcomponent": "studies",
             "aio_id": aio_id,
         }
         graph = lambda aio_id: {
-            "component": "OperationGraphPPQ",
+            "component": "DistributionsGraphPPQ",
             "subcomponent": "graph",
             "aio_id": aio_id,
         }
@@ -40,13 +40,13 @@ class OperationGraphPPQ(html.Div):
                 html.Div(
                     [
                         html.H4(
-                            "EVOLUCAO TEMPORAL",
+                            "ESTABILIDADE DAS VARIÁVEIS",
                             className="card-title",
                         ),
                         html.Div(
                             dcc.Loading(
                                 id="loading-operation-ppq",
-                                children=OperationFiltersPPQ(aio_id=aio_id),
+                                children=DistributionFiltersPPQ(aio_id=aio_id),
                                 type="default",
                                 className="loading-spinner",
                                 color="rgba(204,213,207,1)",
@@ -69,7 +69,7 @@ class OperationGraphPPQ(html.Div):
         )
 
     @callback(
-        Output(OperationFiltersPPQ.ids.studies(MATCH), "data"),
+        Output(DistributionFiltersPPQ.ids.studies(MATCH), "data"),
         Input(ids.studies(MATCH), "data"),
     )
     def update_current_studies(studies_data):
@@ -77,15 +77,27 @@ class OperationGraphPPQ(html.Div):
 
     @callback(
         Output(ids.graph(MATCH), "figure"),
-        Input(OperationFiltersPPQ.ids.data(MATCH), "data"),
+        Input(DistributionFiltersPPQ.ids.data(MATCH), "data"),
         State(
-            OperationFiltersPPQ.ids.variable_dropdown(MATCH),
+            DistributionFiltersPPQ.ids.variable_dropdown(MATCH),
             "value",
         ),
-        State(OperationFiltersPPQ.ids.filters(MATCH), "data"),
+        State(DistributionFiltersPPQ.ids.filters(MATCH), "data"),
         State(ids.studies(MATCH), "data"),
     )
-    def generate_operation_graph(operation_data, variable, filters, studies):
-        return plots.generate_operation_graph_ppq(
+    def generate_distribution_graph(
+        operation_data, variable, filters, studies
+    ):
+        return plots.generate_distribution_graph_ppq(
             operation_data, variable, filters, studies
         )
+
+    @callback(
+        Output(
+            DistributionFiltersPPQ.ids.estagio_dropdown_container(MATCH),
+            "style",
+        ),
+        Input(DistributionFiltersPPQ.ids.data(MATCH), "data"),
+    )
+    def show_estagio_dropdown(variable):
+        return {"display": "flex"}

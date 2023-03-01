@@ -506,7 +506,9 @@ def update_cluster_resources_data_casos(
         return df_job.to_json(orient="split")
 
 
-def update_operation_data_ppq(interval, studies, filters: dict, variable: str):
+def update_distribution_data_ppq(
+    interval, studies, filters: dict, variable: str
+):
     if not studies:
         return None
     if not variable:
@@ -524,6 +526,36 @@ def update_operation_data_ppq(interval, studies, filters: dict, variable: str):
         labels,
         variable,
         {**req_filters, "preprocess": "FULL"},
+    )
+
+    if df is None:
+        return None
+    if df.empty:
+        return None
+    else:
+        return df.to_json(orient="split")
+
+
+def update_operation_data_ppq(
+    interval, studies, filters: dict, variable: str, study: str
+):
+    if not studies:
+        return None
+    if not variable:
+        return None
+    if not study:
+        return None
+    req_filters = validation.validate_required_filters(variable, filters)
+    if req_filters is None:
+        return None
+    studies_df = pd.read_json(studies, orient="split")
+    paths = studies_df["CAMINHO"].tolist()
+    labels = studies_df["NOME"].tolist()
+    df = API.fetch_result_list(
+        paths,
+        labels,
+        variable,
+        {**req_filters, "preprocess": "STATISTICS"},
     )
 
     if df is None:
