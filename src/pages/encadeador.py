@@ -1,6 +1,6 @@
 # package imports
 import dash
-from dash import html, callback, Input, Output, State
+from dash import html, dcc, callback, Input, Output, State
 
 from src.components.newstudymodal import NewStudyModal
 from src.components.editstudymodal import EditStudyModal
@@ -17,25 +17,36 @@ from src.components.encadeador.violationgraphencadeador import (
 from src.components.encadeador.statustableencadeador import (
     StatusTable,
 )
+from src.components.login import login_location
 
 import src.utils.modals as modals
 import src.utils.data as data
 
 
-dash.register_page(__name__, title="Encadeador")
-
-layout = html.Div(
-    [
-        NewStudyModal(aio_id="encadeador-modal"),
-        EditStudyModal(aio_id="encadeador-edit-modal"),
-        CurrentStudiesTable(aio_id="encadeador-current-studies"),
-        StatusTable(aio_id="encadeador-status-table"),
-        OperationGraphEncadeador(aio_id="encadeador-operation-graph"),
-        TimeCostsGraphEncadeador(aio_id="encadeador-tempo-custos-graph"),
-        ViolationGraph(aio_id="encadeador-inviabs-graph"),
-    ],
-    className="encadeador-app-page",
+dash.register_page(
+    __name__,
+    path="/encadeador",
+    title="Encadeador",
+    path_template="/encadeador/<screen_id>",
 )
+
+
+def layout(screen_id=None):
+    return html.Div(
+        [
+            NewStudyModal(aio_id="encadeador-modal"),
+            EditStudyModal(aio_id="encadeador-edit-modal"),
+            CurrentStudiesTable(aio_id="encadeador-current-studies"),
+            StatusTable(aio_id="encadeador-status-table"),
+            OperationGraphEncadeador(aio_id="encadeador-operation-graph"),
+            TimeCostsGraphEncadeador(aio_id="encadeador-tempo-custos-graph"),
+            ViolationGraph(aio_id="encadeador-inviabs-graph"),
+            dcc.Store(
+                "encadeador-screen", storage_type="memory", data=screen_id
+            ),
+        ],
+        className="encadeador-app-page",
+    )
 
 
 @callback(
@@ -116,6 +127,7 @@ def toggle_encadeador_modal(src1, src2, is_open, selected):
         "data",
     ),
     State(CurrentStudiesTable.ids.data("encadeador-current-studies"), "data"),
+    State("encadeador-screen", "data"),
 )
 def edit_current_encadeador_study_data(
     add_study_button_clicks,
@@ -130,6 +142,7 @@ def edit_current_encadeador_study_data(
     edit_study_color,
     selected_study,
     current_studies,
+    screen,
 ):
     return data.edit_current_study_data(
         add_study_button_clicks,
@@ -147,6 +160,7 @@ def edit_current_encadeador_study_data(
         NewStudyModal.ids.confirm_study_btn("encadeador-modal"),
         EditStudyModal.ids.confirm_study_btn("encadeador-edit-modal"),
         CurrentStudiesTable.ids.remove_study_btn("encadeador-current-studies"),
+        screen,
     )
 
 

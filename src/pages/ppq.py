@@ -1,30 +1,38 @@
 # package imports
 import dash
-import pandas as pd
-from dash import html, callback, Input, Output, State
+from dash import html, dcc, callback, Input, Output, State
 
 from src.components.newstudymodal import NewStudyModal
 from src.components.editstudymodal import EditStudyModal
 from src.components.currentstudiestable import CurrentStudiesTable
 from src.components.ppquente.distributionsgraphppq import DistributionsGraphPPQ
 from src.components.ppquente.operationgraphppq import OperationGraphPPQ
+from src.components.login import login_location
 
 import src.utils.modals as modals
 import src.utils.data as data
 
 
-dash.register_page(__name__, path="/ppquente", title="Casos")
-
-layout = html.Div(
-    [
-        NewStudyModal(aio_id="ppq-modal"),
-        EditStudyModal(aio_id="ppq-edit-modal"),
-        CurrentStudiesTable(aio_id="ppq-current-studies"),
-        OperationGraphPPQ(aio_id="ppq-operation-graph"),
-        DistributionsGraphPPQ(aio_id="ppq-distribution-graph"),
-    ],
-    className="ppq-app-page",
+dash.register_page(
+    __name__,
+    path="/ppquente",
+    title="PPQ",
+    path_template="/ppquente/<screen_id>",
 )
+
+
+def layout(screen_id=None):
+    return html.Div(
+        [
+            NewStudyModal(aio_id="ppq-modal"),
+            EditStudyModal(aio_id="ppq-edit-modal"),
+            CurrentStudiesTable(aio_id="ppq-current-studies"),
+            OperationGraphPPQ(aio_id="ppq-operation-graph"),
+            DistributionsGraphPPQ(aio_id="ppq-distribution-graph"),
+            dcc.Store("ppq-screen", storage_type="memory", data=screen_id),
+        ],
+        className="ppq-app-page",
+    )
 
 
 @callback(
@@ -95,6 +103,7 @@ def toggle_ppq_modal(src1, src2, is_open, selected):
         "data",
     ),
     State(CurrentStudiesTable.ids.data("ppq-current-studies"), "data"),
+    State("ppq-screen", "data"),
 )
 def edit_current_ppq_study_data(
     add_study_button_clicks,
@@ -109,6 +118,7 @@ def edit_current_ppq_study_data(
     edit_study_color,
     selected_study,
     current_studies,
+    screen,
 ):
     return data.edit_current_study_data(
         add_study_button_clicks,
@@ -126,6 +136,7 @@ def edit_current_ppq_study_data(
         NewStudyModal.ids.confirm_study_btn("ppq-modal"),
         EditStudyModal.ids.confirm_study_btn("ppq-edit-modal"),
         CurrentStudiesTable.ids.remove_study_btn("ppq-current-studies"),
+        screen,
     )
 
 

@@ -40,6 +40,7 @@ def edit_current_study_data(
     add_trigger,
     edit_trigger,
     remove_trigger,
+    screen,
 ):
     if ctx.triggered_id == add_trigger:
         if add_study_button_clicks:
@@ -98,6 +99,10 @@ def edit_current_study_data(
             return new_data.to_json(orient="split")
         else:
             return current_studies
+    elif screen is not None:
+        print(f"SCREEN: {screen}")
+        # Accesses DB and retrieves the table data
+        return current_studies
     else:
         return current_studies
 

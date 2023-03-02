@@ -1,6 +1,6 @@
 # package imports
 import dash
-from dash import html, callback, Input, Output, State
+from dash import html, dcc, callback, Input, Output, State
 
 from src.components.newstudymodal import NewStudyModal
 from src.components.editstudymodal import EditStudyModal
@@ -10,26 +10,36 @@ from src.components.casos.acumprobgraph import AcumProbGraph
 from src.components.casos.timecostsgraph import TimeCostsGraph
 from src.components.casos.convergencegraph import ConvergenceGraph
 from src.components.casos.resourcesgraph import ResourcesGraph
+from src.components.login import login_location
 
 import src.utils.modals as modals
 import src.utils.data as data
 
 
-dash.register_page(__name__, path="/", redirect_from=["/casos"], title="Casos")
-
-layout = html.Div(
-    [
-        NewStudyModal(aio_id="casos-modal"),
-        EditStudyModal(aio_id="casos-edit-modal"),
-        CurrentStudiesTable(aio_id="casos-current-studies"),
-        OperationGraph(aio_id="casos-operation-graph"),
-        AcumProbGraph(aio_id="casos-permanencia-graph"),
-        TimeCostsGraph(aio_id="casos-tempo-custos-graph"),
-        ConvergenceGraph(aio_id="casos-convergence-graph"),
-        ResourcesGraph(aio_id="casos-resources-graph"),
-    ],
-    className="casos-app-page",
+dash.register_page(
+    __name__,
+    path="/",
+    redirect_from=["/casos"],
+    title="Casos",
+    path_template="/casos/<screen_id>",
 )
+
+
+def layout(screen_id=None):
+    return html.Div(
+        [
+            NewStudyModal(aio_id="casos-modal"),
+            EditStudyModal(aio_id="casos-edit-modal"),
+            CurrentStudiesTable(aio_id="casos-current-studies"),
+            OperationGraph(aio_id="casos-operation-graph"),
+            AcumProbGraph(aio_id="casos-permanencia-graph"),
+            TimeCostsGraph(aio_id="casos-tempo-custos-graph"),
+            ConvergenceGraph(aio_id="casos-convergence-graph"),
+            ResourcesGraph(aio_id="casos-resources-graph"),
+            dcc.Store("casos-screen", storage_type="memory", data=screen_id),
+        ],
+        className="casos-app-page",
+    )
 
 
 @callback(
@@ -100,6 +110,7 @@ def toggle_casos_modal(src1, src2, is_open, selected):
         "data",
     ),
     State(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
+    State("casos-screen", "data"),
 )
 def edit_current_casos_study_data(
     add_study_button_clicks,
@@ -114,6 +125,7 @@ def edit_current_casos_study_data(
     edit_study_color,
     selected_study,
     current_studies,
+    screen,
 ):
     return data.edit_current_study_data(
         add_study_button_clicks,
@@ -131,6 +143,7 @@ def edit_current_casos_study_data(
         NewStudyModal.ids.confirm_study_btn("casos-modal"),
         EditStudyModal.ids.confirm_study_btn("casos-edit-modal"),
         CurrentStudiesTable.ids.remove_study_btn("casos-current-studies"),
+        screen,
     )
 
 
