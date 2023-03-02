@@ -9,6 +9,7 @@ import src.utils.validation as validation
 from src.utils.settings import Settings
 from dash import ctx
 from src.utils.log import Log
+from datetime import datetime
 
 DISCRETE_COLOR_PALLETE = [
     "#f94144",
@@ -49,10 +50,10 @@ def edit_current_study_data(
             elif len(new_study_id) == 0:
                 return current_studies
             current_data = pd.read_json(current_studies, orient="split")
-            if new_study_id in current_data["CAMINHO"].tolist():
+            if new_study_id in current_data["path"].tolist():
                 return current_studies
             else:
-                current_ids = current_data["id"].to_list()
+                current_ids = current_data["table_id"].to_list()
                 last_id = 0 if len(current_ids) == 0 else int(current_ids[-1])
                 if new_study_label is None:
                     label = pathlib.Path(new_study_id).parts[-1]
@@ -66,10 +67,12 @@ def edit_current_study_data(
                     color = new_study_color
                 new_data = pd.DataFrame(
                     data={
-                        "id": [str(last_id + 1)],
-                        "CAMINHO": [new_study_id],
-                        "NOME": [label],
-                        "COR": [color],
+                        "study_id": [None],
+                        "table_id": [str(last_id + 1)],
+                        "path": [new_study_id],
+                        "name": [label],
+                        "color": [color],
+                        "crated_date": [datetime.now()],
                     }
                 )
                 return pd.concat(
@@ -81,20 +84,20 @@ def edit_current_study_data(
         if edit_study_button_clicks:
             current_data = pd.read_json(current_studies, orient="split")
             current_data.loc[
-                current_data["id"] == edit_study_id, "CAMINHO"
+                current_data["table_id"] == edit_study_id, "path"
             ] = edit_study_path
             current_data.loc[
-                current_data["id"] == edit_study_id, "NOME"
+                current_data["table_id"] == edit_study_id, "name"
             ] = edit_study_name
             current_data.loc[
-                current_data["id"] == edit_study_id, "COR"
+                current_data["table_id"] == edit_study_id, "color"
             ] = edit_study_color
             return current_data.to_json(orient="split")
     elif ctx.triggered_id == remove_trigger:
         if remove_study_button_clicks:
             current_data = pd.read_json(current_studies, orient="split")
             new_data = current_data.loc[
-                ~current_data["id"].isin(selected_study)
+                ~current_data["table_id"].isin(selected_study)
             ]
             return new_data.to_json(orient="split")
         else:
@@ -117,17 +120,17 @@ def extract_selected_study_data(
     elif len(selected_study) == 0:
         return None
     else:
-        study_id = selected_study[0]
+        table_id = selected_study[0]
         return {
-            "id": study_id,
-            "CAMINHO": current_data.loc[
-                current_data["id"] == study_id, "CAMINHO"
+            "table_id": table_id,
+            "path": current_data.loc[
+                current_data["table_id"] == table_id, "path"
             ].tolist()[0],
-            "NOME": current_data.loc[
-                current_data["id"] == study_id, "NOME"
+            "name": current_data.loc[
+                current_data["table_id"] == table_id, "name"
             ].tolist()[0],
-            "COR": current_data.loc[
-                current_data["id"] == study_id, "COR"
+            "color": current_data.loc[
+                current_data["table_id"] == table_id, "color"
             ].tolist()[0],
         }
 
@@ -163,8 +166,8 @@ def update_status_data_encadeador(interval, studies):
         return None
 
     studies_df = pd.read_json(studies, orient="split")
-    paths = studies_df["CAMINHO"].tolist()
-    labels = studies_df["NOME"].tolist()
+    paths = studies_df["path"].tolist()
+    labels = studies_df["name"].tolist()
     study_df = API.fetch_result_list(
         paths,
         labels,
@@ -240,8 +243,8 @@ def update_operation_data_encadeador(
     Log.log().info(f"Obtendo dados - ENCADEADOR ({variable}, {filters})")
     fetch_filters = {**req_filters, "estagio": 1, "preprocess": "STATISTICS"}
     studies_df = pd.read_json(studies, orient="split")
-    paths = studies_df["CAMINHO"].tolist()
-    labels = studies_df["NOME"].tolist()
+    paths = studies_df["path"].tolist()
+    labels = studies_df["name"].tolist()
     complete_df = pd.DataFrame()
     newave_df = API.fetch_result_list(
         [
@@ -303,8 +306,8 @@ def update_operation_data_casos(
     if req_filters is None:
         return None
     studies_df = pd.read_json(studies, orient="split")
-    paths = studies_df["CAMINHO"].tolist()
-    labels = studies_df["NOME"].tolist()
+    paths = studies_df["path"].tolist()
+    labels = studies_df["name"].tolist()
     df = API.fetch_result_list(
         paths,
         labels,
@@ -335,8 +338,8 @@ def update_custos_tempo_data_encadeador(
         return None
     Log.log().info(f"Obtendo dados - ENCADEADOR ({variable}, {filters})")
     studies_df = pd.read_json(studies, orient="split")
-    paths = studies_df["CAMINHO"].tolist()
-    labels = studies_df["NOME"].tolist()
+    paths = studies_df["path"].tolist()
+    labels = studies_df["name"].tolist()
     dir = {"NEWAVE": Settings.newave_dir, "DECOMP": Settings.decomp_dir}.get(
         programa
     )
@@ -368,8 +371,8 @@ def update_violation_data_encadeador(
         return None
     Log.log().info(f"Obtendo dados - ENCADEADOR ({violation}, {filters})")
     studies_df = pd.read_json(studies, orient="split")
-    paths = studies_df["CAMINHO"].tolist()
-    labels = studies_df["NOME"].tolist()
+    paths = studies_df["path"].tolist()
+    labels = studies_df["name"].tolist()
     dir = {"NEWAVE": Settings.newave_dir, "DECOMP": Settings.decomp_dir}.get(
         programa
     )
@@ -400,8 +403,8 @@ def update_custos_tempo_data_casos(
     if not variable:
         return None
     studies_df = pd.read_json(studies, orient="split")
-    paths = studies_df["CAMINHO"].tolist()
-    labels = studies_df["NOME"].tolist()
+    paths = studies_df["path"].tolist()
+    labels = studies_df["name"].tolist()
     df = API.fetch_result_list(
         paths,
         labels,
@@ -424,8 +427,8 @@ def update_runtime_data_casos(
     if not studies:
         return None
     studies_df = pd.read_json(studies, orient="split")
-    paths = studies_df["CAMINHO"].tolist()
-    labels = studies_df["NOME"].tolist()
+    paths = studies_df["path"].tolist()
+    labels = studies_df["name"].tolist()
     df = API.fetch_result_list(
         paths,
         labels,
@@ -447,8 +450,8 @@ def update_convergence_data_casos(
     if not studies:
         return None
     studies_df = pd.read_json(studies, orient="split")
-    paths = studies_df["CAMINHO"].tolist()
-    labels = studies_df["NOME"].tolist()
+    paths = studies_df["path"].tolist()
+    labels = studies_df["name"].tolist()
     df = API.fetch_result_list(
         paths,
         labels,
@@ -471,8 +474,8 @@ def update_job_resources_data_casos(
     if not studies:
         return None
     studies_df = pd.read_json(studies, orient="split")
-    paths = studies_df["CAMINHO"].tolist()
-    labels = studies_df["NOME"].tolist()
+    paths = studies_df["path"].tolist()
+    labels = studies_df["name"].tolist()
     df_cluster = API.fetch_result_list(
         paths,
         labels,
@@ -495,8 +498,8 @@ def update_cluster_resources_data_casos(
     if not studies:
         return None
     studies_df = pd.read_json(studies, orient="split")
-    paths = studies_df["CAMINHO"].tolist()
-    labels = studies_df["NOME"].tolist()
+    paths = studies_df["path"].tolist()
+    labels = studies_df["name"].tolist()
     df_job = API.fetch_result_list(
         paths,
         labels,
@@ -524,8 +527,8 @@ def update_distribution_data_ppq(
     if req_filters is None:
         return None
     studies_df = pd.read_json(studies, orient="split")
-    paths = studies_df["CAMINHO"].tolist()
-    labels = studies_df["NOME"].tolist()
+    paths = studies_df["path"].tolist()
+    labels = studies_df["name"].tolist()
     df = API.fetch_result_list(
         paths,
         labels,
@@ -554,8 +557,8 @@ def update_operation_data_ppq(
     if req_filters is None:
         return None
     studies_df = pd.read_json(studies, orient="split")
-    paths = studies_df["CAMINHO"].tolist()
-    labels = studies_df["NOME"].tolist()
+    paths = studies_df["path"].tolist()
+    labels = studies_df["name"].tolist()
     df = API.fetch_result_list(
         paths,
         labels,

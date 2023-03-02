@@ -10,8 +10,8 @@ from dash import (
     ctx,
     no_update,
 )
+from flask_login import current_user
 import dash_bootstrap_components as dbc
-import pandas as pd
 import uuid
 
 
@@ -91,6 +91,7 @@ class EditStudyModal(html.Div):
                                             ),
                                             className="modal-input-field",
                                             type="text",
+                                            readonly=True,
                                         ),
                                         dbc.Label(
                                             "Nome",
@@ -143,3 +144,13 @@ class EditStudyModal(html.Div):
             id=self.ids.modal_container(aio_id),
             className="modal",
         )
+
+    @callback(
+        Output(ids.edit_study_path(MATCH), "readonly"),
+        Input("url-login", "pathname"),
+    )
+    def update_allow_edit_path(path):
+        if current_user.is_authenticated:
+            return False
+        else:
+            return True

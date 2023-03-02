@@ -178,10 +178,10 @@ def generate_operation_graph_casos(
 
     line_shape = "hv"
 
-    visibilidade_p = __background_area_visibility(df_estudos["NOME"])
+    visibilidade_p = __background_area_visibility(df_estudos["name"])
     for _, linha_df in df_estudos.iterrows():
-        estudo = linha_df["NOME"]
-        rgb = hex_to_rgb(linha_df["COR"])
+        estudo = linha_df["name"]
+        rgb = hex_to_rgb(linha_df["color"])
         cor = f"rgba({rgb[0]},{rgb[1]},{rgb[2]}, 1.0)"
         cor_fundo = f"rgba({rgb[0]},{rgb[1]},{rgb[2]}, 0.3)"
         if dados is not None:
@@ -280,18 +280,18 @@ def generate_operation_graph_casos_twinx(
     df_estudos = pd.read_json(studies_data, orient="split")
 
     line_shape = "hv"
-    visibilidade_p = __background_area_visibility(df_estudos["NOME"])
+    visibilidade_p = __background_area_visibility(df_estudos["name"])
     for _, linha_df in df_estudos.iterrows():
-        estudo = linha_df["NOME"]
-        rgb = hex_to_rgb(linha_df["COR"])
+        estudo = linha_df["name"]
+        rgb = hex_to_rgb(linha_df["color"])
         cor = f"rgba({rgb[0]},{rgb[1]},{rgb[2]}, 1.0)"
         cor_fundo = f"rgba({rgb[0]},{rgb[1]},{rgb[2]}, 0.3)"
         dados_estudo = pivot_df_for_plot(dados.loc[dados["estudo"] == estudo])
         dados_legend = __make_operation_plot_legend_name(
-            df_estudos["NOME"].tolist(), estudo, variable, filters
+            df_estudos["name"].tolist(), estudo, variable, filters
         )
         dados_twinx_legend = __make_operation_plot_legend_name(
-            df_estudos["NOME"].tolist(), estudo, variable_twinx, filters_twinx
+            df_estudos["name"].tolist(), estudo, variable_twinx, filters_twinx
         )
         if not dados_estudo.empty:
             dados_estudo = __add_final_date_line_to_df(dados_estudo)
@@ -427,10 +427,10 @@ def generate_operation_graph_encadeador(
     df_newave = dados.loc[filtro_newave]
     df_decomp = dados.loc[filtro_decomp]
 
-    visibilidade_newave = __background_area_visibility(df_estudos["NOME"])
+    visibilidade_newave = __background_area_visibility(df_estudos["name"])
     for _, linha_df in df_estudos.iterrows():
-        estudo = linha_df["NOME"]
-        rgb = hex_to_rgb(linha_df["COR"])
+        estudo = linha_df["name"]
+        rgb = hex_to_rgb(linha_df["color"])
         cor = f"rgba({rgb[0]},{rgb[1]},{rgb[2]}, 1.0)"
         cor_fundo = f"rgba({rgb[0]},{rgb[1]},{rgb[2]}, 0.3)"
         if df_decomp is not None:
@@ -609,7 +609,7 @@ def generate_distribution_graph_ppq(
     dados = pd.read_json(operation_data, orient="split")
     df_estudos = pd.read_json(studies_data, orient="split")
     mapa_cor = {
-        linha["NOME"]: linha["COR"] for _, linha in df_estudos.iterrows()
+        linha["name"]: linha["color"] for _, linha in df_estudos.iterrows()
     }
     ordem_estudos = dados["estudo"].unique().tolist()
     fig = px.box(
@@ -667,8 +667,8 @@ def generate_acumprob_graph_casos(
     df_estudos = pd.read_json(studies_data, orient="split")
     line_shape = "hv"
     for _, linha_df in df_estudos.iterrows():
-        estudo = linha_df["NOME"]
-        rgb = hex_to_rgb(linha_df["COR"])
+        estudo = linha_df["name"]
+        rgb = hex_to_rgb(linha_df["color"])
         cor = f"rgba({rgb[0]},{rgb[1]},{rgb[2]}, 1.0)"
         if dados is not None:
             dados_estudo = pivot_df_for_plot(
@@ -711,7 +711,7 @@ def generate_timecosts_graph_encadeador(time_costs, variable, studies_data):
     ordem_estudos = dados["estudo"].unique().tolist()
     df_estudos = pd.read_json(studies_data, orient="split")
     mapa_cor = {
-        linha["NOME"]: linha["COR"] for _, linha in df_estudos.iterrows()
+        linha["name"]: linha["color"] for _, linha in df_estudos.iterrows()
     }
     if "etapa" in dados.columns:
         dados = dados.loc[dados["etapa"] == "Tempo Total", :]
@@ -798,7 +798,7 @@ def generate_timecosts_graph_casos(time_costs, variable, studies_data):
     dados = pd.read_json(time_costs, orient="split")
     df_estudos = pd.read_json(studies_data, orient="split")
     mapa_cor = {
-        linha["NOME"]: linha["COR"] for _, linha in df_estudos.iterrows()
+        linha["name"]: linha["color"] for _, linha in df_estudos.iterrows()
     }
     if "etapa" in dados.columns:
         dados = dados.loc[dados["etapa"] != "Tempo Total", :]
@@ -860,7 +860,7 @@ def generate_violation_graph_encadeador(
 
     df_estudos = pd.read_json(studies_data, orient="split")
     mapa_cor = {
-        linha["NOME"]: linha["COR"] for _, linha in df_estudos.iterrows()
+        linha["name"]: linha["color"] for _, linha in df_estudos.iterrows()
     }
 
     ordem_estudos = dados["estudo"].unique().tolist()
@@ -927,7 +927,7 @@ def generate_convergence_graph_casos(convergence_data, variable, studies_data):
     )
     df_estudos = pd.read_json(studies_data, orient="split")
     mapa_cor = {
-        linha["NOME"]: linha["COR"] for _, linha in df_estudos.iterrows()
+        linha["name"]: linha["color"] for _, linha in df_estudos.iterrows()
     }
     fig.update_layout(graph_layout)
     if variable is not None:

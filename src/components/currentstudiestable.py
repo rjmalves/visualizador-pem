@@ -13,9 +13,12 @@ from dash import (
 import pandas as pd
 import uuid
 from src.utils.settings import Settings
+from flask_login import current_user
 
-
-df = pd.DataFrame(columns=["id", "CAMINHO", "NOME", "COR"])
+data_df = pd.DataFrame(
+    columns=["study_id", "table_id", "path", "name", "color"]
+)
+table_df = pd.DataFrame(columns=["id", "CAMINHO", "NOME", "COR"])
 
 
 class CurrentStudiesTable(html.Div):
@@ -33,6 +36,21 @@ class CurrentStudiesTable(html.Div):
         remove_study_btn = lambda aio_id: {
             "component": "CurrentStudiesTable",
             "subcomponent": "remove_study_btn",
+            "aio_id": aio_id,
+        }
+        save_study_btn = lambda aio_id: {
+            "component": "CurrentStudiesTable",
+            "subcomponent": "save_study_btn",
+            "aio_id": aio_id,
+        }
+        load_study_btn = lambda aio_id: {
+            "component": "CurrentStudiesTable",
+            "subcomponent": "load_study_btn",
+            "aio_id": aio_id,
+        }
+        button_type_div = lambda aio_id: {
+            "component": "CurrentStudiesTable",
+            "subcomponent": "button_type_div",
             "aio_id": aio_id,
         }
         table = lambda aio_id: {
@@ -76,6 +94,7 @@ class CurrentStudiesTable(html.Div):
                                         html.Button(
                                             "Adicionar",
                                             id=self.ids.add_study_btn(aio_id),
+                                            style={"display": "none"},
                                         ),
                                         html.Button(
                                             "Editar",
@@ -86,6 +105,29 @@ class CurrentStudiesTable(html.Div):
                                             id=self.ids.remove_study_btn(
                                                 aio_id
                                             ),
+                                            style={"display": "none"},
+                                        ),
+                                        html.Div(
+                                            id=self.ids.button_type_div(
+                                                aio_id
+                                            ),
+                                            style={
+                                                "border-right": "6px solid #a3b18a",
+                                                "height": "auto",
+                                                "border-radius": "4px",
+                                                "margin-left": "10px",
+                                                "display": "none",
+                                            },
+                                        ),
+                                        html.Button(
+                                            "Salvar",
+                                            id=self.ids.save_study_btn(aio_id),
+                                            style={"display": "none"},
+                                        ),
+                                        html.Button(
+                                            "Carregar",
+                                            id=self.ids.load_study_btn(aio_id),
+                                            style={"display": "none"},
                                         ),
                                     ],
                                     className="card-menu-row",
@@ -99,8 +141,10 @@ class CurrentStudiesTable(html.Div):
                 html.Div(
                     # TODO - remove styling from here
                     dash_table.DataTable(
-                        data=df.to_dict("records"),
-                        columns=[{"id": c, "name": c} for c in df.columns],
+                        data=table_df.to_dict("records"),
+                        columns=[
+                            {"id": c, "name": c} for c in table_df.columns
+                        ],
                         cell_selectable=False,
                         row_selectable="single",
                         id=self.ids.table(aio_id),
@@ -127,7 +171,7 @@ class CurrentStudiesTable(html.Div):
                 ),
                 dcc.Store(
                     id=self.ids.data(aio_id),
-                    data=df.to_json(orient="split"),
+                    data=data_df.to_json(orient="split"),
                     storage_type=Settings.storage,
                 ),
                 dcc.Store(
@@ -142,7 +186,19 @@ class CurrentStudiesTable(html.Div):
         Input(ids.data(MATCH), "data"),
     )
     def update_current_studies_table(current_data):
-        return pd.read_json(current_data, orient="split").to_dict("records")
+        # Atribui renomeando as colunas e filtrando as informações
+        all_data = pd.read_json(current_data, orient="split")
+        renamed_data = all_data.rename(
+            columns={
+                "table_id": "id",
+                "path": "CAMINHO",
+                "name": "NOME",
+                "color": "COR",
+            }
+        )
+        return renamed_data[["id", "CAMINHO", "NOME", "COR"]].to_dict(
+            "records"
+        )
 
     @callback(
         Output(ids.selected(MATCH), "data"),
@@ -167,3 +223,63 @@ class CurrentStudiesTable(html.Div):
             for i in sel_rows
         ]
         return val
+
+    @callback(
+        Output(ids.add_study_btn(MATCH), "style"),
+        Input("url-login", "pathname"),
+        State(ids.add_study_btn(MATCH), "style"),
+    )
+    def update_display_add_button(path, current_style):
+        if current_user.is_authenticated:
+            display = "flex"
+        else:
+            display = "none"
+        return {**current_style, "display": display}
+
+    @callback(
+        Output(ids.remove_study_btn(MATCH), "style"),
+        Input("url-login", "pathname"),
+        State(ids.remove_study_btn(MATCH), "style"),
+    )
+    def update_display_remove_button(path, current_style):
+        if current_user.is_authenticated:
+            display = "flex"
+        else:
+            display = "none"
+        return {**current_style, "display": display}
+
+    @callback(
+        Output(ids.save_study_btn(MATCH), "style"),
+        Input("url-login", "pathname"),
+        State(ids.save_study_btn(MATCH), "style"),
+    )
+    def update_display_save_button(path, current_style):
+        if current_user.is_authenticated:
+            display = "flex"
+        else:
+            display = "none"
+        return {**current_style, "display": display}
+
+    @callback(
+        Output(ids.load_study_btn(MATCH), "style"),
+        Input("url-login", "pathname"),
+        State(ids.load_study_btn(MATCH), "style"),
+    )
+    def update_display_load_button(path, current_style):
+        if current_user.is_authenticated:
+            display = "flex"
+        else:
+            display = "none"
+        return {**current_style, "display": display}
+
+    @callback(
+        Output(ids.button_type_div(MATCH), "style"),
+        Input("url-login", "pathname"),
+        State(ids.button_type_div(MATCH), "style"),
+    )
+    def update_display_button_type_div(path, current_style):
+        if current_user.is_authenticated:
+            display = "flex"
+        else:
+            display = "none"
+        return {**current_style, "display": display}

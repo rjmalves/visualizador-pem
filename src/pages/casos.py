@@ -10,8 +10,7 @@ from src.components.casos.acumprobgraph import AcumProbGraph
 from src.components.casos.timecostsgraph import TimeCostsGraph
 from src.components.casos.convergencegraph import ConvergenceGraph
 from src.components.casos.resourcesgraph import ResourcesGraph
-from src.components.login import login_location
-
+from flask_login import current_user
 import src.utils.modals as modals
 import src.utils.data as data
 
@@ -57,7 +56,10 @@ def layout(screen_id=None):
     [State(NewStudyModal.ids.modal("casos-modal"), "is_open")],
 )
 def toggle_casos_modal(src1, src2, is_open):
-    return modals.toggle_modal(src1, src2, is_open)
+    if current_user.is_authenticated:
+        return modals.toggle_modal(src1, src2, is_open)
+    else:
+        return False
 
 
 @callback(
