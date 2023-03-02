@@ -638,7 +638,7 @@ def __process_acumprob(operation_data: pd.DataFrame) -> pd.DataFrame:
     ]
     all_scenarios = operation_data["cenario"].unique().tolist()
     stats_scenarios = ["mean", "min", "max", "median"] + [
-        c for c in all_scenarios if "p" in c
+        c for c in all_scenarios if "p" in str(c)
     ]
     vals = (
         operation_data.loc[
@@ -671,9 +671,7 @@ def generate_acumprob_graph_casos(
         rgb = hex_to_rgb(linha_df["color"])
         cor = f"rgba({rgb[0]},{rgb[1]},{rgb[2]}, 1.0)"
         if dados is not None:
-            dados_estudo = pivot_df_for_plot(
-                dados.loc[dados["estudo"] == estudo]
-            )
+            dados_estudo = dados.loc[dados["estudo"] == estudo]
             if not dados_estudo.empty:
                 dados_estudo = __process_acumprob(dados_estudo)
                 fig.add_trace(
