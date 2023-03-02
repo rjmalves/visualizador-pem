@@ -15,6 +15,7 @@ from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 from src.utils.settings import Settings
 from src.utils.log import Log
+from src.utils.db import find_studies_by_url
 
 
 class User(UserMixin):
@@ -111,6 +112,7 @@ logout_card = (
 )
 def update_authentication_status(path):
     logged_in = current_user.is_authenticated
+    studies = find_studies_by_url(path)
     Log.log().info(f"AUTH: {logged_in} - {path}")
     if path == (Settings.url_prefix + "logout") and logged_in:
         Log.log().info("LOGOUT: Sucesso")

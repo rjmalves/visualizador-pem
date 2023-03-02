@@ -19,6 +19,7 @@ LOCALHOST = __get_ip_address("eth0")
 
 
 class Settings:
+    basedir = os.getenv("BASEDIR")
     mode = os.getenv("MODE", "DEV")
     host = os.getenv("HOST", "0.0.0.0")
     port = int(os.getenv("PORT", "5050"))
@@ -39,6 +40,7 @@ class Settings:
 
     @classmethod
     def read_environments(cls):
+        cls.basedir = os.getenv("BASEDIR")
         cls.mode = os.getenv("MODE", "DEV")
         cls.host = os.getenv("HOST", "0.0.0.0")
         cls.port = int(os.getenv("PORT", "5050"))
