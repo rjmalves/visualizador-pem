@@ -165,7 +165,7 @@ def update_edit_study_modal_id(selected_study, current_studies):
     if dados is None:
         return None
     else:
-        return dados["id"]
+        return dados["table_id"]
 
 
 @callback(
@@ -184,7 +184,7 @@ def update_edit_study_modal_path(selected_study, current_studies):
     if dados is None:
         return None
     else:
-        return dados["CAMINHO"]
+        return dados["path"]
 
 
 @callback(
@@ -204,7 +204,7 @@ def update_edit_study_modal_name(selected_study, current_studies):
     if dados is None:
         return None
     else:
-        return dados["NOME"]
+        return dados["name"]
 
 
 @callback(
@@ -224,7 +224,7 @@ def update_edit_study_modal_color(selected_study, current_studies):
     if dados is None:
         return None
     else:
-        return dados["COR"]
+        return dados["color"]
 
 
 @callback(
