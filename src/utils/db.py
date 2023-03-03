@@ -5,6 +5,16 @@ from typing import Optional
 import pandas as pd
 
 
+def find_screen_type_in_url(url: str) -> str:
+    valid = url.split(Settings.url_prefix)[1]
+    parts = valid.split("/")
+    if len(parts) == 1:
+        kind = ""
+    elif len(parts) == 2:
+        kind = parts[0]
+    return kind
+
+
 def find_studies_by_url(url: str) -> Optional[pd.DataFrame]:
     valid = url.split(Settings.url_prefix)[1]
     parts = valid.split("/")

@@ -36,6 +36,7 @@ screen_table = Table(
     Column("screen_id", Integer, primary_key=True, autoincrement=True),
     Column("name", String(255), unique=True),
     Column("type", Enum(ScreenType)),
+    Column("created_date", DateTime),
 )
 
 screen_studies_table = Table(
