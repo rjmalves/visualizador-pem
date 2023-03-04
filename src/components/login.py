@@ -75,7 +75,7 @@ login_card = html.Div(
     )
 )
 
-login_location = dcc.Location(id="url-login")
+login_location = dcc.Location(id="page-location")
 login_info = html.Div(id="user-status-header")
 logged_in_info = html.Div(
     [
@@ -107,7 +107,7 @@ logout_card = (
 
 @callback(
     Output("user-status-header", "children"),
-    Input("url-login", "pathname"),
+    Input("page-location", "pathname"),
 )
 def update_authentication_status(path):
     logged_in = current_user.is_authenticated
@@ -121,29 +121,3 @@ def update_authentication_status(path):
     else:
         child = logged_out_info
     return child
-
-
-@callback(
-    Output("url-login", "pathname"),
-    Input("login-button", "n_clicks"),
-    State("login-username", "value"),
-    State("login-password", "value"),
-    State("_pages_location", "pathname"),
-    prevent_initial_call=True,
-)
-def login_button_click(n_clicks, username, password, pathname):
-    if n_clicks is not None:
-        if n_clicks > 0:
-            if username == Settings.user and password == Settings.password:
-                login_user(User(username))
-                Log.log().info(
-                    f"LOGIN: Sucesso. Usuario: {username} - {pathname}"
-                )
-                return Settings.url_prefix
-            return pathname
-    raise PreventUpdate
-
-
-# TODO -
-# Remover a lógica de redirecionamento daqui pra poder acrescenta-la
-# também como callback do carregar tela e salvar tela.

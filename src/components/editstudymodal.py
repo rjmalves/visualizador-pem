@@ -147,7 +147,7 @@ class EditStudyModal(html.Div):
 
     @callback(
         Output(ids.edit_study_path(MATCH), "readonly"),
-        Input("url-login", "pathname"),
+        Input("page-location", "pathname"),
     )
     def update_allow_edit_path(path):
         if current_user.is_authenticated:

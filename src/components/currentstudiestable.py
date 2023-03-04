@@ -226,7 +226,7 @@ class CurrentStudiesTable(html.Div):
 
     @callback(
         Output(ids.add_study_btn(MATCH), "style"),
-        Input("url-login", "pathname"),
+        Input("page-location", "pathname"),
         State(ids.add_study_btn(MATCH), "style"),
     )
     def update_display_add_button(path, current_style):
@@ -238,7 +238,7 @@ class CurrentStudiesTable(html.Div):
 
     @callback(
         Output(ids.remove_study_btn(MATCH), "style"),
-        Input("url-login", "pathname"),
+        Input("page-location", "pathname"),
         State(ids.remove_study_btn(MATCH), "style"),
     )
     def update_display_remove_button(path, current_style):
@@ -250,7 +250,7 @@ class CurrentStudiesTable(html.Div):
 
     @callback(
         Output(ids.save_study_btn(MATCH), "style"),
-        Input("url-login", "pathname"),
+        Input("page-location", "pathname"),
         State(ids.save_study_btn(MATCH), "style"),
     )
     def update_display_save_button(path, current_style):
@@ -262,7 +262,7 @@ class CurrentStudiesTable(html.Div):
 
     @callback(
         Output(ids.load_study_btn(MATCH), "style"),
-        Input("url-login", "pathname"),
+        Input("page-location", "pathname"),
         State(ids.load_study_btn(MATCH), "style"),
     )
     def update_display_load_button(path, current_style):
@@ -274,7 +274,7 @@ class CurrentStudiesTable(html.Div):
 
     @callback(
         Output(ids.button_type_div(MATCH), "style"),
-        Input("url-login", "pathname"),
+        Input("page-location", "pathname"),
         State(ids.button_type_div(MATCH), "style"),
     )
     def update_display_button_type_div(path, current_style):
