@@ -142,3 +142,8 @@ def login_button_click(n_clicks, username, password, pathname):
                 return Settings.url_prefix
             return pathname
     raise PreventUpdate
+
+
+# TODO -
+# Remover a lógica de redirecionamento daqui pra poder acrescenta-la
+# também como callback do carregar tela e salvar tela.

@@ -166,12 +166,3 @@ class SaveScreenModal(html.Div):
                     screen_name, screen_type_str, current_studies
                 )
         return None
-
-
-# TODO
-# 1 - implementar a função que salva os casos atuais,
-# criando todos os objetos no db (redirecionar para o link em seguida)
-# 2 - adicionar suporte para, caso o nome de tela
-# já existe, atualizar o conteúdo desta (apagar e recriar tudo)
-# 3 - implementar a lógica de, partindo do url atual,
-# popular corretamente a tabela de casos (buscar do DB)
