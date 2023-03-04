@@ -16,7 +16,7 @@ from src.utils.settings import Settings
 from flask_login import current_user
 
 data_df = pd.DataFrame(
-    columns=["study_id", "table_id", "path", "name", "color"]
+    columns=["study_id", "table_id", "path", "name", "color", "created_date"]
 )
 table_df = pd.DataFrame(columns=["id", "CAMINHO", "NOME", "COR"])
 

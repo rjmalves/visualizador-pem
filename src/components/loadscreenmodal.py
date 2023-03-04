@@ -14,6 +14,7 @@ from flask_login import current_user
 import dash_bootstrap_components as dbc
 import pandas as pd
 import uuid
+from src.utils import db
 
 
 class LoadScreenModal(html.Div):
@@ -36,6 +37,11 @@ class LoadScreenModal(html.Div):
         modal_container = lambda aio_id: {
             "component": "LoadScreenModal",
             "subcomponent": "modal_container",
+            "aio_id": aio_id,
+        }
+        screen_type_str = lambda aio_id: {
+            "component": "LoadScreenModal",
+            "subcomponent": "screen_type_str",
             "aio_id": aio_id,
         }
 
@@ -76,6 +82,12 @@ class LoadScreenModal(html.Div):
                                                 aio_id
                                             ),
                                             className="modal-input-field",
+                                            style={
+                                                "width": "100%",
+                                                "padding": "12px 20px",
+                                                "margin": "8px 0",
+                                                "border": "8px solid var(--card-border-color)",
+                                            },
                                         ),
                                     ]
                                 ),
@@ -99,7 +111,17 @@ class LoadScreenModal(html.Div):
                     size="lg",
                     fade=True,
                 ),
+                dcc.Store(
+                    id=self.ids.screen_type_str(aio_id), storage_type="memory"
+                ),
             ],
             id=self.ids.modal_container(aio_id),
             className="modal",
         )
+
+    @callback(
+        Output(ids.screen_type_str(MATCH), "data"),
+        Input("url-login", "pathname"),
+    )
+    def update_screen_type_str(path):
+        return db.find_screen_type_in_url(path)

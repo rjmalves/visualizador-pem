@@ -22,5 +22,6 @@ def default_session_factory() -> sessionmaker:
     return sessionmaker(
         bind=create_engine(
             sqlite_url(),
-        )
+        ),
+        autoflush=True,
     )

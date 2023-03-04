@@ -1,4 +1,6 @@
 from datetime import datetime
+from typing import List
+import pandas as pd
 
 
 class Study:
@@ -30,3 +32,18 @@ class Study:
                 self.created_date == o.created_date,
             ]
         )
+
+    @classmethod
+    def from_df(cls, df: pd.DataFrame) -> List["Study"]:
+        studies: List[cls] = []
+        for _, line in df.iterrows():
+            studies.append(
+                Study(
+                    line["table_id"],
+                    line["path"],
+                    line["name"],
+                    line["color"],
+                    line["created_date"],
+                )
+            )
+        return studies

@@ -23,3 +23,18 @@ class Screen:
                 self.created_date == o.created_date,
             ]
         )
+
+    def __gt__(self, o: object):
+        if not isinstance(o, Screen):
+            raise TypeError(f"cannot compare Screen with {type(o)}")
+        else:
+            return self.created_date > o.created_date
+
+    def __lt__(self, o: object):
+        if not isinstance(o, Screen):
+            raise TypeError(f"cannot compare Screen with {type(o)}")
+        else:
+            return self.created_date < o.created_date
+
+    def __repr__(self) -> str:
+        return f"{self.screen_id} | {self.name} | {self.type.value} | {self.created_date.isoformat()}"

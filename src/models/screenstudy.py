@@ -4,7 +4,7 @@ class ScreenStudy:
         screen_id: int,
         study_id: int,
     ) -> None:
-        self.id == None
+        self.id = None
         self.screen_id = screen_id
         self.study_id = study_id
 
@@ -17,3 +17,6 @@ class ScreenStudy:
                 self.study_id == o.study_id,
             ]
         )
+
+    def __repr__(self) -> str:
+        return f"{self.id} | {self.screen_id} | {self.study_id}"

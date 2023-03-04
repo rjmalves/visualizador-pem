@@ -9,6 +9,7 @@ import src.utils.validation as validation
 from src.utils.settings import Settings
 from dash import ctx
 from src.utils.log import Log
+import src.utils.db as db
 from datetime import datetime
 
 DISCRETE_COLOR_PALLETE = [
@@ -42,6 +43,7 @@ def edit_current_study_data(
     edit_trigger,
     remove_trigger,
     screen,
+    screen_type_str,
 ):
     if ctx.triggered_id == add_trigger:
         if add_study_button_clicks:
@@ -72,7 +74,7 @@ def edit_current_study_data(
                         "path": [new_study_id],
                         "name": [label],
                         "color": [color],
-                        "crated_date": [datetime.now()],
+                        "created_date": [datetime.now()],
                     }
                 )
                 return pd.concat(
@@ -103,9 +105,11 @@ def edit_current_study_data(
         else:
             return current_studies
     elif screen is not None:
-        print(f"SCREEN: {screen}")
-        # Accesses DB and retrieves the table data
-        return current_studies
+        screen_df = db.load_screen(screen, screen_type_str)
+        if screen_df is not None:
+            return screen_df.to_json(orient="split")
+        else:
+            return current_studies
     else:
         return current_studies
 

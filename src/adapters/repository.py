@@ -32,7 +32,7 @@ class SQLStudyRepository:
     def update(self, study: Study):
         statement = (
             update(Study)
-            .where(Study.study_id == study.id)
+            .where(Study.study_id == study.study_id)
             .values(
                 {
                     "path": study.path,

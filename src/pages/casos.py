@@ -10,9 +10,12 @@ from src.components.casos.acumprobgraph import AcumProbGraph
 from src.components.casos.timecostsgraph import TimeCostsGraph
 from src.components.casos.convergencegraph import ConvergenceGraph
 from src.components.casos.resourcesgraph import ResourcesGraph
+from src.components.savescreenmodal import SaveScreenModal
+from src.components.loadscreenmodal import LoadScreenModal
 from flask_login import current_user
 import src.utils.modals as modals
 import src.utils.data as data
+import src.utils.db as db
 
 
 dash.register_page(
@@ -35,6 +38,8 @@ def layout(screen_id=None):
             TimeCostsGraph(aio_id="casos-tempo-custos-graph"),
             ConvergenceGraph(aio_id="casos-convergence-graph"),
             ResourcesGraph(aio_id="casos-resources-graph"),
+            SaveScreenModal(aio_id="casos-save-screen-modal"),
+            LoadScreenModal(aio_id="casos-load-screen-modal"),
             dcc.Store("casos-screen", storage_type="memory", data=screen_id),
         ],
         className="casos-app-page",
@@ -87,6 +92,52 @@ def toggle_casos_modal(src1, src2, is_open, selected):
         return None
     else:
         return modals.toggle_modal(src1, src2, is_open)
+
+
+@callback(
+    Output(SaveScreenModal.ids.modal("casos-save-screen-modal"), "is_open"),
+    [
+        Input(
+            CurrentStudiesTable.ids.save_study_btn("casos-current-studies"),
+            "n_clicks",
+        ),
+        Input(
+            SaveScreenModal.ids.confirm_save_screen_btn(
+                "casos-save-screen-modal"
+            ),
+            "n_clicks",
+        ),
+    ],
+    [State(SaveScreenModal.ids.modal("casos-save-screen-modal"), "is_open")],
+)
+def toggle_casos_modal(src1, src2, is_open):
+    if current_user.is_authenticated:
+        return modals.toggle_modal(src1, src2, is_open)
+    else:
+        return False
+
+
+@callback(
+    Output(LoadScreenModal.ids.modal("casos-load-screen-modal"), "is_open"),
+    [
+        Input(
+            CurrentStudiesTable.ids.load_study_btn("casos-current-studies"),
+            "n_clicks",
+        ),
+        Input(
+            LoadScreenModal.ids.confirm_load_screen_btn(
+                "casos-load-screen-modal"
+            ),
+            "n_clicks",
+        ),
+    ],
+    [State(LoadScreenModal.ids.modal("casos-load-screen-modal"), "is_open")],
+)
+def toggle_casos_modal(src1, src2, is_open):
+    if current_user.is_authenticated:
+        return modals.toggle_modal(src1, src2, is_open)
+    else:
+        return False
 
 
 @callback(
@@ -146,6 +197,7 @@ def edit_current_casos_study_data(
         EditStudyModal.ids.confirm_study_btn("casos-edit-modal"),
         CurrentStudiesTable.ids.remove_study_btn("casos-current-studies"),
         screen,
+        "casos",
     )
 
 
@@ -265,3 +317,30 @@ def update_current_studies(studies_data):
 )
 def update_current_studies(studies_data):
     return studies_data
+
+
+@callback(
+    Output(
+        SaveScreenModal.ids.current_studies("casos-save-screen-modal"), "data"
+    ),
+    Input(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
+)
+def update_current_studies(studies_data):
+    return studies_data
+
+
+@callback(
+    Output(
+        LoadScreenModal.ids.load_screen_select("casos-load-screen-modal"),
+        "options",
+    ),
+    Input(
+        CurrentStudiesTable.ids.load_study_btn("casos-current-studies"),
+        "n_clicks",
+    ),
+    State(
+        LoadScreenModal.ids.screen_type_str("casos-load-screen-modal"), "data"
+    ),
+)
+def update_screen_type_str(path, screen_type_str):
+    return db.list_screens(screen_type_str)

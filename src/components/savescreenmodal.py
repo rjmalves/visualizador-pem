@@ -42,12 +42,17 @@ class SaveScreenModal(html.Div):
         }
         screen_type_str = lambda aio_id: {
             "component": "SaveScreenModal",
-            "subcomponent": "modal_container",
+            "subcomponent": "screen_type_str",
             "aio_id": aio_id,
         }
         current_studies = lambda aio_id: {
             "component": "SaveScreenModal",
-            "subcomponent": "modal_container",
+            "subcomponent": "current_studies",
+            "aio_id": aio_id,
+        }
+        no_op = lambda aio_id: {
+            "component": "SaveScreenModal",
+            "subcomponent": "no_op",
             "aio_id": aio_id,
         }
 
@@ -119,6 +124,9 @@ class SaveScreenModal(html.Div):
                 dcc.Store(
                     id=self.ids.current_studies(aio_id), storage_type="memory"
                 ),
+                html.Div(
+                    id=self.ids.no_op(aio_id), style={"display": "hidden"}
+                ),
             ],
             id=self.ids.modal_container(aio_id),
             className="modal",
@@ -129,8 +137,11 @@ class SaveScreenModal(html.Div):
         Input(ids.new_screen_name(MATCH), "value"),
     )
     def validate_screen_name(name: str):
-        pattern = r"[A-Za-z0-9-]+"
-        return re.search(name, pattern) is not None
+        if name is None:
+            return True
+        else:
+            pattern = r"[A-Za-z0-9-]+"
+            return re.match(pattern, name) is not None
 
     @callback(
         Output(ids.screen_type_str(MATCH), "data"),
@@ -138,6 +149,23 @@ class SaveScreenModal(html.Div):
     )
     def update_screen_type_str(path):
         return db.find_screen_type_in_url(path)
+
+    @callback(
+        Output(ids.no_op(MATCH), "children"),
+        Input(ids.confirm_save_screen_btn(MATCH), "n_clicks"),
+        State(ids.new_screen_name(MATCH), "value"),
+        State(ids.screen_type_str(MATCH), "data"),
+        State(ids.current_studies(MATCH), "data"),
+    )
+    def add_screen_to_db(
+        n_clicks, screen_name, screen_type_str, current_studies
+    ):
+        if n_clicks is not None:
+            if current_studies is not None:
+                return db.create_or_update_screen(
+                    screen_name, screen_type_str, current_studies
+                )
+        return None
 
 
 # TODO
