@@ -1,0 +1,102 @@
+.card {
+    margin: 20px 10px;
+    padding: 0px 5px 5px 5px;
+    border-radius: 10px;
+    background-color: var(--card-border-color);
+}
+
+.card-title {
+    color: var(--card-header-text-color);
+    letter-spacing: 0.1rem;
+    font-size: large;
+    display: flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.card-header {
+    box-sizing: border-box;
+    margin: 0;
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 1%;
+    border-radius: 10px;
+}
+
+.card-menu {
+    display: grid;
+    align-items:center;
+    justify-content:center;
+}
+
+.card-menu-row {
+    justify-content: flex-end;
+    display: flex;
+    margin: 10px 0px;
+}
+
+.card-menu button {
+    padding: 9px 25px;
+    margin: 0px 0px 0px 10px;
+    font-weight: 500;
+    font-size: 16px;
+    color: var(--card-header-text-color);
+    text-decoration: none;
+    background-color: var(--button-background-color);
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease 0s;
+}
+
+.card-menu button:hover  {
+    transition: all 0.3s ease 0s;
+    background-color: var(--button-background-color-hover);
+    color: var(--card-header-text-color);
+}
+
+.card-content {
+    margin: 5px 20px;
+}
+
+.variable-dropdown  {
+    min-width: 200px;
+    color: var(--card-dropdown-text-color);
+    font-weight: bold;
+}
+
+.variable-dropdown .Select-control  {
+    background-color: var(--card-dropdown-background-color);
+}
+
+.variable-dropdown .VirtualizedSelectOption {
+    background-color: var(--card-dropdown-background-color);
+    color: var(--card-dropdown-text-color);
+}
+
+.variable-dropdown .VirtualizedSelectFocusedOption {
+    background-color: var(--card-dropdown-background-color-hover);
+    color: var(--card-dropdown-text-color-hover);
+}
+
+.dropdown-container {
+    padding-right: 10px;
+}
+
+.dash-graph .dash-graph {
+    padding: 10px;
+}
+
+.dash-graph .svg-container {
+    width: 100%;
+    padding: 10px;
+}
+
+.dash-graph .main-svg {
+    border-radius: 1rem;
+    width: 100%;
+}
+
+.loading-spinner {
+    color: var(--loading-spinner-color);
+}

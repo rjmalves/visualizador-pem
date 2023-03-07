@@ -1,6 +1,12 @@
 pandas
 plotly
 dash
+dash_bootstrap_components
 python-dotenv
 waitress
-base62
+pybase62
+pyarrow
+requests
+aiohttp
+SQLAlchemy
+flask_login
