@@ -1,6 +1,6 @@
 # package imports
 import dash
-from dash import html, dcc, callback, Input, Output, State
+from dash import html, dcc, callback, Input, Output, State, ctx
 
 from src.components.newstudymodal import NewStudyModal
 from src.components.editstudymodal import EditStudyModal
@@ -26,6 +26,8 @@ dash.register_page(
     path_template="/casos/<screen_id>",
 )
 
+casos_url = dcc.Location("casos-url")
+
 
 def layout(screen_id=None):
     return html.Div(
@@ -41,6 +43,7 @@ def layout(screen_id=None):
             SaveScreenModal(aio_id="casos-save-screen-modal"),
             LoadScreenModal(aio_id="casos-load-screen-modal"),
             dcc.Store("casos-screen", storage_type="memory", data=screen_id),
+            dcc.Location("casos-url"),
         ],
         className="casos-app-page",
     )
@@ -344,3 +347,45 @@ def update_current_studies(studies_data):
 )
 def update_screen_type_str(path, screen_type_str):
     return db.list_screens(screen_type_str)
+
+
+@callback(
+    Output("casos-url", "pathname"),
+    Input(
+        LoadScreenModal.ids.confirm_load_screen_btn("casos-load-screen-modal"),
+        "n_clicks",
+    ),
+    Input(
+        SaveScreenModal.ids.confirm_save_screen_btn("casos-save-screen-modal"),
+        "n_clicks",
+    ),
+    State("_pages_location", "pathname"),
+    State(
+        LoadScreenModal.ids.load_screen_select("casos-load-screen-modal"),
+        "value",
+    ),
+    State(
+        SaveScreenModal.ids.new_screen_name("casos-save-screen-modal"),
+        "value",
+    ),
+    prevent_initial_call=True,
+)
+def redirect_page(
+    casos_load_screen_confirm_click,
+    casos_save_screen_confirm_click,
+    pathname,
+    casos_load_screen_value,
+    casos_save_screen_name,
+):
+    if ctx.triggered_id == LoadScreenModal.ids.confirm_load_screen_btn(
+        "casos-load-screen-modal"
+    ):
+        if casos_load_screen_confirm_click is not None:
+            if casos_load_screen_confirm_click > 0:
+                pass
+    elif ctx.triggered_id == SaveScreenModal.ids.confirm_save_screen_btn(
+        "casos-save-screen-modal"
+    ):
+        if casos_save_screen_confirm_click is not None:
+            if casos_save_screen_confirm_click > 0:
+                pass

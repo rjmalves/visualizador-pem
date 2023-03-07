@@ -1,6 +1,6 @@
 # package imports
 import dash
-from dash import html, dcc, callback, Input, Output, State
+from dash import html, dcc, callback, Input, Output, State, ctx
 
 from src.components.newstudymodal import NewStudyModal
 from src.components.editstudymodal import EditStudyModal
@@ -17,6 +17,8 @@ from src.components.encadeador.violationgraphencadeador import (
 from src.components.encadeador.statustableencadeador import (
     StatusTable,
 )
+from src.components.savescreenmodal import SaveScreenModal
+from src.components.loadscreenmodal import LoadScreenModal
 from src.components.login import login_location
 from flask_login import current_user
 import src.utils.modals as modals
@@ -44,6 +46,7 @@ def layout(screen_id=None):
             dcc.Store(
                 "encadeador-screen", storage_type="memory", data=screen_id
             ),
+            dcc.Location(id="encadeador-url"),
         ],
         className="encadeador-app-page",
     )
@@ -293,3 +296,49 @@ def update_current_studies_timecosts_graph(studies_data):
 )
 def update_current_studies_violation_graph(studies_data):
     return studies_data
+
+
+@callback(
+    Output("encadeador-url", "pathname"),
+    Input(
+        LoadScreenModal.ids.confirm_load_screen_btn(
+            "encadeador-load-screen-modal"
+        ),
+        "n_clicks",
+    ),
+    Input(
+        SaveScreenModal.ids.confirm_save_screen_btn(
+            "encadeador-save-screen-modal"
+        ),
+        "n_clicks",
+    ),
+    State("_pages_location", "pathname"),
+    State(
+        LoadScreenModal.ids.load_screen_select("encadeador-load-screen-modal"),
+        "value",
+    ),
+    State(
+        SaveScreenModal.ids.new_screen_name("encadeador-save-screen-modal"),
+        "value",
+    ),
+    prevent_initial_call=True,
+)
+def redirect_page(
+    encadeador_load_screen_confirm_click,
+    encadeador_save_screen_confirm_click,
+    pathname,
+    encadeador_load_screen_value,
+    encadeador_save_screen_name,
+):
+    if ctx.triggered_id == LoadScreenModal.ids.confirm_load_screen_btn(
+        "encadeador-load-screen-modal"
+    ):
+        if encadeador_load_screen_confirm_click is not None:
+            if encadeador_load_screen_confirm_click > 0:
+                pass
+    elif ctx.triggered_id == SaveScreenModal.ids.confirm_save_screen_btn(
+        "encadeador-save-screen-modal"
+    ):
+        if encadeador_save_screen_confirm_click is not None:
+            if encadeador_save_screen_confirm_click > 0:
+                pass

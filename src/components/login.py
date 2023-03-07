@@ -15,6 +15,9 @@ from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 from src.utils.settings import Settings
 from src.utils.log import Log
+from src.components.loadscreenmodal import LoadScreenModal
+from src.components.savescreenmodal import SaveScreenModal
+from dash.exceptions import PreventUpdate
 
 
 class User(UserMixin):
@@ -22,6 +25,11 @@ class User(UserMixin):
         self.id = username
 
 
+login_button = dbc.Button(
+    "Login",
+    id="login-button",
+    className="login-button",
+)
 login_card = html.Div(
     dbc.Form(
         html.Div(
@@ -33,13 +41,7 @@ login_card = html.Div(
                             className="card-title",
                         ),
                         html.Div(
-                            [
-                                dbc.Button(
-                                    "Login",
-                                    id="login-button",
-                                    className="login-button",
-                                )
-                            ],
+                            [login_button],
                             className="card-menu",
                         ),
                     ],
@@ -121,3 +123,29 @@ def update_authentication_status(path):
     else:
         child = logged_out_info
     return child
+
+
+@callback(
+    Output("page-location", "pathname"),
+    Input("login-button", "n_clicks"),
+    State("login-username", "value"),
+    State("login-password", "value"),
+    State("_pages_location", "pathname"),
+    prevent_initial_call=True,
+)
+def redirect_page(
+    login_n_clicks,
+    username,
+    password,
+    pathname,
+):
+    if login_n_clicks is not None:
+        if login_n_clicks > 0:
+            if username == Settings.user and password == Settings.password:
+                login_user(User(username))
+                Log.log().info(
+                    f"LOGIN: Sucesso. Usuario: {username} - {pathname}"
+                )
+                return Settings.url_prefix
+            return pathname
+    raise PreventUpdate
