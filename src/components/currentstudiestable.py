@@ -99,6 +99,7 @@ class CurrentStudiesTable(html.Div):
                                         html.Button(
                                             "Editar",
                                             id=self.ids.edit_study_btn(aio_id),
+                                            disabled=True,
                                         ),
                                         html.Button(
                                             "Remover",
@@ -106,6 +107,7 @@ class CurrentStudiesTable(html.Div):
                                                 aio_id
                                             ),
                                             style={"display": "none"},
+                                            disabled=True,
                                         ),
                                         html.Div(
                                             id=self.ids.button_type_div(
@@ -223,6 +225,20 @@ class CurrentStudiesTable(html.Div):
             for i in sel_rows
         ]
         return val
+
+    @callback(
+        Output(ids.edit_study_btn(MATCH), "disabled"),
+        Input(ids.selected(MATCH), "data"),
+    )
+    def disable_edit_btn(value):
+        return value is None
+
+    @callback(
+        Output(ids.remove_study_btn(MATCH), "disabled"),
+        Input(ids.selected(MATCH), "data"),
+    )
+    def disable_remove_btn(value):
+        return value is None
 
     @callback(
         Output(ids.add_study_btn(MATCH), "style"),

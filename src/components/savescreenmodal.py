@@ -16,6 +16,7 @@ import pandas as pd
 import uuid
 import re
 import src.utils.db as db
+from src.utils.log import Log
 
 
 class SaveScreenModal(html.Div):
@@ -88,7 +89,7 @@ class SaveScreenModal(html.Div):
                                             className="modal-form-comment",
                                         ),
                                         dbc.Input(
-                                            placeholder="Insira o caminho. Deve ser um caminho absoluto UNIX válido (/home/...)",
+                                            placeholder="Insira um nome (deve possuir apenas caracteres alfanuméricos e '-'. )",
                                             id=self.ids.new_screen_name(
                                                 aio_id
                                             ),
@@ -105,6 +106,7 @@ class SaveScreenModal(html.Div):
                                             aio_id
                                         ),
                                         className="modal-button",
+                                        disabled=True,
                                     )
                                 ),
                             ]
@@ -140,8 +142,19 @@ class SaveScreenModal(html.Div):
         if name is None:
             return True
         else:
-            pattern = r"[A-Za-z0-9-]+"
-            return re.match(pattern, name) is not None
+            pattern = r"^[A-Za-z0-9-]+$"
+            match = re.match(pattern, name)
+            if match is None:
+                return False
+            else:
+                return re.match(pattern, name).string == name
+
+    @callback(
+        Output(ids.confirm_save_screen_btn(MATCH), "disabled"),
+        Input(ids.new_screen_name(MATCH), "valid"),
+    )
+    def validate_screen_name(valid):
+        return not valid
 
     @callback(
         Output(ids.screen_type_str(MATCH), "data"),

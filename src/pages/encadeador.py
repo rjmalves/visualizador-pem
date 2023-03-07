@@ -23,7 +23,8 @@ from src.components.login import login_location
 from flask_login import current_user
 import src.utils.modals as modals
 import src.utils.data as data
-
+from src.utils.settings import Settings
+from src.utils.log import Log
 
 dash.register_page(
     __name__,
@@ -335,10 +336,22 @@ def redirect_page(
     ):
         if encadeador_load_screen_confirm_click is not None:
             if encadeador_load_screen_confirm_click > 0:
-                pass
+                Log.log().info(
+                    f"Redirecionando TELA - {encadeador_load_screen_value}"
+                )
+                return (
+                    Settings.url_prefix
+                    + f"encadeador/{encadeador_load_screen_value}"
+                )
     elif ctx.triggered_id == SaveScreenModal.ids.confirm_save_screen_btn(
         "encadeador-save-screen-modal"
     ):
         if encadeador_save_screen_confirm_click is not None:
             if encadeador_save_screen_confirm_click > 0:
-                pass
+                Log.log().info(
+                    f"Redirecionando TELA - {encadeador_save_screen_name}"
+                )
+                return (
+                    Settings.url_prefix
+                    + f"encadeador/{encadeador_save_screen_name}"
+                )

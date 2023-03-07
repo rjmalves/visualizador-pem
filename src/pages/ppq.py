@@ -13,6 +13,8 @@ from flask_login import current_user
 import src.utils.db as db
 import src.utils.modals as modals
 import src.utils.data as data
+from src.utils.settings import Settings
+from src.utils.log import Log
 
 
 dash.register_page(
@@ -371,10 +373,16 @@ def redirect_page(
     ):
         if ppq_load_screen_confirm_click is not None:
             if ppq_load_screen_confirm_click > 0:
-                pass
+                Log.log().info(
+                    f"Redirecionando TELA - {ppq_load_screen_value}"
+                )
+                return (
+                    Settings.url_prefix + f"ppquente/{ppq_load_screen_value}"
+                )
     elif ctx.triggered_id == SaveScreenModal.ids.confirm_save_screen_btn(
         "ppq-save-screen-modal"
     ):
         if ppq_load_screen_confirm_click is not None:
             if ppq_load_screen_confirm_click > 0:
-                pass
+                Log.log().info(f"Redirecionando TELA - {ppq_save_screen_name}")
+                return Settings.url_prefix + f"ppquente/{ppq_save_screen_name}"

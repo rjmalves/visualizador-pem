@@ -19,6 +19,7 @@ class API:
         url = f"{Settings.result_api}/{identifier}"
         with requests.get(url) as r:
             if r.status_code != 200:
+                print(r.text)
                 return None
             else:
                 return r.json()

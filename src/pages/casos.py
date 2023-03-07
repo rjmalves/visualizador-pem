@@ -13,6 +13,8 @@ from src.components.casos.resourcesgraph import ResourcesGraph
 from src.components.savescreenmodal import SaveScreenModal
 from src.components.loadscreenmodal import LoadScreenModal
 from flask_login import current_user
+from src.utils.log import Log
+from src.utils.settings import Settings
 import src.utils.modals as modals
 import src.utils.data as data
 import src.utils.db as db
@@ -382,10 +384,16 @@ def redirect_page(
     ):
         if casos_load_screen_confirm_click is not None:
             if casos_load_screen_confirm_click > 0:
-                pass
+                Log.log().info(
+                    f"Redirecionando TELA - {casos_load_screen_value}"
+                )
+                return Settings.url_prefix + f"casos/{casos_load_screen_value}"
     elif ctx.triggered_id == SaveScreenModal.ids.confirm_save_screen_btn(
         "casos-save-screen-modal"
     ):
         if casos_save_screen_confirm_click is not None:
             if casos_save_screen_confirm_click > 0:
-                pass
+                Log.log().info(
+                    f"Redirecionando TELA - {casos_save_screen_name}"
+                )
+                return Settings.url_prefix + f"casos/{casos_save_screen_name}"

@@ -76,7 +76,7 @@ class LoadScreenModal(html.Div):
                                             "Conjuntos de Estudos",
                                             className="modal-form-comment",
                                         ),
-                                        dbc.Select(
+                                        dcc.Dropdown(
                                             options=[],
                                             id=self.ids.load_screen_select(
                                                 aio_id
@@ -84,8 +84,6 @@ class LoadScreenModal(html.Div):
                                             className="modal-input-field",
                                             style={
                                                 "width": "100%",
-                                                "padding": "12px 20px",
-                                                "margin": "8px 0",
                                                 "border": "8px solid var(--card-border-color)",
                                             },
                                         ),
@@ -125,3 +123,10 @@ class LoadScreenModal(html.Div):
     )
     def update_screen_type_str(path):
         return db.find_screen_type_in_url(path)
+
+    @callback(
+        Output(ids.confirm_load_screen_btn(MATCH), "disabled"),
+        Input(ids.load_screen_select(MATCH), "value"),
+    )
+    def disable_load_btn(value):
+        return value is None

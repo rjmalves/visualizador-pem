@@ -32,4 +32,6 @@
     --card-dropdown-text-color-hover: rgba(204,213,207,1);
     --modal-form-input-border-color: rgba( 43, 90, 57,1);
     --loading-spinner-color: rgba(204,213,207,1);
+    --invalid-form-field: rgb(255, 142, 132);
+    --valid-form-field: rgb(255, 255, 255);
 }

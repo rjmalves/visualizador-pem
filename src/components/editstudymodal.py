@@ -13,6 +13,9 @@ from dash import (
 from flask_login import current_user
 import dash_bootstrap_components as dbc
 import uuid
+from src.utils.api import API
+from datetime import datetime, timedelta
+from src.utils.log import Log
 
 
 class EditStudyModal(html.Div):
@@ -50,6 +53,21 @@ class EditStudyModal(html.Div):
         modal_container = lambda aio_id: {
             "component": "EditStudyModal",
             "subcomponent": "modal_container",
+            "aio_id": aio_id,
+        }
+        path_validation_timer = lambda aio_id: {
+            "component": "EditStudyModal",
+            "subcomponent": "path_validation_timer",
+            "aio_id": aio_id,
+        }
+        path_validation_interval = lambda aio_id: {
+            "component": "EditStudyModal",
+            "subcomponent": "path_validation_interval",
+            "aio_id": aio_id,
+        }
+        validated_path = lambda aio_id: {
+            "component": "EditStudyModal",
+            "subcomponent": "validated_path",
             "aio_id": aio_id,
         }
 
@@ -140,6 +158,19 @@ class EditStudyModal(html.Div):
                     size="lg",
                     fade=True,
                 ),
+                dcc.Store(
+                    id=self.ids.path_validation_timer(aio_id),
+                    data=datetime.now().isoformat(),
+                ),
+                dcc.Store(
+                    id=self.ids.validated_path(aio_id),
+                    data=True,
+                ),
+                dcc.Interval(
+                    id=self.ids.path_validation_interval(aio_id),
+                    interval=500,
+                    n_intervals=0,
+                ),
             ],
             id=self.ids.modal_container(aio_id),
             className="modal",
@@ -154,3 +185,62 @@ class EditStudyModal(html.Div):
             return False
         else:
             return True
+
+    @callback(
+        Output(ids.path_validation_timer(MATCH), "data"),
+        Output(ids.edit_study_path(MATCH), "valid"),
+        Output(ids.validated_path(MATCH), "data"),
+        Input(ids.edit_study_path(MATCH), "value"),
+        Input(ids.path_validation_interval(MATCH), "n_intervals"),
+        State(ids.path_validation_timer(MATCH), "data"),
+        State(ids.edit_study_path(MATCH), "valid"),
+        State(ids.validated_path(MATCH), "data"),
+    )
+    def update_validation_timer(
+        path: str,
+        intervals: bool,
+        last_update_time: str,
+        valid_input: bool,
+        validated: bool,
+    ):
+        if (
+            ctx.triggered_id["subcomponent"]
+            == EditStudyModal.ids.edit_study_path(MATCH)["subcomponent"]
+        ):
+            return [datetime.now().isoformat(), False, False]
+        else:
+            if valid_input or validated:
+                return [last_update_time, valid_input, validated]
+            else:
+                # Make a request do the options route and check validity
+                time_since_last_change = (
+                    datetime.now() - datetime.fromisoformat(last_update_time)
+                )
+                if (path is not None) and (
+                    time_since_last_change > timedelta(seconds=1)
+                ):
+                    results = API.fetch_available_results(path)
+                    return [
+                        datetime.now().isoformat(),
+                        results is not None,
+                        True,
+                    ]
+                else:
+                    return [last_update_time, valid_input, validated]
+
+    @callback(
+        Output(ids.edit_study_path(MATCH), "style"),
+        Input(ids.edit_study_path(MATCH), "valid"),
+    )
+    def update_field_style(valid):
+        color = (
+            "var(--valid-form-field)" if valid else "var(--invalid-form-field)"
+        )
+        return {"background-color": color}
+
+    @callback(
+        Output(ids.confirm_study_btn(MATCH), "disabled"),
+        Input(ids.edit_study_path(MATCH), "valid"),
+    )
+    def disable_confirm_btn(valid):
+        return not valid
