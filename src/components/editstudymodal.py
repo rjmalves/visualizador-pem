@@ -195,6 +195,7 @@ class EditStudyModal(html.Div):
         State(ids.path_validation_timer(MATCH), "data"),
         State(ids.edit_study_path(MATCH), "valid"),
         State(ids.validated_path(MATCH), "data"),
+        prevent_initial_call=True,
     )
     def update_validation_timer(
         path: str,

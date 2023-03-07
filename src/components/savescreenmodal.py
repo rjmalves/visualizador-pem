@@ -150,10 +150,20 @@ class SaveScreenModal(html.Div):
                 return re.match(pattern, name).string == name
 
     @callback(
+        Output(ids.new_screen_name(MATCH), "style"),
+        Input(ids.new_screen_name(MATCH), "valid"),
+    )
+    def update_field_style(valid):
+        color = (
+            "var(--valid-form-field)" if valid else "var(--invalid-form-field)"
+        )
+        return {"background-color": color}
+
+    @callback(
         Output(ids.confirm_save_screen_btn(MATCH), "disabled"),
         Input(ids.new_screen_name(MATCH), "valid"),
     )
-    def validate_screen_name(valid):
+    def disable_save_btn(valid):
         return not valid
 
     @callback(

@@ -13,6 +13,8 @@ from dash import (
 import dash_bootstrap_components as dbc
 import pandas as pd
 import uuid
+from datetime import datetime, timedelta
+from src.utils.api import API
 
 
 class NewStudyModal(html.Div):
@@ -45,6 +47,21 @@ class NewStudyModal(html.Div):
         modal_container = lambda aio_id: {
             "component": "NewStudyModal",
             "subcomponent": "modal_container",
+            "aio_id": aio_id,
+        }
+        path_validation_timer = lambda aio_id: {
+            "component": "NewStudyModal",
+            "subcomponent": "path_validation_timer",
+            "aio_id": aio_id,
+        }
+        path_validation_interval = lambda aio_id: {
+            "component": "NewStudyModal",
+            "subcomponent": "path_validation_interval",
+            "aio_id": aio_id,
+        }
+        validated_path = lambda aio_id: {
+            "component": "NewStudyModal",
+            "subcomponent": "validated_path",
             "aio_id": aio_id,
         }
 
@@ -129,7 +146,80 @@ class NewStudyModal(html.Div):
                     size="lg",
                     fade=True,
                 ),
+                dcc.Store(
+                    id=self.ids.path_validation_timer(aio_id),
+                    data=datetime.now().isoformat(),
+                ),
+                dcc.Store(
+                    id=self.ids.validated_path(aio_id),
+                    data=True,
+                ),
+                dcc.Interval(
+                    id=self.ids.path_validation_interval(aio_id),
+                    interval=500,
+                    n_intervals=0,
+                ),
             ],
             id=self.ids.modal_container(aio_id),
             className="modal",
         )
+
+    @callback(
+        Output(ids.path_validation_timer(MATCH), "data"),
+        Output(ids.new_study_name(MATCH), "valid"),
+        Output(ids.validated_path(MATCH), "data"),
+        Input(ids.new_study_name(MATCH), "value"),
+        Input(ids.path_validation_interval(MATCH), "n_intervals"),
+        State(ids.path_validation_timer(MATCH), "data"),
+        State(ids.new_study_name(MATCH), "valid"),
+        State(ids.validated_path(MATCH), "data"),
+        prevent_initial_call=True,
+    )
+    def update_validation_timer(
+        path: str,
+        intervals: bool,
+        last_update_time: str,
+        valid_input: bool,
+        validated: bool,
+    ):
+        if (
+            ctx.triggered_id["subcomponent"]
+            == NewStudyModal.ids.new_study_name(MATCH)["subcomponent"]
+        ):
+            return [datetime.now().isoformat(), False, False]
+        else:
+            if valid_input or validated:
+                return [last_update_time, valid_input, validated]
+            else:
+                # Make a request do the options route and check validity
+                time_since_last_change = (
+                    datetime.now() - datetime.fromisoformat(last_update_time)
+                )
+                if (path is not None) and (
+                    time_since_last_change > timedelta(seconds=1)
+                ):
+                    results = API.fetch_available_results(path)
+                    return [
+                        datetime.now().isoformat(),
+                        results is not None,
+                        True,
+                    ]
+                else:
+                    return [last_update_time, valid_input, validated]
+
+    @callback(
+        Output(ids.new_study_name(MATCH), "style"),
+        Input(ids.new_study_name(MATCH), "valid"),
+    )
+    def update_field_style(valid):
+        color = (
+            "var(--valid-form-field)" if valid else "var(--invalid-form-field)"
+        )
+        return {"background-color": color}
+
+    @callback(
+        Output(ids.confirm_study_btn(MATCH), "disabled"),
+        Input(ids.new_study_name(MATCH), "valid"),
+    )
+    def disable_confirm_btn(valid):
+        return not valid
