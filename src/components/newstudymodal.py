@@ -59,11 +59,6 @@ class NewStudyModal(html.Div):
             "subcomponent": "path_validation_interval",
             "aio_id": aio_id,
         }
-        validated_path = lambda aio_id: {
-            "component": "NewStudyModal",
-            "subcomponent": "validated_path",
-            "aio_id": aio_id,
-        }
 
     # Make the ids class a public class
     ids = ids
@@ -150,10 +145,6 @@ class NewStudyModal(html.Div):
                     id=self.ids.path_validation_timer(aio_id),
                     data=datetime.now().isoformat(),
                 ),
-                dcc.Store(
-                    id=self.ids.validated_path(aio_id),
-                    data=True,
-                ),
                 dcc.Interval(
                     id=self.ids.path_validation_interval(aio_id),
                     interval=500,
@@ -167,12 +158,11 @@ class NewStudyModal(html.Div):
     @callback(
         Output(ids.path_validation_timer(MATCH), "data"),
         Output(ids.new_study_name(MATCH), "valid"),
-        Output(ids.validated_path(MATCH), "data"),
         Input(ids.new_study_name(MATCH), "value"),
         Input(ids.path_validation_interval(MATCH), "n_intervals"),
         State(ids.path_validation_timer(MATCH), "data"),
         State(ids.new_study_name(MATCH), "valid"),
-        State(ids.validated_path(MATCH), "data"),
+        State(ids.modal(MATCH), "is_open"),
         prevent_initial_call=True,
     )
     def update_validation_timer(
@@ -180,17 +170,15 @@ class NewStudyModal(html.Div):
         intervals: bool,
         last_update_time: str,
         valid_input: bool,
-        validated: bool,
+        is_open: bool,
     ):
         if (
             ctx.triggered_id["subcomponent"]
             == NewStudyModal.ids.new_study_name(MATCH)["subcomponent"]
         ):
-            return [datetime.now().isoformat(), False, False]
+            return [datetime.now().isoformat(), False]
         else:
-            if valid_input or validated:
-                return [last_update_time, valid_input, validated]
-            else:
+            if is_open:
                 # Make a request do the options route and check validity
                 time_since_last_change = (
                     datetime.now() - datetime.fromisoformat(last_update_time)
@@ -202,10 +190,11 @@ class NewStudyModal(html.Div):
                     return [
                         datetime.now().isoformat(),
                         results is not None,
-                        True,
                     ]
                 else:
-                    return [last_update_time, valid_input, validated]
+                    return [last_update_time, valid_input]
+            else:
+                return [last_update_time, valid_input]
 
     @callback(
         Output(ids.new_study_name(MATCH), "style"),
