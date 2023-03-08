@@ -10,15 +10,15 @@ from src.utils.data import DISCRETE_COLOR_PALLETE
 
 DISCRETE_COLOR_PALLETE_COSTS = [
     "rgba(249, 65, 68, 1)",
+    "rgba(87, 117, 144, 1)",
     "rgba(144, 190, 109, 1)",
     "rgba(243, 114, 44, 1)",
-    "rgba(249, 199, 79, 1)",
-    "rgba(249, 132, 74, 1)",
-    "rgba(39, 125, 161, 1)",
     "rgba(67, 170, 139, 1)",
-    "rgba(248, 150, 30, 1)",
+    "rgba(39, 125, 161, 1)",
+    "rgba(249, 132, 74, 1)",
     "rgba(77, 144, 142, 1)",
-    "rgba(87, 117, 144, 1)",
+    "rgba(249, 199, 79, 1)",
+    "rgba(248, 150, 30, 1)",
 ]
 
 
@@ -811,6 +811,15 @@ def generate_timecosts_graph_casos(time_costs, variable, studies_data):
         title = "Tempo de Execução"
         unit = "Tempo (horas)"
         error_y = None
+        fig = px.bar(
+            dados,
+            x="estudo",
+            y=y_col,
+            error_y=error_y,
+            color=color_col,
+            color_discrete_map=mapa_cor,
+            text="label",
+        )
     else:
         dados = dados.loc[dados["mean"] > 0, :]
         dados["label"] = dados["mean"]
@@ -820,15 +829,15 @@ def generate_timecosts_graph_casos(time_costs, variable, studies_data):
         unit = "Custo ($)"
         error_y = "std"
 
-    fig = px.bar(
-        dados,
-        x="estudo",
-        y=y_col,
-        error_y=error_y,
-        color=color_col,
-        color_discrete_map=mapa_cor,
-        text="label",
-    )
+        fig = px.bar(
+            dados,
+            x="estudo",
+            y=y_col,
+            error_y=error_y,
+            color=color_col,
+            color_discrete_sequence=DISCRETE_COLOR_PALLETE_COSTS,
+            text="label",
+        )
     fig.update_layout(graph_layout)
     if variable is not None:
         fig.update_traces(textposition="inside")
