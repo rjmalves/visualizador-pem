@@ -168,6 +168,7 @@ def edit_current_encadeador_study_data(
         EditStudyModal.ids.confirm_study_btn("encadeador-edit-modal"),
         CurrentStudiesTable.ids.remove_study_btn("encadeador-current-studies"),
         screen,
+        "encadeador"
     )
 
 
