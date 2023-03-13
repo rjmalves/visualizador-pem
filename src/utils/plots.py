@@ -176,7 +176,7 @@ def generate_operation_graph_casos(
     dados["dataFim"] = pd.to_datetime(dados["dataFim"], unit="ms")
     df_estudos = pd.read_json(studies_data, orient="split")
 
-    line_shape = "hv"
+    line_shape = "linear"
 
     visibilidade_p = __background_area_visibility(df_estudos["name"])
     for _, linha_df in df_estudos.iterrows():
@@ -279,7 +279,7 @@ def generate_operation_graph_casos_twinx(
     dados_twinx["dataFim"] = pd.to_datetime(dados_twinx["dataFim"], unit="ms")
     df_estudos = pd.read_json(studies_data, orient="split")
 
-    line_shape = "hv"
+    line_shape = "linear"
     visibilidade_p = __background_area_visibility(df_estudos["name"])
     for _, linha_df in df_estudos.iterrows():
         estudo = linha_df["name"]
