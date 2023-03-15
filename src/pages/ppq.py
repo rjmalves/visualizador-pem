@@ -33,8 +33,8 @@ def layout(screen_id=None):
             CurrentStudiesTable(aio_id="ppq-current-studies"),
             OperationGraphPPQ(aio_id="ppq-operation-graph"),
             DistributionsGraphPPQ(aio_id="ppq-distribution-graph"),
-            SaveScreenModal(aio_id="encadeador-save-screen-modal"),
-            LoadScreenModal(aio_id="encadeador-load-screen-modal"),
+            SaveScreenModal(aio_id="ppq-save-screen-modal"),
+            LoadScreenModal(aio_id="ppq-load-screen-modal"),
             dcc.Store("ppq-screen", storage_type="memory", data=screen_id),
             dcc.Location(id="ppq-url"),
         ],
@@ -92,30 +92,30 @@ def toggle_ppq_modal(src1, src2, is_open, selected):
 
 @callback(
     Output(
-        SaveScreenModal.ids.modal("encadeador-save-screen-modal"), "is_open"
+        SaveScreenModal.ids.modal("ppq-save-screen-modal"), "is_open"
     ),
     [
         Input(
             CurrentStudiesTable.ids.save_study_btn(
-                "encadeador-current-studies"
+                "ppq-current-studies"
             ),
             "n_clicks",
         ),
         Input(
             SaveScreenModal.ids.confirm_save_screen_btn(
-                "encadeador-save-screen-modal"
+                "ppq-save-screen-modal"
             ),
             "n_clicks",
         ),
     ],
     [
         State(
-            SaveScreenModal.ids.modal("encadeador-save-screen-modal"),
+            SaveScreenModal.ids.modal("ppq-save-screen-modal"),
             "is_open",
         )
     ],
 )
-def toggle_encadeador_modal(src1, src2, is_open):
+def toggle_ppq_modal(src1, src2, is_open):
     if current_user.is_authenticated:
         return modals.toggle_modal(src1, src2, is_open)
     else:
@@ -124,30 +124,30 @@ def toggle_encadeador_modal(src1, src2, is_open):
 
 @callback(
     Output(
-        LoadScreenModal.ids.modal("encadeador-load-screen-modal"), "is_open"
+        LoadScreenModal.ids.modal("ppq-load-screen-modal"), "is_open"
     ),
     [
         Input(
             CurrentStudiesTable.ids.load_study_btn(
-                "encadeador-current-studies"
+                "ppq-current-studies"
             ),
             "n_clicks",
         ),
         Input(
             LoadScreenModal.ids.confirm_load_screen_btn(
-                "encadeador-load-screen-modal"
+                "ppq-load-screen-modal"
             ),
             "n_clicks",
         ),
     ],
     [
         State(
-            LoadScreenModal.ids.modal("encadeador-load-screen-modal"),
+            LoadScreenModal.ids.modal("ppq-load-screen-modal"),
             "is_open",
         )
     ],
 )
-def toggle_encadeador_modal(src1, src2, is_open):
+def toggle_ppq_modal(src1, src2, is_open):
     if current_user.is_authenticated:
         return modals.toggle_modal(src1, src2, is_open)
     else:
@@ -313,10 +313,10 @@ def update_current_studies(studies_data):
 
 @callback(
     Output(
-        SaveScreenModal.ids.current_studies("encadeador-save-screen-modal"),
+        SaveScreenModal.ids.current_studies("ppq-save-screen-modal"),
         "data",
     ),
-    Input(CurrentStudiesTable.ids.data("encadeador-current-studies"), "data"),
+    Input(CurrentStudiesTable.ids.data("ppq-current-studies"), "data"),
 )
 def update_current_studies(studies_data):
     return studies_data
@@ -324,15 +324,15 @@ def update_current_studies(studies_data):
 
 @callback(
     Output(
-        LoadScreenModal.ids.load_screen_select("encadeador-load-screen-modal"),
+        LoadScreenModal.ids.load_screen_select("ppq-load-screen-modal"),
         "options",
     ),
     Input(
-        CurrentStudiesTable.ids.load_study_btn("encadeador-current-studies"),
+        CurrentStudiesTable.ids.load_study_btn("ppq-current-studies"),
         "n_clicks",
     ),
     State(
-        LoadScreenModal.ids.screen_type_str("encadeador-load-screen-modal"),
+        LoadScreenModal.ids.screen_type_str("ppq-load-screen-modal"),
         "data",
     ),
 )
@@ -382,7 +382,7 @@ def redirect_page(
     elif ctx.triggered_id == SaveScreenModal.ids.confirm_save_screen_btn(
         "ppq-save-screen-modal"
     ):
-        if ppq_load_screen_confirm_click is not None:
-            if ppq_load_screen_confirm_click > 0:
+        if ppq_save_screen_confirm_click is not None:
+            if ppq_save_screen_confirm_click > 0:
                 Log.log().info(f"Redirecionando TELA - {ppq_save_screen_name}")
                 return Settings.url_prefix + f"ppquente/{ppq_save_screen_name}"
