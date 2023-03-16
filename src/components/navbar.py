@@ -12,7 +12,7 @@ navbar = html.Header(
         html.Div(
             [
                 html.Img(
-                    src=os.path.join(Settings.url_prefix, "static/icon.png"),
+                    src=os.path.join(Settings.url_prefix, "icon.png"),
                     className="logo",
                 ),
                 html.Nav(
