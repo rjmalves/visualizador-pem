@@ -13,10 +13,7 @@ from src.utils.log import Log
 def find_screen_type_in_url(url: str) -> str:
     valid = url.split(Settings.url_prefix)[1]
     parts = valid.split("/")
-    if len(parts) == 1:
-        kind = ""
-    elif len(parts) == 2:
-        kind = parts[0]
+    kind = parts[0]
     return kind
 
 
@@ -53,7 +50,8 @@ def _update_screen(
     screen_name: str, screen_type: ScreenType, studies: List[Study]
 ):
     _delete_screen(screen_name)
-    _create_screen(screen_name, screen_type, studies)
+    if len(studies) > 0:
+        _create_screen(screen_name, screen_type, studies)
 
 
 def create_or_update_screen(
