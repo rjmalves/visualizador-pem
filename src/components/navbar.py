@@ -11,7 +11,7 @@ navbar = html.Header(
     [
         html.Div(
             [
-                html.Img(src="/assets/icon.png", className="logo"),
+                html.Img(src="/static/icon.png", className="logo"),
                 html.Nav(
                     html.Ul(
                         [
