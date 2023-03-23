@@ -69,10 +69,10 @@ def create_or_update_screen(
         existing_screens = uow.screens.list()
         should_update = any([e.name == screen_name for e in existing_screens])
     if should_update:
-        Log.log().info(f"Atualizando TELA - {screen_name}")
+        Log.log().info(f"Atualizando TELA - {screen_type}/{screen_name}")
         _update_screen(screen_name, screen_type, studies)
     else:
-        Log.log().info(f"Criando TELA - {screen_name}")
+        Log.log().info(f"Criando TELA - {screen_type}/{screen_name}")
         _create_screen(screen_name, screen_type, studies)
 
 

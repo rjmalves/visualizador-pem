@@ -107,11 +107,16 @@ def toggle_encadeador_modal(src1, src2, is_open, selected):
     else:
         return modals.toggle_modal(src1, src2, is_open)
 
+
 @callback(
-    Output(SaveScreenModal.ids.modal("encadeador-save-screen-modal"), "is_open"),
+    Output(
+        SaveScreenModal.ids.modal("encadeador-save-screen-modal"), "is_open"
+    ),
     [
         Input(
-            CurrentStudiesTable.ids.save_study_btn("encadeador-current-studies"),
+            CurrentStudiesTable.ids.save_study_btn(
+                "encadeador-current-studies"
+            ),
             "n_clicks",
         ),
         Input(
@@ -121,7 +126,12 @@ def toggle_encadeador_modal(src1, src2, is_open, selected):
             "n_clicks",
         ),
     ],
-    [State(SaveScreenModal.ids.modal("encadeador-save-screen-modal"), "is_open")],
+    [
+        State(
+            SaveScreenModal.ids.modal("encadeador-save-screen-modal"),
+            "is_open",
+        )
+    ],
 )
 def toggle_encadeador_modal(src1, src2, is_open):
     if current_user.is_authenticated:
@@ -131,10 +141,14 @@ def toggle_encadeador_modal(src1, src2, is_open):
 
 
 @callback(
-    Output(LoadScreenModal.ids.modal("encadeador-load-screen-modal"), "is_open"),
+    Output(
+        LoadScreenModal.ids.modal("encadeador-load-screen-modal"), "is_open"
+    ),
     [
         Input(
-            CurrentStudiesTable.ids.load_study_btn("encadeador-current-studies"),
+            CurrentStudiesTable.ids.load_study_btn(
+                "encadeador-current-studies"
+            ),
             "n_clicks",
         ),
         Input(
@@ -144,13 +158,19 @@ def toggle_encadeador_modal(src1, src2, is_open):
             "n_clicks",
         ),
     ],
-    [State(LoadScreenModal.ids.modal("encadeador-load-screen-modal"), "is_open")],
+    [
+        State(
+            LoadScreenModal.ids.modal("encadeador-load-screen-modal"),
+            "is_open",
+        )
+    ],
 )
 def toggle_encadeador_modal(src1, src2, is_open):
     if current_user.is_authenticated:
         return modals.toggle_modal(src1, src2, is_open)
     else:
         return False
+
 
 @callback(
     Output(CurrentStudiesTable.ids.data("encadeador-current-studies"), "data"),
@@ -215,7 +235,7 @@ def edit_current_encadeador_study_data(
         EditStudyModal.ids.confirm_study_btn("encadeador-edit-modal"),
         CurrentStudiesTable.ids.remove_study_btn("encadeador-current-studies"),
         screen,
-        "encadeador"
+        "encadeador",
     )
 
 
@@ -305,6 +325,17 @@ def update_edit_study_modal_color(selected_study, current_studies):
 
 @callback(
     Output(
+        SaveScreenModal.ids.current_studies("encadeador-save-screen-modal"),
+        "data",
+    ),
+    Input(CurrentStudiesTable.ids.data("encadeador-current-studies"), "data"),
+)
+def update_current_studies(studies_data):
+    return studies_data
+
+
+@callback(
+    Output(
         StatusTable.ids.studies("encadeador-status-table"),
         "data",
     ),
@@ -357,11 +388,13 @@ def update_current_studies_violation_graph(studies_data):
         "n_clicks",
     ),
     State(
-        LoadScreenModal.ids.screen_type_str("encadeador-load-screen-modal"), "data"
+        LoadScreenModal.ids.screen_type_str("encadeador-load-screen-modal"),
+        "data",
     ),
 )
 def update_screen_type_str(path, screen_type_str):
     return db.list_screens(screen_type_str)
+
 
 @callback(
     Output("encadeador-url", "pathname"),
