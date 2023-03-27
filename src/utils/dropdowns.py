@@ -10,16 +10,27 @@ COSTS_TIME_FILES = [
     "TEMPO",
 ]
 
-NOT_OPERATION_FILES = [
-    "CUSTOS",
-    "TEMPO",
-    "CONVERGENCIA",
-    "PROBABILIDADES",
-    "INVIABILIDADES",
-    "RECURSOS_CLUSTER",
-    "RECURSOS_JOB",
-    "PROGRAMA",
-] + SYSTEM_FILES
+POLICY_FILES = (
+    ["CORTES"]
+    + [f"CORTES{i}" for i in range(1, 61)]
+    + ["ESTADOS"]
+    + [f"ESTADOS{i}" for i in range(1, 61)]
+)
+
+NOT_OPERATION_FILES = (
+    [
+        "CUSTOS",
+        "TEMPO",
+        "CONVERGENCIA",
+        "PROBABILIDADES",
+        "INVIABILIDADES",
+        "RECURSOS_CLUSTER",
+        "RECURSOS_JOB",
+        "PROGRAMA",
+    ]
+    + SYSTEM_FILES
+    + POLICY_FILES
+)
 
 
 def update_operation_variables_dropdown_options_encadeador(
