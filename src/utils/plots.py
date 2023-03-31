@@ -61,6 +61,14 @@ VARIABLE_NAMES = {
     "VTUR": "Volume Turbinado",
     "VVER": "Volume Vertido",
     "VENTO": "Velocidade do Vento",
+    "VDEFMIN": "Violação de Restrições de Defluência Mínima",
+    "VDEFMAX": "Violação de Restrições de Defluência Máxima",
+    "VTURMIN": "Violação de Restrições de Turbinamento Mínimo",
+    "VTURMAX": "Violação de Restrições de Turbinamento Máximo",
+    "VEVMIN": "Violação de Energia de Vazão Mínima",
+    "VVMINOP": "Violação do Volume Mínimo Operativo",
+    "VFPHA": "Violação das Restrições da FPHA",
+    "VEOL": "Corte de Geração Eólica",
 }
 
 SPATIAL_RES_NAMES = {
@@ -127,6 +135,14 @@ VARIABLE_UNITS = {
     "VTUR": "hm3",
     "VVER": "hm3",
     "VENTO": "m/s",
+    "VDEFMIN": "m3/s",
+    "VDEFMAX": "m3/s",
+    "VTURMIN": "m3/s",
+    "VTURMAX": "m3/s",
+    "VEVMIN": "MWmed",
+    "VVMINOP": "MWmed",
+    "VFPHA": "MWmed",
+    "VEOL": "MWmed",
 }
 
 NOT_SCENARIO_COLUMNS = [
@@ -251,7 +267,6 @@ def generate_operation_graph_casos_twinx(
     filters_twinx,
     studies_data,
 ):
-
     graph_layout = go.Layout(
         plot_bgcolor="rgba(158, 149, 128, 0.2)",
         paper_bgcolor="rgba(255,255,255,1)",
@@ -1186,7 +1201,6 @@ def generate_resources_graph_casos(
 
 
 def __make_operation_plot_title(variable: str, filters: dict) -> str:
-
     variable_data = variable.split("_")
     name = variable_data[0]
     spatial_res = variable_data[1]
@@ -1237,7 +1251,6 @@ def __add_final_date_line_to_df(df: pd.DataFrame) -> pd.DataFrame:
 def __make_operation_plot_legend_name(
     estudos: List[str], estudo: str, variable: str, filters: dict
 ) -> str:
-
     variable_data = variable.split("_")
     name = variable_data[0]
     spatial_res = variable_data[1]
