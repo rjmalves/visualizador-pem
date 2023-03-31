@@ -25,7 +25,6 @@ class OperationGraph(html.Div):
         self,
         aio_id=None,
     ):
-
         if aio_id is None:
             aio_id = str(uuid.uuid4())
 
@@ -34,7 +33,7 @@ class OperationGraph(html.Div):
                 html.Div(
                     [
                         html.H4(
-                            "EVOLUÇÂO TEMPORAL",
+                            "EVOLUÇÃO TEMPORAL",
                             className="card-title",
                         ),
                         html.Div(
