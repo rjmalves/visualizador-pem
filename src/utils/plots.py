@@ -785,6 +785,7 @@ def generate_timecosts_graph_encadeador(time_costs, variable, studies_data):
         color_discrete_map=mapa_cor,
         text="label",
         category_orders={"estudo": ordem_estudos},
+        barmode="group",
     )
     fig.update_layout(graph_layout)
     if variable is not None:
