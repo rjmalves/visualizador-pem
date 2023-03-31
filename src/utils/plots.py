@@ -205,7 +205,6 @@ def generate_operation_graph_casos(
                 dados.loc[dados["estudo"] == estudo]
             )
             if not dados_estudo.empty:
-                dados_estudo = __add_final_date_line_to_df(dados_estudo)
                 fig.add_trace(
                     go.Scatter(
                         x=dados_estudo["dataInicio"],
@@ -309,8 +308,6 @@ def generate_operation_graph_casos_twinx(
             df_estudos["name"].tolist(), estudo, variable_twinx, filters_twinx
         )
         if not dados_estudo.empty:
-            dados_estudo = __add_final_date_line_to_df(dados_estudo)
-
             fig.add_trace(
                 go.Scatter(
                     x=dados_estudo["dataInicio"],
@@ -354,7 +351,6 @@ def generate_operation_graph_casos_twinx(
             dados_twinx.loc[dados_twinx["estudo"] == estudo]
         )
         if not dados_estudo.empty:
-            dados_estudo = __add_final_date_line_to_df(dados_estudo)
             fig.add_trace(
                 go.Scatter(
                     x=dados_estudo["dataInicio"],
