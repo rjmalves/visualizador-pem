@@ -785,7 +785,6 @@ def generate_timecosts_graph_encadeador(time_costs, variable, studies_data):
         color_discrete_map=mapa_cor,
         text="label",
         category_orders={"estudo": ordem_estudos},
-        barmode="group",
     )
     fig.update_layout(graph_layout)
     if variable is not None:
@@ -889,7 +888,6 @@ def generate_violation_graph_encadeador(
     ordem_estudos = dados["estudo"].unique().tolist()
     if violation in ["TI", "RHQ", "RE", "RHE", "RHV"]:
         unit = str(dados["unidade"].tolist()[0])
-        error_y = None
         # Grafico com montantes
         dados = (
             dados.groupby(["estudo", "caso"])
@@ -901,7 +899,6 @@ def generate_violation_graph_encadeador(
     else:
         # Grafico com contagens
         unit = "Núm. Inviabilidades"
-        error_y = None
         # Grafico com montantes
         dados = dados.groupby(["estudo", "caso"]).count().reset_index()
         y_col = "violacao"
@@ -911,10 +908,10 @@ def generate_violation_graph_encadeador(
         dados,
         x="caso",
         y=y_col,
-        error_y=error_y,
         color="estudo",
-        color_discrete_sequence=mapa_cor,
+        color_discrete_map=mapa_cor,
         category_orders={"estudo": ordem_estudos},
+        barmode="group",
     )
     fig.update_layout(graph_layout)
     if violation is not None:

@@ -387,6 +387,7 @@ def update_violation_data_encadeador(
         "INVIABILIDADES",
         {"iteracao": -1, "tipo": f"'{violation}'", "preprocess": "FULL"},
     )
+
     Log.log().info(f"Dados obtidos - ENCADEADOR ({violation}, {filters})")
     if df is None:
         return None
