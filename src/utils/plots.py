@@ -644,16 +644,13 @@ def generate_distribution_graph_ppq(
 
 
 def __process_acumprob(operation_data: pd.DataFrame) -> pd.DataFrame:
-    cols_scenarios = [
-        c for c in operation_data.columns if c not in NOT_SCENARIO_COLUMNS
-    ]
     all_scenarios = operation_data["cenario"].unique().tolist()
     stats_scenarios = ["mean", "min", "max", "median"] + [
         c for c in all_scenarios if "p" in str(c)
     ]
     vals = (
         operation_data.loc[
-            ~operation_data["cenario"].isin(stats_scenarios), cols_scenarios
+            ~operation_data["cenario"].isin(stats_scenarios), "valor"
         ]
         .to_numpy()
         .flatten()
