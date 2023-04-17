@@ -193,7 +193,7 @@ def generate_operation_graph_casos(
     df_estudos = pd.read_json(studies_data, orient="split")
 
     line_shape = "linear"
-
+    mode = "lines"
     visibilidade_p = __background_area_visibility(df_estudos["name"])
     for _, linha_df in df_estudos.iterrows():
         estudo = linha_df["name"]
@@ -214,6 +214,7 @@ def generate_operation_graph_casos(
                             "width": 3,
                             "shape": line_shape,
                         },
+                        mode=mode,
                         name=estudo,
                         legendgroup="mean",
                         legendgrouptitle_text="mean",
@@ -225,6 +226,7 @@ def generate_operation_graph_casos(
                         y=dados_estudo["p10"],
                         line_color=cor_fundo,
                         line_shape=line_shape,
+                        mode=mode,
                         legendgroup="p10",
                         legendgrouptitle_text="p10",
                         name=estudo,
@@ -238,6 +240,7 @@ def generate_operation_graph_casos(
                         line_color=cor_fundo,
                         fillcolor=cor_fundo,
                         line_shape=line_shape,
+                        mode=mode,
                         fill="tonexty",
                         legendgroup="p90",
                         legendgrouptitle_text="p90",
@@ -294,6 +297,7 @@ def generate_operation_graph_casos_twinx(
     df_estudos = pd.read_json(studies_data, orient="split")
 
     line_shape = "linear"
+    mode = "lines"
     visibilidade_p = __background_area_visibility(df_estudos["name"])
     for _, linha_df in df_estudos.iterrows():
         estudo = linha_df["name"]
@@ -317,6 +321,7 @@ def generate_operation_graph_casos_twinx(
                         "width": 3,
                         "shape": line_shape,
                     },
+                    mode=mode,
                     name="mean",
                     legendgroup=dados_legend,
                     legendgrouptitle_text=dados_legend,
@@ -328,6 +333,7 @@ def generate_operation_graph_casos_twinx(
                     y=dados_estudo["p10"],
                     line_color=cor_fundo,
                     line_shape=line_shape,
+                    mode=mode,
                     name="p10",
                     legendgroup=dados_legend,
                     visible=visibilidade_p,
@@ -340,6 +346,7 @@ def generate_operation_graph_casos_twinx(
                     line_color=cor_fundo,
                     fillcolor=cor_fundo,
                     line_shape=line_shape,
+                    mode=mode,
                     fill="tonexty",
                     name="p90",
                     legendgroup=dados_legend,
@@ -437,13 +444,14 @@ def generate_operation_graph_encadeador(
     filtro_decomp = dados["programa"] == "DECOMP"
     df_newave = dados.loc[filtro_newave]
     df_decomp = dados.loc[filtro_decomp]
-
+    mode = "lines"
     visibilidade_newave = __background_area_visibility(df_estudos["name"])
     for _, linha_df in df_estudos.iterrows():
         estudo = linha_df["name"]
         rgb = hex_to_rgb(linha_df["color"])
         cor = f"rgba({rgb[0]},{rgb[1]},{rgb[2]}, 1.0)"
         cor_fundo = f"rgba({rgb[0]},{rgb[1]},{rgb[2]}, 0.3)"
+
         if df_decomp is not None:
             estudo_decomp = pivot_df_for_plot(
                 df_decomp.loc[df_decomp["estudo"] == estudo]
@@ -457,6 +465,7 @@ def generate_operation_graph_encadeador(
                             "color": cor,
                             "width": 3,
                         },
+                        mode=mode,
                         name=estudo,
                         legendgroup="DECOMP",
                         legendgrouptitle_text="DECOMP",
@@ -476,7 +485,7 @@ def generate_operation_graph_encadeador(
                             "dash": "dot",
                             "width": 2,
                         },
-                        mode="lines",
+                        mode=mode,
                         name=estudo,
                         legendgroup="NEWAVEm",
                         legendgrouptitle_text="NEWAVEm",
@@ -488,7 +497,7 @@ def generate_operation_graph_encadeador(
                         x=estudo_newave["dataFim"],
                         y=estudo_newave["p10"],
                         line_color=cor_fundo,
-                        mode="lines",
+                        mode=mode,
                         legendgroup="NEWAVEp10",
                         legendgrouptitle_text="NEWAVEp10",
                         name=estudo,
@@ -501,7 +510,7 @@ def generate_operation_graph_encadeador(
                         y=estudo_newave["p90"],
                         line_color=cor_fundo,
                         fillcolor=cor_fundo,
-                        mode="lines",
+                        mode=mode,
                         fill="tonexty",
                         legendgroup="NEWAVEp90",
                         legendgrouptitle_text="NEWAVEp90",
@@ -553,6 +562,7 @@ def generate_operation_graph_ppq(
                 dados.loc[dados["iteracao"] == iteracao]
             )
             nome = f"it {iteracao}"
+            mode = "lines"
             if not dados_estudo.empty:
                 fig.add_trace(
                     go.Scatter(
@@ -563,6 +573,7 @@ def generate_operation_graph_ppq(
                             "width": 3,
                             "shape": line_shape,
                         },
+                        mode=mode,
                         name=nome,
                         legendgroup="mean",
                         legendgrouptitle_text="mean",
@@ -574,6 +585,7 @@ def generate_operation_graph_ppq(
                         y=dados_estudo["p10"],
                         line_color=cor_fundo,
                         line_shape=line_shape,
+                        mode=mode,
                         legendgroup="p10",
                         legendgrouptitle_text="p10",
                         name=nome,
@@ -587,6 +599,7 @@ def generate_operation_graph_ppq(
                         line_color=cor_fundo,
                         fillcolor=cor_fundo,
                         line_shape=line_shape,
+                        mode=mode,
                         fill="tonexty",
                         legendgroup="p90",
                         legendgrouptitle_text="p90",
