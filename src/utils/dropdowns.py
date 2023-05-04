@@ -32,6 +32,8 @@ NOT_OPERATION_FILES = (
     + POLICY_FILES
 )
 
+SCENARIO_FILE_PATTERNS = ["_FOR", "_BKW", "_SF"]
+
 
 def update_operation_variables_dropdown_options_encadeador(
     interval, studies_data
@@ -64,6 +66,11 @@ def update_operation_variables_dropdown_options_casos(interval, studies_data):
     unique_variables = API.fetch_available_results_list(paths)
     unique_variables = [
         a for a in unique_variables if a not in NOT_OPERATION_FILES
+    ]
+    unique_variables = [
+        a
+        for a in unique_variables
+        if not any([p in a for p in SCENARIO_FILE_PATTERNS])
     ]
     return sorted(unique_variables)
 
