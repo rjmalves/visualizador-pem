@@ -57,6 +57,11 @@ def update_operation_variables_dropdown_options_encadeador(
     all_variables = all_variables.union(set(newave_variables))
     all_variables = all_variables.union(set(decomp_variables))
     all_variables = [a for a in all_variables if a not in NOT_OPERATION_FILES]
+    all_variables = [
+        a
+        for a in all_variables
+        if not any([p in a for p in SCENARIO_FILE_PATTERNS])
+    ]
     return sorted(list(all_variables))
 
 

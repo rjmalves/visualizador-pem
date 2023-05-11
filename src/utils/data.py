@@ -141,7 +141,9 @@ def extract_selected_study_data(
 
 def get_statistics_scenarios(all_scenarios: List[str]) -> List[str]:
     scenarios = [
-        s for s in all_scenarios if s in ["min", "max", "median", "mean"]
+        s
+        for s in all_scenarios
+        if s in ["min", "max", "median", "mean", "std"]
     ]
     scenarios = [s for s in scenarios if "p" in s]
     return scenarios
@@ -149,7 +151,9 @@ def get_statistics_scenarios(all_scenarios: List[str]) -> List[str]:
 
 def get_non_statistics_scenarios(all_scenarios: List[str]) -> List[str]:
     scenarios = [
-        s for s in all_scenarios if s not in ["min", "max", "median", "mean"]
+        s
+        for s in all_scenarios
+        if s not in ["min", "max", "median", "mean", "std"]
     ]
     scenarios = [s for s in scenarios if "p" not in s]
     return scenarios

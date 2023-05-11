@@ -658,7 +658,7 @@ def generate_distribution_graph_ppq(
 
 def __process_acumprob(operation_data: pd.DataFrame) -> pd.DataFrame:
     all_scenarios = operation_data["cenario"].unique().tolist()
-    stats_scenarios = ["mean", "min", "max", "median"] + [
+    stats_scenarios = ["mean", "min", "max", "median", "std"] + [
         c for c in all_scenarios if "p" in str(c)
     ]
     vals = (
