@@ -80,6 +80,18 @@ def update_operation_variables_dropdown_options_casos(interval, studies_data):
     return sorted(unique_variables)
 
 
+def update_scenario_variables_dropdown_options_casos(interval, studies_data):
+    studies = pd.read_json(studies_data, orient="split")
+    paths = studies["path"].tolist()
+    unique_variables = API.fetch_available_results_list(paths)
+    unique_variables = [
+        a
+        for a in unique_variables
+        if any([s in a for s in SCENARIO_FILE_PATTERNS])
+    ]
+    return sorted(unique_variables)
+
+
 def update_costs_time_variables_dropdown_options_encadeador(
     interval, studies_data
 ):
@@ -161,6 +173,20 @@ def update_operation_options_encadeador(interval, studies, variable: str):
 
 
 def update_operation_options_casos(interval, studies, variable: str):
+    if not studies:
+        return None
+    if not variable:
+        return None
+    studies_df = pd.read_json(studies, orient="split")
+    paths = studies_df["path"].tolist()
+    options = API.fetch_result_options_list(paths, variable)
+    if len(options) == 0:
+        return None
+    else:
+        return options
+
+
+def update_scenario_options_casos(interval, studies, variable: str):
     if not studies:
         return None
     if not variable:

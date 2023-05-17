@@ -11,13 +11,15 @@ REQUIRED_FILTERS = {
     "UEE": ["usina"],
     "PAT": ["patamar"],
     "EST": [],
+    "FOR": ["iteracao"],
+    "BKW": ["iteracao"],
+    "SF": [],
 }
 
 
 def validate_required_filters(
     variable: str, filters: dict, ppq: bool = False
 ) -> Optional[dict]:
-
     if not variable:
         return False
     variable_data = variable.split("_")

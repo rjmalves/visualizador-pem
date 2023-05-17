@@ -6,6 +6,7 @@ from src.components.newstudymodal import NewStudyModal
 from src.components.editstudymodal import EditStudyModal
 from src.components.currentstudiestable import CurrentStudiesTable
 from src.components.casos.operationgraph import OperationGraph
+from src.components.casos.scenariograph import ScenarioGraph
 from src.components.casos.acumprobgraph import AcumProbGraph
 from src.components.casos.timecostsgraph import TimeCostsGraph
 from src.components.casos.convergencegraph import ConvergenceGraph
@@ -39,6 +40,7 @@ def layout(screen_id=None):
             CurrentStudiesTable(aio_id="casos-current-studies"),
             OperationGraph(aio_id="casos-operation-graph"),
             AcumProbGraph(aio_id="casos-permanencia-graph"),
+            ScenarioGraph(aio_id="casos-scenario-graph"),
             TimeCostsGraph(aio_id="casos-tempo-custos-graph"),
             ConvergenceGraph(aio_id="casos-convergence-graph"),
             ResourcesGraph(aio_id="casos-resources-graph"),
@@ -286,6 +288,14 @@ def update_edit_study_modal_color(selected_study, current_studies):
 
 @callback(
     Output(OperationGraph.ids.studies("casos-operation-graph"), "data"),
+    Input(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
+)
+def update_current_studies(studies_data):
+    return studies_data
+
+
+@callback(
+    Output(ScenarioGraph.ids.studies("casos-scenario-graph"), "data"),
     Input(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
 )
 def update_current_studies(studies_data):

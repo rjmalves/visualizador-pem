@@ -331,6 +331,41 @@ def update_operation_data_casos(
         return df.to_json(orient="split")
 
 
+def update_scenario_data_casos(
+    interval,
+    studies,
+    filters: dict,
+    variable: str,
+    preprocess: str = "FULL",
+    needs_stage: bool = False,
+):
+    if not studies:
+        return None
+    if not variable:
+        return None
+    req_filters = validation.validate_required_filters(
+        variable, filters, ppq=needs_stage
+    )
+    if req_filters is None:
+        return None
+    studies_df = pd.read_json(studies, orient="split")
+    paths = studies_df["path"].tolist()
+    labels = studies_df["name"].tolist()
+    df = API.fetch_result_list(
+        paths,
+        labels,
+        variable,
+        {**req_filters, "preprocess": preprocess},
+    )
+
+    if df is None:
+        return None
+    if df.empty:
+        return None
+    else:
+        return df.to_json(orient="split")
+
+
 def update_custos_tempo_data_encadeador(
     interval,
     studies,

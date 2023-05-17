@@ -92,9 +92,18 @@ SPATIAL_RES_FILTER_NAMES = {
     "UEE": "usina",
 }
 
-TEMPORAL_RES_NAMES = {"PAT": "Patamar"}
+TEMPORAL_RES_NAMES = {
+    "PAT": "Patamar",
+    "FOR": "Iteração",
+    "BKW": "Iteração",
+    "SF": "Simulação Final",
+}
 
-TEMPORAL_RES_FILTER_NAMES = {"PAT": "patamar"}
+TEMPORAL_RES_FILTER_NAMES = {
+    "PAT": "patamar",
+    "FOR": "iteracao",
+    "BKW": "iteracao",
+}
 
 VARIABLE_UNITS = {
     "COP": "R$",
@@ -162,9 +171,9 @@ NOT_SCENARIO_COLUMNS = [
 ]
 
 
-def pivot_df_for_plot(df: pd.DataFrame) -> pd.DataFrame:
+def pivot_df_for_plot(df: pd.DataFrame, col: str = "valor") -> pd.DataFrame:
     index_cols = [c for c in df.columns if c in NOT_SCENARIO_COLUMNS]
-    df_plot = df.pivot(index=index_cols, columns="cenario", values="valor")
+    df_plot = df.pivot(index=index_cols, columns="cenario", values=col)
     return df_plot.reset_index()
 
 
@@ -420,6 +429,52 @@ def generate_operation_graph_casos_twinx(
         secondary_y=True,
     )
 
+    return fig
+
+
+def generate_scenario_graph_casos(
+    scenario_data, variable, filters, studies_data
+):
+    graph_layout = go.Layout(
+        plot_bgcolor="rgba(158, 149, 128, 0.2)",
+        paper_bgcolor="rgba(255,255,255,1)",
+    )
+    fig = go.Figure()
+    fig.update_layout(graph_layout)
+    if scenario_data is None:
+        return fig
+    dados = pd.read_json(scenario_data, orient="split")
+    dados["dataInicio"] = pd.to_datetime(dados["dataInicio"], unit="ms")
+    dados["dataFim"] = pd.to_datetime(dados["dataFim"], unit="ms")
+    all_scenarios = dados["cenario"].unique().tolist()
+    stats_scenarios = ["mean", "min", "max", "median", "std"] + [
+        c for c in all_scenarios if "p" in str(c)
+    ]
+
+    df_estudos = pd.read_json(studies_data, orient="split")
+
+    nomes_estudos = df_estudos["name"].tolist()
+    cores_estudos = df_estudos["color"].tolist()
+    mapas_cores = {}
+    for nome, cor in zip(nomes_estudos, cores_estudos):
+        rgb = hex_to_rgb(cor)
+        mapas_cores[nome] = f"rgba({rgb[0]},{rgb[1]},{rgb[2]}, 1.0)"
+    fig = px.box(
+        dados.loc[~dados["cenario"].isin(stats_scenarios)],
+        x="dataInicio",
+        y="valorMlt",
+        color="estudo",
+        color_discrete_map=mapas_cores,
+    )
+    fig.update_layout(graph_layout)
+    if variable is not None:
+        fig.update_layout(
+            title=__make_operation_plot_title(variable, filters),
+            xaxis_title="Data",
+            yaxis_title="% MLT",
+            hovermode="x unified",
+            legend=dict(groupclick="toggleitem"),
+        )
     return fig
 
 
@@ -1229,7 +1284,7 @@ def __make_operation_plot_title(variable: str, filters: dict) -> str:
     elif full_spatial_res:
         title += f" - {full_spatial_res} {filters[SPATIAL_RES_FILTER_NAMES[spatial_res]]}"
 
-    if temporal_res == "EST":
+    if temporal_res in ["EST", "SF"]:
         pass
     elif full_temporal_res:
         title += f" - {full_temporal_res} {filters[TEMPORAL_RES_FILTER_NAMES[temporal_res]]}"
