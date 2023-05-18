@@ -1,4 +1,5 @@
 from dash import html, dcc, callback, Input, State, Output, MATCH
+from dash.exceptions import PreventUpdate
 import uuid
 import pandas as pd
 
@@ -125,11 +126,6 @@ class ResourcesFilters(html.Div):
                     id=self.ids.timeData(aio_id),
                     storage_type="memory",
                 ),
-                dcc.Interval(
-                    id=self.ids.updater(aio_id),
-                    interval=int(Settings.graphs_update_period),
-                    n_intervals=0,
-                ),
                 dcc.Download(id=self.ids.download(aio_id)),
                 html.Button(
                     "CSV",
@@ -141,55 +137,46 @@ class ResourcesFilters(html.Div):
 
     @callback(
         Output(ids.studies_dropdown(MATCH), "options"),
-        Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.studies(MATCH), "data"),
     )
-    def update_studies_dropdown_options(interval, studies_data):
+    def update_studies_dropdown_options(studies_data):
         return dropdowns.update_studies_names_dropdown_options_casos(
-            interval, studies_data
+            studies_data
         )
 
     @callback(
         Output(ids.jobData(MATCH), "data"),
-        Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.studies(MATCH), "data"),
     )
-    def update_data(interval, studies):
+    def update_data(studies):
         return data.update_job_resources_data_casos(
-            interval,
             studies,
         )
 
     @callback(
         Output(ids.clusterData(MATCH), "data"),
-        Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.studies(MATCH), "data"),
     )
-    def update_data(interval, studies):
+    def update_data(studies):
         return data.update_cluster_resources_data_casos(
-            interval,
             studies,
         )
 
     @callback(
         Output(ids.timeData(MATCH), "data"),
-        Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.studies(MATCH), "data"),
     )
-    def update_data(interval, studies):
+    def update_data(studies):
         return data.update_runtime_data_casos(
-            interval,
             studies,
         )
 
     @callback(
         Output(ids.convergenceData(MATCH), "data"),
-        Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.studies(MATCH), "data"),
     )
-    def update_data(interval, studies):
+    def update_data(studies):
         return data.update_convergence_data_casos(
-            interval,
             studies,
         )
 
@@ -200,7 +187,7 @@ class ResourcesFilters(html.Div):
     )
     def generate_csv(n_clicks, operation_data):
         if n_clicks is None:
-            return
+            raise PreventUpdate
         if operation_data is not None:
             dados = pd.read_json(operation_data, orient="split")
             return dcc.send_data_frame(dados.to_csv, "recursos.csv")

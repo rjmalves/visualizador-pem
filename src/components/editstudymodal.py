@@ -12,6 +12,7 @@ from dash import (
 )
 from flask_login import current_user
 import dash_bootstrap_components as dbc
+from dash.exceptions import PreventUpdate
 import uuid
 from src.utils.api import API
 from datetime import datetime, timedelta
@@ -74,7 +75,6 @@ class EditStudyModal(html.Div):
         self,
         aio_id=None,
     ):
-
         if aio_id is None:
             aio_id = str(uuid.uuid4())
 
@@ -214,13 +214,14 @@ class EditStudyModal(html.Div):
                         results is not None,
                     ]
                 else:
-                    return [last_update_time, valid_input]
+                    raise PreventUpdate
             else:
-                return [last_update_time, valid_input]
+                raise PreventUpdate
 
     @callback(
         Output(ids.edit_study_path(MATCH), "style"),
         Input(ids.edit_study_path(MATCH), "valid"),
+        prevent_initial_call=True,
     )
     def update_field_style(valid):
         color = (

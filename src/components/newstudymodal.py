@@ -1,17 +1,6 @@
-from dash import (
-    Output,
-    Input,
-    State,
-    html,
-    dcc,
-    callback,
-    MATCH,
-    dash_table,
-    ctx,
-    no_update,
-)
+from dash import Output, Input, State, html, dcc, callback, MATCH, ctx
 import dash_bootstrap_components as dbc
-import pandas as pd
+from dash.exceptions import PreventUpdate
 import uuid
 from datetime import datetime, timedelta
 from src.utils.api import API
@@ -68,7 +57,6 @@ class NewStudyModal(html.Div):
         self,
         aio_id=None,
     ):
-
         if aio_id is None:
             aio_id = str(uuid.uuid4())
 
@@ -192,13 +180,14 @@ class NewStudyModal(html.Div):
                         results is not None,
                     ]
                 else:
-                    return [last_update_time, valid_input]
+                    raise PreventUpdate
             else:
-                return [last_update_time, valid_input]
+                raise PreventUpdate
 
     @callback(
         Output(ids.new_study_name(MATCH), "style"),
         Input(ids.new_study_name(MATCH), "valid"),
+        prevent_initial_call=True,
     )
     def update_field_style(valid):
         color = (
@@ -209,6 +198,7 @@ class NewStudyModal(html.Div):
     @callback(
         Output(ids.confirm_study_btn(MATCH), "disabled"),
         Input(ids.new_study_name(MATCH), "valid"),
+        prevent_initial_call=True,
     )
     def disable_confirm_btn(valid):
         return not valid

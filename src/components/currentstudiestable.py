@@ -7,16 +7,23 @@ from dash import (
     callback,
     MATCH,
     dash_table,
-    ctx,
-    no_update,
 )
+from dash.exceptions import PreventUpdate
 import pandas as pd
 import uuid
 from src.utils.settings import Settings
 from flask_login import current_user
 
 data_df = pd.DataFrame(
-    columns=["study_id", "table_id", "path", "name", "color", "created_date"]
+    columns=[
+        "study_id",
+        "table_id",
+        "path",
+        "name",
+        "color",
+        "created_date",
+        "options",
+    ]
 )
 table_df = pd.DataFrame(columns=["id", "CAMINHO", "NOME", "COR"])
 
@@ -77,7 +84,6 @@ class CurrentStudiesTable(html.Div):
         self,
         aio_id=None,
     ):
-
         if aio_id is None:
             aio_id = str(uuid.uuid4())
 
@@ -186,6 +192,7 @@ class CurrentStudiesTable(html.Div):
     @callback(
         Output(ids.table(MATCH), "data"),
         Input(ids.data(MATCH), "data"),
+        prevent_initial_callback=True,
     )
     def update_current_studies_table(current_data):
         # Atribui renomeando as colunas e filtrando as informações
@@ -205,6 +212,7 @@ class CurrentStudiesTable(html.Div):
     @callback(
         Output(ids.selected(MATCH), "data"),
         Input(ids.table(MATCH), "derived_virtual_selected_row_ids"),
+        prevent_initial_callback=True,
     )
     def update_selected_study(sel_rows):
         return sel_rows
@@ -212,10 +220,11 @@ class CurrentStudiesTable(html.Div):
     @callback(
         Output(ids.table(MATCH), "style_data_conditional"),
         Input(ids.selected(MATCH), "data"),
+        prevent_initial_callback=True,
     )
     def style_selected_rows(sel_rows):
         if sel_rows is None:
-            return no_update
+            raise PreventUpdate
         val = [
             {
                 "if": {"filter_query": "{{id}} ={}".format(i)},

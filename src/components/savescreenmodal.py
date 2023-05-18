@@ -6,17 +6,13 @@ from dash import (
     dcc,
     callback,
     MATCH,
-    dash_table,
-    ctx,
-    no_update,
 )
 from flask_login import current_user
 import dash_bootstrap_components as dbc
-import pandas as pd
+from dash.exceptions import PreventUpdate
 import uuid
 import re
 import src.utils.db as db
-from src.utils.log import Log
 
 
 class SaveScreenModal(html.Div):
@@ -65,7 +61,6 @@ class SaveScreenModal(html.Div):
         self,
         aio_id=None,
     ):
-
         if aio_id is None:
             aio_id = str(uuid.uuid4())
 
@@ -137,6 +132,7 @@ class SaveScreenModal(html.Div):
     @callback(
         Output(ids.new_screen_name(MATCH), "valid"),
         Input(ids.new_screen_name(MATCH), "value"),
+        prevent_initial_call=True,
     )
     def validate_screen_name(name: str):
         if name is None:
@@ -152,6 +148,7 @@ class SaveScreenModal(html.Div):
     @callback(
         Output(ids.new_screen_name(MATCH), "style"),
         Input(ids.new_screen_name(MATCH), "valid"),
+        prevent_initial_call=True,
     )
     def update_field_style(valid):
         color = (
@@ -169,6 +166,7 @@ class SaveScreenModal(html.Div):
     @callback(
         Output(ids.screen_type_str(MATCH), "data"),
         Input("page-location", "pathname"),
+        prevent_initial_call=True,
     )
     def update_screen_type_str(path):
         return db.find_screen_type_in_url(path)
@@ -179,6 +177,7 @@ class SaveScreenModal(html.Div):
         State(ids.new_screen_name(MATCH), "value"),
         State(ids.screen_type_str(MATCH), "data"),
         State(ids.current_studies(MATCH), "data"),
+        prevent_initial_call=True,
     )
     def add_screen_to_db(
         n_clicks, screen_name, screen_type_str, current_studies
@@ -188,4 +187,4 @@ class SaveScreenModal(html.Div):
                 return db.create_or_update_screen(
                     screen_name, screen_type_str, current_studies
                 )
-        return None
+        raise PreventUpdate

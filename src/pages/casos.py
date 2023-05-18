@@ -304,15 +304,6 @@ def update_current_studies(studies_data):
 
 
 @callback(
-    Output(ScenarioGraph.ids.studies("casos-scenario-graph"), "data"),
-    Input(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
-    prevent_initial_call=True,
-)
-def update_current_studies(studies_data):
-    return studies_data
-
-
-@callback(
     Output(AcumProbGraph.ids.studies("casos-permanencia-graph"), "data"),
     Input(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
     prevent_initial_call=True,
@@ -323,6 +314,15 @@ def update_current_studies(studies_data):
 
 @callback(
     Output(TimeCostsGraph.ids.studies("casos-tempo-custos-graph"), "data"),
+    Input(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
+    prevent_initial_call=True,
+)
+def update_current_studies(studies_data):
+    return studies_data
+
+
+@callback(
+    Output(ScenarioGraph.ids.studies("casos-scenario-graph"), "data"),
     Input(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
     prevent_initial_call=True,
 )

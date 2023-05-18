@@ -1,4 +1,5 @@
 from dash import html, dcc, callback, Input, State, Output, MATCH
+from dash.exceptions import PreventUpdate
 import uuid
 import pandas as pd
 
@@ -366,11 +367,6 @@ class ScenarioFilters(html.Div):
                     id=self.ids.filters(aio_id),
                     storage_type="memory",
                 ),
-                dcc.Interval(
-                    id=self.ids.updater(aio_id),
-                    interval=int(Settings.graphs_update_period),
-                    n_intervals=0,
-                ),
                 dcc.Download(id=self.ids.download(aio_id)),
                 html.Button(
                     "CSV",
@@ -478,100 +474,92 @@ class ScenarioFilters(html.Div):
 
     @callback(
         Output(ids.usina_dropdown(MATCH), "options"),
-        Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.options(MATCH), "data"),
     )
-    def update_usina_options(interval, options):
+    def update_usina_options(options):
         if options:
             if "usina" in options.keys():
                 return sorted(list(set(options["usina"])))
-        return []
+        raise PreventUpdate
 
     @callback(
         Output(ids.ree_dropdown(MATCH), "options"),
-        Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.options(MATCH), "data"),
     )
-    def update_ree_options(interval, options):
+    def update_ree_options(options):
         if options:
             if "ree" in options.keys():
                 return sorted(list(set(options["ree"])))
-        return []
+        raise PreventUpdate
 
     @callback(
         Output(ids.pee_dropdown(MATCH), "options"),
-        Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.options(MATCH), "data"),
     )
-    def update_pee_options(interval, options):
+    def update_pee_options(options):
         if options:
             if "pee" in options.keys():
                 return sorted(list(set(options["pee"])))
-        return []
+        raise PreventUpdate
 
     @callback(
         Output(ids.submercado_dropdown(MATCH), "options"),
-        Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.options(MATCH), "data"),
     )
-    def update_submercado_options(interval, options):
+    def update_submercado_options(options):
         if options:
             if "submercado" in options.keys():
                 subs = list(set(options["submercado"]))
                 return sorted(
                     list(set([GRUPOS_SUBMERCADOS.get(s, s) for s in subs]))
                 )
-        return []
+        raise PreventUpdate
 
     @callback(
         Output(ids.submercadoDe_dropdown(MATCH), "options"),
-        Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.options(MATCH), "data"),
     )
-    def update_submercadoDe_options(interval, options):
+    def update_submercadoDe_options(options):
         if options:
             if "submercadoDe" in options.keys():
                 subs = list(set(options["submercadoDe"]))
                 return sorted(
                     list(set([GRUPOS_SUBMERCADOS.get(s, s) for s in subs]))
                 )
-        return []
+        raise PreventUpdate
 
     @callback(
         Output(ids.submercadoPara_dropdown(MATCH), "options"),
-        Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.options(MATCH), "data"),
     )
-    def update_submercadoPara_options(interval, options):
+    def update_submercadoPara_options(options):
         if options:
             if "submercadoPara" in options.keys():
                 subs = list(set(options["submercadoPara"]))
                 return sorted(
                     list(set([GRUPOS_SUBMERCADOS.get(s, s) for s in subs]))
                 )
-        return []
+        raise PreventUpdate
 
     @callback(
         Output(ids.patamar_dropdown(MATCH), "options"),
-        Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.options(MATCH), "data"),
     )
-    def update_patamar_options(interval, options):
+    def update_patamar_options(options):
         if options:
             if "patamar" in options.keys():
                 return sorted(list(set(options["patamar"])))
-        return []
+        raise PreventUpdate
 
     @callback(
         Output(ids.iteracao_dropdown(MATCH), "options"),
-        Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.options(MATCH), "data"),
     )
-    def update_iteracao_options(interval, options):
+    def update_iteracao_options(options):
         if options:
             if "iteracao" in options.keys():
                 return sorted(list(set(options["iteracao"])))
-        return []
+        raise PreventUpdate
 
     @callback(
         Output(ids.filters(MATCH), "data"),
@@ -615,36 +603,29 @@ class ScenarioFilters(html.Div):
 
     @callback(
         Output(ids.variable_dropdown(MATCH), "options"),
-        Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.studies(MATCH), "data"),
     )
-    def update_variables_dropdown_options(interval, studies_data):
+    def update_variables_dropdown_options(studies_data):
         return dropdowns.update_scenario_variables_dropdown_options_casos(
-            interval, studies_data
+            studies_data
         )
 
     @callback(
         Output(ids.options(MATCH), "data"),
-        Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.studies(MATCH), "data"),
         Input(ids.variable_dropdown(MATCH), "value"),
     )
-    def update_options(interval, studies, variable: str):
-        return dropdowns.update_scenario_options_casos(
-            interval, studies, variable
-        )
+    def update_options(studies, variable: str):
+        return dropdowns.update_scenario_options_casos(studies, variable)
 
     @callback(
         Output(ids.data(MATCH), "data"),
-        Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.studies(MATCH), "data"),
         Input(ids.filters(MATCH), "data"),
         Input(ids.variable_dropdown(MATCH), "value"),
     )
-    def update_data(interval, studies, filters: dict, variable: str):
-        return data.update_scenario_data_casos(
-            interval, studies, filters, variable
-        )
+    def update_data(studies, filters: dict, variable: str):
+        return data.update_scenario_data_casos(studies, filters, variable)
 
     @callback(
         Output(ids.download(MATCH), "data"),
@@ -654,7 +635,7 @@ class ScenarioFilters(html.Div):
     )
     def generate_csv(n_clicks, operation_data, variable):
         if n_clicks is None:
-            return
+            raise PreventUpdate
         if operation_data is not None:
             dados = pd.read_json(operation_data, orient="split")
             dados["dataInicio"] = pd.to_datetime(

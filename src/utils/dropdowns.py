@@ -66,7 +66,7 @@ def update_operation_variables_dropdown_options_encadeador(
     return sorted(list(all_variables))
 
 
-def update_operation_variables_dropdown_options_casos(interval, studies_data):
+def update_operation_variables_dropdown_options_casos(studies_data):
     studies = pd.read_json(studies_data, orient="split")
     options = studies["options"].tolist()
     unique_variables = [o.split(",") for o in options]
@@ -84,7 +84,7 @@ def update_operation_variables_dropdown_options_casos(interval, studies_data):
     return sorted(unique_variables)
 
 
-def update_scenario_variables_dropdown_options_casos(interval, studies_data):
+def update_scenario_variables_dropdown_options_casos(studies_data):
     studies = pd.read_json(studies_data, orient="split")
     options = studies["options"].tolist()
     unique_variables = [o.split(",") for o in options]
@@ -125,7 +125,7 @@ def update_costs_time_variables_dropdown_options_encadeador(
     return sorted(list(all_variables))
 
 
-def update_costs_time_variables_dropdown_options_casos(interval, studies_data):
+def update_costs_time_variables_dropdown_options_casos(studies_data):
     studies = pd.read_json(studies_data, orient="split")
     options = studies["options"].tolist()
     unique_variables = [o.split(",") for o in options]
@@ -142,7 +142,7 @@ def update_studies_names_dropdown_options_encadeador(interval, studies_data):
     return labels
 
 
-def update_studies_names_dropdown_options_casos(interval, studies_data):
+def update_studies_names_dropdown_options_casos(studies_data):
     studies = pd.read_json(studies_data, orient="split")
     labels = studies["name"].tolist()
     return labels
@@ -182,7 +182,7 @@ def update_operation_options_encadeador(interval, studies, variable: str):
         return complete_options
 
 
-def update_operation_options_casos(interval, studies, variable: str):
+def update_operation_options_casos(studies, variable: str):
     if not studies:
         return None
     if not variable:
@@ -196,7 +196,7 @@ def update_operation_options_casos(interval, studies, variable: str):
         return options
 
 
-def update_scenario_options_casos(interval, studies, variable: str):
+def update_scenario_options_casos(studies, variable: str):
     if not studies:
         return None
     if not variable:

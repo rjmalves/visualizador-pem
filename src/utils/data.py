@@ -313,7 +313,6 @@ def update_operation_data_encadeador(
 
 
 def update_operation_data_casos(
-    interval,
     studies,
     filters: dict,
     variable: str,
@@ -348,7 +347,6 @@ def update_operation_data_casos(
 
 
 def update_scenario_data_casos(
-    interval,
     studies,
     filters: dict,
     variable: str,
@@ -454,7 +452,6 @@ def update_violation_data_encadeador(
 
 
 def update_custos_tempo_data_casos(
-    interval,
     studies,
     variable: str,
 ):
@@ -481,7 +478,6 @@ def update_custos_tempo_data_casos(
 
 
 def update_runtime_data_casos(
-    interval,
     studies,
 ):
     if not studies:
@@ -504,7 +500,6 @@ def update_runtime_data_casos(
 
 
 def update_convergence_data_casos(
-    interval,
     studies,
 ):
     if not studies:
@@ -528,7 +523,6 @@ def update_convergence_data_casos(
 
 
 def update_job_resources_data_casos(
-    interval,
     studies,
 ):
     if not studies:
@@ -552,7 +546,6 @@ def update_job_resources_data_casos(
 
 
 def update_cluster_resources_data_casos(
-    interval,
     studies,
 ):
     if not studies:
