@@ -25,6 +25,8 @@ DISCRETE_COLOR_PALLETE = [
     "#43aa8b",
 ]
 
+ENCADEADOR_TABLES = ["ESTUDO", "CASOS", "RODADAS"]
+
 
 def update_variables_options_casos(paths):
     unique_variables = API.fetch_available_results_list(paths)
@@ -49,6 +51,7 @@ def update_variables_options_encadeador(paths):
 
     all_variables = all_variables.union(set(newave_variables))
     all_variables = all_variables.union(set(decomp_variables))
+    all_variables = [a for a in all_variables if a not in ENCADEADOR_TABLES]
     return sorted(list(all_variables))
 
 
