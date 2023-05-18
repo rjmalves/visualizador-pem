@@ -26,6 +26,11 @@ DISCRETE_COLOR_PALLETE = [
 ]
 
 
+def update_variables_options_casos(paths):
+    unique_variables = API.fetch_available_results_list(paths)
+    return sorted(unique_variables)
+
+
 def edit_current_study_data(
     add_study_button_clicks,
     edit_study_button_clicks,
@@ -67,6 +72,7 @@ def edit_current_study_data(
                     ]
                 else:
                     color = new_study_color
+                options = update_variables_options_casos([new_study_id])
                 new_data = pd.DataFrame(
                     data={
                         "study_id": [None],
@@ -75,6 +81,7 @@ def edit_current_study_data(
                         "name": [label],
                         "color": [color],
                         "created_date": [datetime.now()],
+                        "options": [",".join(options)],
                     }
                 )
                 return pd.concat(
@@ -94,6 +101,9 @@ def edit_current_study_data(
             current_data.loc[
                 current_data["table_id"] == edit_study_id, "color"
             ] = edit_study_color
+            current_data.loc[
+                current_data["table_id"] == edit_study_id, "options"
+            ] = ",".join(update_variables_options_casos([edit_study_path]))
             return current_data.to_json(orient="split")
     elif ctx.triggered_id == remove_trigger:
         if remove_study_button_clicks:
@@ -107,6 +117,12 @@ def edit_current_study_data(
     elif screen is not None:
         screen_df = db.load_screen(screen, screen_type_str)
         if screen_df is not None:
+            screen_df["options"] = screen_df.apply(
+                lambda linha: ",".join(
+                    update_variables_options_casos([linha["path"]])
+                ),
+                axis=1,
+            )
             return screen_df.to_json(orient="split")
         else:
             return current_studies

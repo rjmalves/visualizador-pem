@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+import itertools
 from src.utils.settings import Settings
 from src.utils.api import API
 
@@ -67,8 +68,11 @@ def update_operation_variables_dropdown_options_encadeador(
 
 def update_operation_variables_dropdown_options_casos(interval, studies_data):
     studies = pd.read_json(studies_data, orient="split")
-    paths = studies["path"].tolist()
-    unique_variables = API.fetch_available_results_list(paths)
+    options = studies["options"].tolist()
+    unique_variables = [o.split(",") for o in options]
+    unique_variables = list(
+        set(list(itertools.chain.from_iterable(unique_variables)))
+    )
     unique_variables = [
         a for a in unique_variables if a not in NOT_OPERATION_FILES
     ]
@@ -82,8 +86,11 @@ def update_operation_variables_dropdown_options_casos(interval, studies_data):
 
 def update_scenario_variables_dropdown_options_casos(interval, studies_data):
     studies = pd.read_json(studies_data, orient="split")
-    paths = studies["path"].tolist()
-    unique_variables = API.fetch_available_results_list(paths)
+    options = studies["options"].tolist()
+    unique_variables = [o.split(",") for o in options]
+    unique_variables = list(
+        set(list(itertools.chain.from_iterable(unique_variables)))
+    )
     unique_variables = [
         a
         for a in unique_variables
@@ -120,8 +127,11 @@ def update_costs_time_variables_dropdown_options_encadeador(
 
 def update_costs_time_variables_dropdown_options_casos(interval, studies_data):
     studies = pd.read_json(studies_data, orient="split")
-    paths = studies["path"].tolist()
-    unique_variables = API.fetch_available_results_list(paths)
+    options = studies["options"].tolist()
+    unique_variables = [o.split(",") for o in options]
+    unique_variables = list(
+        set(list(itertools.chain.from_iterable(unique_variables)))
+    )
     unique_variables = [a for a in unique_variables if a in COSTS_TIME_FILES]
     return sorted(unique_variables)
 

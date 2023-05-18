@@ -1,7 +1,7 @@
 # package imports
 import dash
 from dash import html, dcc, callback, Input, Output, State, ctx
-
+from dash.exceptions import PreventUpdate
 from src.components.newstudymodal import NewStudyModal
 from src.components.editstudymodal import EditStudyModal
 from src.components.currentstudiestable import CurrentStudiesTable
@@ -66,6 +66,7 @@ def layout(screen_id=None):
         ),
     ],
     [State(NewStudyModal.ids.modal("casos-modal"), "is_open")],
+    prevent_initial_call=True,
 )
 def toggle_casos_modal(src1, src2, is_open):
     if current_user.is_authenticated:
@@ -91,12 +92,13 @@ def toggle_casos_modal(src1, src2, is_open):
         CurrentStudiesTable.ids.selected("casos-current-studies"),
         "data",
     ),
+    prevent_initial_call=True,
 )
 def toggle_casos_modal(src1, src2, is_open, selected):
     if selected is None:
-        return None
+        raise PreventUpdate
     elif len(selected) == 0:
-        return None
+        raise PreventUpdate
     else:
         return modals.toggle_modal(src1, src2, is_open)
 
@@ -116,6 +118,7 @@ def toggle_casos_modal(src1, src2, is_open, selected):
         ),
     ],
     [State(SaveScreenModal.ids.modal("casos-save-screen-modal"), "is_open")],
+    prevent_initial_call=True,
 )
 def toggle_casos_modal(src1, src2, is_open):
     if current_user.is_authenticated:
@@ -139,6 +142,7 @@ def toggle_casos_modal(src1, src2, is_open):
         ),
     ],
     [State(LoadScreenModal.ids.modal("casos-load-screen-modal"), "is_open")],
+    prevent_initial_call=True,
 )
 def toggle_casos_modal(src1, src2, is_open):
     if current_user.is_authenticated:
@@ -215,6 +219,7 @@ def edit_current_casos_study_data(
         "data",
     ),
     State(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
+    prevent_initial_call=True,
 )
 def update_edit_study_modal_id(selected_study, current_studies):
     dados = data.extract_selected_study_data(
@@ -222,7 +227,7 @@ def update_edit_study_modal_id(selected_study, current_studies):
         current_studies,
     )
     if dados is None:
-        return None
+        raise PreventUpdate
     else:
         return dados["table_id"]
 
@@ -234,6 +239,7 @@ def update_edit_study_modal_id(selected_study, current_studies):
         "data",
     ),
     State(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
+    prevent_initial_call=True,
 )
 def update_edit_study_modal_path(selected_study, current_studies):
     dados = data.extract_selected_study_data(
@@ -241,7 +247,7 @@ def update_edit_study_modal_path(selected_study, current_studies):
         current_studies,
     )
     if dados is None:
-        return None
+        raise PreventUpdate
     else:
         return dados["path"]
 
@@ -253,6 +259,7 @@ def update_edit_study_modal_path(selected_study, current_studies):
         "data",
     ),
     State(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
+    prevent_initial_call=True,
 )
 def update_edit_study_modal_name(selected_study, current_studies):
     dados = data.extract_selected_study_data(
@@ -261,7 +268,7 @@ def update_edit_study_modal_name(selected_study, current_studies):
     )
 
     if dados is None:
-        return None
+        raise PreventUpdate
     else:
         return dados["name"]
 
@@ -273,6 +280,7 @@ def update_edit_study_modal_name(selected_study, current_studies):
         "data",
     ),
     State(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
+    prevent_initial_call=True,
 )
 def update_edit_study_modal_color(selected_study, current_studies):
     dados = data.extract_selected_study_data(
@@ -281,7 +289,7 @@ def update_edit_study_modal_color(selected_study, current_studies):
     )
 
     if dados is None:
-        return None
+        raise PreventUpdate
     else:
         return dados["color"]
 
@@ -289,6 +297,7 @@ def update_edit_study_modal_color(selected_study, current_studies):
 @callback(
     Output(OperationGraph.ids.studies("casos-operation-graph"), "data"),
     Input(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
+    prevent_initial_call=True,
 )
 def update_current_studies(studies_data):
     return studies_data
@@ -297,6 +306,7 @@ def update_current_studies(studies_data):
 @callback(
     Output(ScenarioGraph.ids.studies("casos-scenario-graph"), "data"),
     Input(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
+    prevent_initial_call=True,
 )
 def update_current_studies(studies_data):
     return studies_data
@@ -305,6 +315,7 @@ def update_current_studies(studies_data):
 @callback(
     Output(AcumProbGraph.ids.studies("casos-permanencia-graph"), "data"),
     Input(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
+    prevent_initial_call=True,
 )
 def update_current_studies(studies_data):
     return studies_data
@@ -313,6 +324,7 @@ def update_current_studies(studies_data):
 @callback(
     Output(TimeCostsGraph.ids.studies("casos-tempo-custos-graph"), "data"),
     Input(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
+    prevent_initial_call=True,
 )
 def update_current_studies(studies_data):
     return studies_data
@@ -321,6 +333,7 @@ def update_current_studies(studies_data):
 @callback(
     Output(ConvergenceGraph.ids.studies("casos-convergence-graph"), "data"),
     Input(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
+    prevent_initial_call=True,
 )
 def update_current_studies(studies_data):
     return studies_data
@@ -329,6 +342,7 @@ def update_current_studies(studies_data):
 @callback(
     Output(ResourcesGraph.ids.studies("casos-resources-graph"), "data"),
     Input(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
+    prevent_initial_call=True,
 )
 def update_current_studies(studies_data):
     return studies_data
@@ -339,6 +353,7 @@ def update_current_studies(studies_data):
         SaveScreenModal.ids.current_studies("casos-save-screen-modal"), "data"
     ),
     Input(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
+    prevent_initial_call=True,
 )
 def update_current_studies(studies_data):
     return studies_data
@@ -356,6 +371,7 @@ def update_current_studies(studies_data):
     State(
         LoadScreenModal.ids.screen_type_str("casos-load-screen-modal"), "data"
     ),
+    prevent_initial_call=True,
 )
 def update_screen_type_str(path, screen_type_str):
     return db.list_screens(screen_type_str)

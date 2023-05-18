@@ -1,4 +1,5 @@
 from dash import html, dcc, callback, Input, State, Output, MATCH
+from dash.exceptions import PreventUpdate
 import uuid
 import pandas as pd
 
@@ -353,6 +354,7 @@ class OperationFiltersTwin(html.Div):
     @callback(
         Output(ids.usina_dropdown_container(MATCH), "style"),
         Input(ids.variable_dropdown(MATCH), "value"),
+        prevent_initial_call=True,
     )
     def update_display_usina_dropdown(variavel: str):
         agregacao_espacial = variavel.split("_")[1] if variavel else ""
@@ -365,6 +367,7 @@ class OperationFiltersTwin(html.Div):
     @callback(
         Output(ids.ree_dropdown_container(MATCH), "style"),
         Input(ids.variable_dropdown(MATCH), "value"),
+        prevent_initial_call=True,
     )
     def update_display_ree_dropdown(variavel: str):
         agregacao_espacial = variavel.split("_")[1] if variavel else ""
@@ -377,6 +380,7 @@ class OperationFiltersTwin(html.Div):
     @callback(
         Output(ids.submercado_dropdown_container(MATCH), "style"),
         Input(ids.variable_dropdown(MATCH), "value"),
+        prevent_initial_call=True,
     )
     def update_display_submercado_dropdown(variavel: str):
         agregacao_espacial = variavel.split("_")[1] if variavel else ""
@@ -389,6 +393,7 @@ class OperationFiltersTwin(html.Div):
     @callback(
         Output(ids.submercadoDe_dropdown_container(MATCH), "style"),
         Input(ids.variable_dropdown(MATCH), "value"),
+        prevent_initial_call=True,
     )
     def update_display_submercadoDe_dropdown(variavel: str):
         agregacao_espacial = variavel.split("_")[1] if variavel else ""
@@ -401,6 +406,7 @@ class OperationFiltersTwin(html.Div):
     @callback(
         Output(ids.submercadoPara_dropdown_container(MATCH), "style"),
         Input(ids.variable_dropdown(MATCH), "value"),
+        prevent_initial_call=True,
     )
     def update_display_submercadoPara_dropdown(variavel: str):
         agregacao_espacial = variavel.split("_")[1] if variavel else ""
@@ -413,6 +419,7 @@ class OperationFiltersTwin(html.Div):
     @callback(
         Output(ids.patamar_dropdown_container(MATCH), "style"),
         Input(ids.variable_dropdown(MATCH), "value"),
+        prevent_initial_call=True,
     )
     def update_display_patamar_dropdown(variavel: str):
         agregacao_temporal = variavel.split("_")[2] if variavel else ""
@@ -426,6 +433,7 @@ class OperationFiltersTwin(html.Div):
         Output(ids.usina_dropdown(MATCH), "options"),
         Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.options(MATCH), "data"),
+        prevent_initial_call=True,
     )
     def update_usina_options(interval, options):
         if options:
@@ -437,6 +445,7 @@ class OperationFiltersTwin(html.Div):
         Output(ids.ree_dropdown(MATCH), "options"),
         Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.options(MATCH), "data"),
+        prevent_initial_call=True,
     )
     def update_ree_options(interval, options):
         if options:
@@ -448,6 +457,7 @@ class OperationFiltersTwin(html.Div):
         Output(ids.submercado_dropdown(MATCH), "options"),
         Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.options(MATCH), "data"),
+        prevent_initial_call=True,
     )
     def update_submercado_options(interval, options):
         if options:
@@ -462,6 +472,7 @@ class OperationFiltersTwin(html.Div):
         Output(ids.submercadoDe_dropdown(MATCH), "options"),
         Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.options(MATCH), "data"),
+        prevent_initial_call=True,
     )
     def update_submercadoDe_options(interval, options):
         if options:
@@ -476,6 +487,7 @@ class OperationFiltersTwin(html.Div):
         Output(ids.submercadoPara_dropdown(MATCH), "options"),
         Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.options(MATCH), "data"),
+        prevent_initial_call=True,
     )
     def update_submercadoPara_options(interval, options):
         if options:
@@ -490,6 +502,7 @@ class OperationFiltersTwin(html.Div):
         Output(ids.patamar_dropdown(MATCH), "options"),
         Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.options(MATCH), "data"),
+        prevent_initial_call=True,
     )
     def update_patamar_options(interval, options):
         if options:
@@ -501,6 +514,7 @@ class OperationFiltersTwin(html.Div):
         Output(ids.estagio_dropdown(MATCH), "options"),
         Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.options(MATCH), "data"),
+        prevent_initial_call=True,
     )
     def update_estagio_options(interval, options):
         if options:
@@ -517,6 +531,7 @@ class OperationFiltersTwin(html.Div):
         Input(ids.submercadoPara_dropdown(MATCH), "value"),
         Input(ids.patamar_dropdown(MATCH), "value"),
         Input(ids.estagio_dropdown(MATCH), "value"),
+        prevent_initial_call=True,
     )
     def update_filters(
         usina: str,
@@ -548,6 +563,7 @@ class OperationFiltersTwin(html.Div):
         Output(ids.variable_dropdown(MATCH), "options"),
         Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.studies(MATCH), "data"),
+        prevent_initial_call=True,
     )
     def update_variables_dropdown_options(interval, studies_data):
         return dropdowns.update_operation_variables_dropdown_options_casos(
@@ -559,6 +575,7 @@ class OperationFiltersTwin(html.Div):
         Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.studies(MATCH), "data"),
         Input(ids.variable_dropdown(MATCH), "value"),
+        prevent_initial_call=True,
     )
     def update_options(interval, studies, variable: str):
         return dropdowns.update_operation_options_casos(
@@ -571,6 +588,7 @@ class OperationFiltersTwin(html.Div):
         Input(ids.studies(MATCH), "data"),
         Input(ids.filters(MATCH), "data"),
         Input(ids.variable_dropdown(MATCH), "value"),
+        prevent_initial_call=True,
     )
     def update_data(interval, studies, filters: dict, variable: str):
         return data.update_operation_data_casos(
@@ -582,10 +600,11 @@ class OperationFiltersTwin(html.Div):
         Input(ids.download_btn(MATCH), "n_clicks"),
         State(ids.data(MATCH), "data"),
         State(ids.variable_dropdown(MATCH), "value"),
+        prevent_initial_call=True,
     )
     def generate_csv(n_clicks, operation_data, variable):
         if n_clicks is None:
-            return
+            raise PreventUpdate
         if operation_data is not None:
             dados = pd.read_json(operation_data, orient="split")
             dados["dataInicio"] = pd.to_datetime(

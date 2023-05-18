@@ -32,7 +32,7 @@ class ScenarioGraph(html.Div):
                 html.Div(
                     [
                         html.H4(
-                            "CENÁRIOS GERADOS",
+                            "CENÁRIOS",
                             className="card-title",
                         ),
                         html.Div(
