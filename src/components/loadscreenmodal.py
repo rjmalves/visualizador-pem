@@ -1,18 +1,12 @@
 from dash import (
     Output,
     Input,
-    State,
     html,
     dcc,
     callback,
     MATCH,
-    dash_table,
-    ctx,
-    no_update,
 )
-from flask_login import current_user
 import dash_bootstrap_components as dbc
-import pandas as pd
 import uuid
 from src.utils import db
 
@@ -53,7 +47,6 @@ class LoadScreenModal(html.Div):
         self,
         aio_id=None,
     ):
-
         if aio_id is None:
             aio_id = str(uuid.uuid4())
 

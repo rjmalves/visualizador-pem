@@ -1,6 +1,7 @@
 # package imports
 import dash
 from dash import html, dcc, callback, Input, Output, State, ctx
+from dash.exceptions import PreventUpdate
 
 from src.components.newstudymodal import NewStudyModal
 from src.components.editstudymodal import EditStudyModal
@@ -55,6 +56,7 @@ def layout(screen_id=None):
         ),
     ],
     [State(NewStudyModal.ids.modal("ppq-modal"), "is_open")],
+    prevent_initial_call=True,
 )
 def toggle_ppq_modal(src1, src2, is_open):
     if current_user.is_authenticated:
@@ -80,6 +82,7 @@ def toggle_ppq_modal(src1, src2, is_open):
         CurrentStudiesTable.ids.selected("ppq-current-studies"),
         "data",
     ),
+    prevent_initial_call=True,
 )
 def toggle_ppq_modal(src1, src2, is_open, selected):
     if selected is None:
@@ -91,14 +94,10 @@ def toggle_ppq_modal(src1, src2, is_open, selected):
 
 
 @callback(
-    Output(
-        SaveScreenModal.ids.modal("ppq-save-screen-modal"), "is_open"
-    ),
+    Output(SaveScreenModal.ids.modal("ppq-save-screen-modal"), "is_open"),
     [
         Input(
-            CurrentStudiesTable.ids.save_study_btn(
-                "ppq-current-studies"
-            ),
+            CurrentStudiesTable.ids.save_study_btn("ppq-current-studies"),
             "n_clicks",
         ),
         Input(
@@ -114,6 +113,7 @@ def toggle_ppq_modal(src1, src2, is_open, selected):
             "is_open",
         )
     ],
+    prevent_initial_call=True,
 )
 def toggle_ppq_modal(src1, src2, is_open):
     if current_user.is_authenticated:
@@ -123,14 +123,10 @@ def toggle_ppq_modal(src1, src2, is_open):
 
 
 @callback(
-    Output(
-        LoadScreenModal.ids.modal("ppq-load-screen-modal"), "is_open"
-    ),
+    Output(LoadScreenModal.ids.modal("ppq-load-screen-modal"), "is_open"),
     [
         Input(
-            CurrentStudiesTable.ids.load_study_btn(
-                "ppq-current-studies"
-            ),
+            CurrentStudiesTable.ids.load_study_btn("ppq-current-studies"),
             "n_clicks",
         ),
         Input(
@@ -146,6 +142,7 @@ def toggle_ppq_modal(src1, src2, is_open):
             "is_open",
         )
     ],
+    prevent_initial_call=True,
 )
 def toggle_ppq_modal(src1, src2, is_open):
     if current_user.is_authenticated:
@@ -222,6 +219,7 @@ def edit_current_ppq_study_data(
         "data",
     ),
     State(CurrentStudiesTable.ids.data("ppq-current-studies"), "data"),
+    prevent_initial_call=True,
 )
 def update_edit_study_modal_id(selected_study, current_studies):
     dados = data.extract_selected_study_data(
@@ -241,6 +239,7 @@ def update_edit_study_modal_id(selected_study, current_studies):
         "data",
     ),
     State(CurrentStudiesTable.ids.data("ppq-current-studies"), "data"),
+    prevent_initial_call=True,
 )
 def update_edit_study_modal_path(selected_study, current_studies):
     dados = data.extract_selected_study_data(
@@ -260,6 +259,7 @@ def update_edit_study_modal_path(selected_study, current_studies):
         "data",
     ),
     State(CurrentStudiesTable.ids.data("ppq-current-studies"), "data"),
+    prevent_initial_call=True,
 )
 def update_edit_study_modal_color(selected_study, current_studies):
     dados = data.extract_selected_study_data(
@@ -280,6 +280,7 @@ def update_edit_study_modal_color(selected_study, current_studies):
         "data",
     ),
     State(CurrentStudiesTable.ids.data("ppq-current-studies"), "data"),
+    prevent_initial_call=True,
 )
 def update_edit_study_modal_name(selected_study, current_studies):
     dados = data.extract_selected_study_data(
@@ -298,6 +299,7 @@ def update_edit_study_modal_name(selected_study, current_studies):
         DistributionsGraphPPQ.ids.studies("ppq-distribution-graph"), "data"
     ),
     Input(CurrentStudiesTable.ids.data("ppq-current-studies"), "data"),
+    prevent_initial_call=True,
 )
 def update_current_studies(studies_data):
     return studies_data
@@ -306,6 +308,7 @@ def update_current_studies(studies_data):
 @callback(
     Output(OperationGraphPPQ.ids.studies("ppq-operation-graph"), "data"),
     Input(CurrentStudiesTable.ids.data("ppq-current-studies"), "data"),
+    prevent_initial_call=True,
 )
 def update_current_studies(studies_data):
     return studies_data
@@ -317,6 +320,7 @@ def update_current_studies(studies_data):
         "data",
     ),
     Input(CurrentStudiesTable.ids.data("ppq-current-studies"), "data"),
+    prevent_initial_call=True,
 )
 def update_current_studies(studies_data):
     return studies_data

@@ -1,11 +1,7 @@
-from dash import html, dcc, callback, Input, Output, State, ctx
+from dash import html, dcc, callback, Input, Output
 import os
 from src.utils.settings import Settings
-from src.utils.log import Log
-from src.components.login import User, login_info, login_location, login_user
-from src.components.loadscreenmodal import LoadScreenModal
-from src.components.savescreenmodal import SaveScreenModal
-from dash.exceptions import PreventUpdate
+from src.components.login import login_info, login_location
 
 navbar = html.Header(
     [

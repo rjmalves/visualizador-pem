@@ -2,7 +2,6 @@ from dash import html, dcc, callback, Input, State, Output, MATCH
 import uuid
 import pandas as pd
 
-from src.utils.settings import Settings
 import src.utils.dropdowns as dropdowns
 import src.utils.data as data
 

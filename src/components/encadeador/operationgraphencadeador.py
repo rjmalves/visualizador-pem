@@ -3,7 +3,6 @@ from src.components.encadeador.operationfiltersencadeador import (
     OperationFiltersEncadeador,
 )
 import src.utils.plots as plots
-from src.utils.settings import Settings
 import uuid
 
 
@@ -31,7 +30,6 @@ class OperationGraphEncadeador(html.Div):
         self,
         aio_id=None,
     ):
-
         if aio_id is None:
             aio_id = str(uuid.uuid4())
 

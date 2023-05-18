@@ -8,15 +8,11 @@ from dash import (
     html,
     dcc,
     callback,
-    ctx,
-    no_update,
 )
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
 from src.utils.settings import Settings
 from src.utils.log import Log
-from src.components.loadscreenmodal import LoadScreenModal
-from src.components.savescreenmodal import SaveScreenModal
 from dash.exceptions import PreventUpdate
 
 

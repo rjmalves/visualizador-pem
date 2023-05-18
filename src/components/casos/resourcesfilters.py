@@ -3,7 +3,6 @@ from dash.exceptions import PreventUpdate
 import uuid
 import pandas as pd
 
-from src.utils.settings import Settings
 import src.utils.dropdowns as dropdowns
 import src.utils.data as data
 
@@ -138,6 +137,7 @@ class ResourcesFilters(html.Div):
     @callback(
         Output(ids.studies_dropdown(MATCH), "options"),
         Input(ids.studies(MATCH), "data"),
+        prevent_initial_call=True,
     )
     def update_studies_dropdown_options(studies_data):
         return dropdowns.update_studies_names_dropdown_options_casos(
@@ -147,6 +147,7 @@ class ResourcesFilters(html.Div):
     @callback(
         Output(ids.jobData(MATCH), "data"),
         Input(ids.studies(MATCH), "data"),
+        prevent_initial_call=True,
     )
     def update_data(studies):
         return data.update_job_resources_data_casos(
@@ -156,6 +157,7 @@ class ResourcesFilters(html.Div):
     @callback(
         Output(ids.clusterData(MATCH), "data"),
         Input(ids.studies(MATCH), "data"),
+        prevent_initial_call=True,
     )
     def update_data(studies):
         return data.update_cluster_resources_data_casos(
@@ -165,6 +167,7 @@ class ResourcesFilters(html.Div):
     @callback(
         Output(ids.timeData(MATCH), "data"),
         Input(ids.studies(MATCH), "data"),
+        prevent_initial_call=True,
     )
     def update_data(studies):
         return data.update_runtime_data_casos(
@@ -174,6 +177,7 @@ class ResourcesFilters(html.Div):
     @callback(
         Output(ids.convergenceData(MATCH), "data"),
         Input(ids.studies(MATCH), "data"),
+        prevent_initial_call=True,
     )
     def update_data(studies):
         return data.update_convergence_data_casos(
@@ -184,6 +188,7 @@ class ResourcesFilters(html.Div):
         Output(ids.download(MATCH), "data"),
         Input(ids.download_btn(MATCH), "n_clicks"),
         State(ids.jobData(MATCH), "data"),
+        prevent_initial_call=True,
     )
     def generate_csv(n_clicks, operation_data):
         if n_clicks is None:

@@ -39,34 +39,28 @@ SCENARIO_FILE_PATTERNS = ["_FOR", "_BKW", "_SF"]
 def update_operation_variables_dropdown_options_encadeador(
     interval, studies_data
 ):
+    if studies_data is None:
+        return []
     studies = pd.read_json(studies_data, orient="split")
-    all_variables = set()
-    newaves_paths = []
-    decomps_paths = []
-    for _, line in studies.iterrows():
-        newave_path = os.path.join(
-            line["path"], Settings.synthesis_dir, Settings.newave_dir
-        )
-        decomp_path = os.path.join(
-            line["path"], Settings.synthesis_dir, Settings.decomp_dir
-        )
-        newaves_paths.append(newave_path)
-        decomps_paths.append(decomp_path)
-    newave_variables = API.fetch_available_results_list(newaves_paths)
-    decomp_variables = API.fetch_available_results_list(decomps_paths)
-
-    all_variables = all_variables.union(set(newave_variables))
-    all_variables = all_variables.union(set(decomp_variables))
-    all_variables = [a for a in all_variables if a not in NOT_OPERATION_FILES]
-    all_variables = [
+    options = studies["options"].tolist()
+    unique_variables = [o.split(",") for o in options]
+    unique_variables = list(
+        set(list(itertools.chain.from_iterable(unique_variables)))
+    )
+    unique_variables = [
+        a for a in unique_variables if a not in NOT_OPERATION_FILES
+    ]
+    unique_variables = [
         a
-        for a in all_variables
+        for a in unique_variables
         if not any([p in a for p in SCENARIO_FILE_PATTERNS])
     ]
-    return sorted(list(all_variables))
+    return sorted(unique_variables)
 
 
 def update_operation_variables_dropdown_options_casos(studies_data):
+    if studies_data is None:
+        return []
     studies = pd.read_json(studies_data, orient="split")
     options = studies["options"].tolist()
     unique_variables = [o.split(",") for o in options]
@@ -85,6 +79,8 @@ def update_operation_variables_dropdown_options_casos(studies_data):
 
 
 def update_scenario_variables_dropdown_options_casos(studies_data):
+    if studies_data is None:
+        return []
     studies = pd.read_json(studies_data, orient="split")
     options = studies["options"].tolist()
     unique_variables = [o.split(",") for o in options]
@@ -102,30 +98,21 @@ def update_scenario_variables_dropdown_options_casos(studies_data):
 def update_costs_time_variables_dropdown_options_encadeador(
     interval, studies_data
 ):
+    if studies_data is None:
+        return []
     studies = pd.read_json(studies_data, orient="split")
-    all_variables = set()
-    newaves_paths = []
-    decomps_paths = []
-    for _, line in studies.iterrows():
-        newave_path = os.path.join(
-            line["path"], Settings.synthesis_dir, Settings.newave_dir
-        )
-        decomp_path = os.path.join(
-            line["path"], Settings.synthesis_dir, Settings.decomp_dir
-        )
-        newaves_paths.append(newave_path)
-        decomps_paths.append(decomp_path)
-    newave_variables = API.fetch_available_results_list(newaves_paths)
-
-    decomp_variables = API.fetch_available_results_list(decomps_paths)
-
-    all_variables = all_variables.union(set(newave_variables))
-    all_variables = all_variables.union(set(decomp_variables))
-    all_variables = [a for a in all_variables if a in COSTS_TIME_FILES]
-    return sorted(list(all_variables))
+    options = studies["options"].tolist()
+    unique_variables = [o.split(",") for o in options]
+    unique_variables = list(
+        set(list(itertools.chain.from_iterable(unique_variables)))
+    )
+    unique_variables = [a for a in unique_variables if a in COSTS_TIME_FILES]
+    return sorted(unique_variables)
 
 
 def update_costs_time_variables_dropdown_options_casos(studies_data):
+    if studies_data is None:
+        return []
     studies = pd.read_json(studies_data, orient="split")
     options = studies["options"].tolist()
     unique_variables = [o.split(",") for o in options]
@@ -137,12 +124,16 @@ def update_costs_time_variables_dropdown_options_casos(studies_data):
 
 
 def update_studies_names_dropdown_options_encadeador(interval, studies_data):
+    if studies_data is None:
+        return []
     studies = pd.read_json(studies_data, orient="split")
     labels = studies["name"].tolist()
     return labels
 
 
 def update_studies_names_dropdown_options_casos(studies_data):
+    if studies_data is None:
+        return []
     studies = pd.read_json(studies_data, orient="split")
     labels = studies["name"].tolist()
     return labels

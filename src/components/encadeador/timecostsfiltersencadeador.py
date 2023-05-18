@@ -1,4 +1,5 @@
 from dash import html, dcc, callback, Input, State, Output, MATCH
+from dash.exceptions import PreventUpdate
 import uuid
 import pandas as pd
 
@@ -204,7 +205,7 @@ class TimeCostsFiltersEncadeador(html.Div):
     )
     def generate_csv(n_clicks, operation_data, variavel):
         if n_clicks is None:
-            return
+            raise PreventUpdate
         if operation_data is not None:
             dados = pd.read_json(operation_data, orient="split")
             return dcc.send_data_frame(dados.to_csv, f"{variavel}.csv")

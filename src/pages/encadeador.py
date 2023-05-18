@@ -19,7 +19,6 @@ from src.components.encadeador.statustableencadeador import (
 )
 from src.components.savescreenmodal import SaveScreenModal
 from src.components.loadscreenmodal import LoadScreenModal
-from src.components.login import login_location
 from flask_login import current_user
 import src.utils.modals as modals
 import src.utils.data as data
@@ -71,6 +70,7 @@ def layout(screen_id=None):
         ),
     ],
     [State(NewStudyModal.ids.modal("encadeador-modal"), "is_open")],
+    prevent_initial_call=True,
 )
 def toggle_encadeador_modal(src1, src2, is_open):
     if current_user.is_authenticated:
@@ -98,6 +98,7 @@ def toggle_encadeador_modal(src1, src2, is_open):
         CurrentStudiesTable.ids.selected("encadeador-current-studies"),
         "data",
     ),
+    prevent_initial_call=True,
 )
 def toggle_encadeador_modal(src1, src2, is_open, selected):
     if selected is None:
@@ -132,6 +133,7 @@ def toggle_encadeador_modal(src1, src2, is_open, selected):
             "is_open",
         )
     ],
+    prevent_initial_call=True,
 )
 def toggle_encadeador_modal(src1, src2, is_open):
     if current_user.is_authenticated:
@@ -164,6 +166,7 @@ def toggle_encadeador_modal(src1, src2, is_open):
             "is_open",
         )
     ],
+    prevent_initial_call=True,
 )
 def toggle_encadeador_modal(src1, src2, is_open):
     if current_user.is_authenticated:
@@ -246,6 +249,7 @@ def edit_current_encadeador_study_data(
         "data",
     ),
     State(CurrentStudiesTable.ids.data("encadeador-current-studies"), "data"),
+    prevent_initial_call=True,
 )
 def update_edit_study_modal_id(selected_study, current_studies):
     dados = data.extract_selected_study_data(
@@ -267,6 +271,7 @@ def update_edit_study_modal_id(selected_study, current_studies):
         "data",
     ),
     State(CurrentStudiesTable.ids.data("encadeador-current-studies"), "data"),
+    prevent_initial_call=True,
 )
 def update_edit_study_modal_path(selected_study, current_studies):
     dados = data.extract_selected_study_data(
@@ -288,6 +293,7 @@ def update_edit_study_modal_path(selected_study, current_studies):
         "data",
     ),
     State(CurrentStudiesTable.ids.data("encadeador-current-studies"), "data"),
+    prevent_initial_call=True,
 )
 def update_edit_study_modal_name(selected_study, current_studies):
     dados = data.extract_selected_study_data(
@@ -310,6 +316,7 @@ def update_edit_study_modal_name(selected_study, current_studies):
         "data",
     ),
     State(CurrentStudiesTable.ids.data("encadeador-current-studies"), "data"),
+    prevent_initial_call=True,
 )
 def update_edit_study_modal_color(selected_study, current_studies):
     dados = data.extract_selected_study_data(
@@ -329,6 +336,7 @@ def update_edit_study_modal_color(selected_study, current_studies):
         "data",
     ),
     Input(CurrentStudiesTable.ids.data("encadeador-current-studies"), "data"),
+    prevent_initial_call=True,
 )
 def update_current_studies(studies_data):
     return studies_data
@@ -340,6 +348,7 @@ def update_current_studies(studies_data):
         "data",
     ),
     Input(CurrentStudiesTable.ids.data("encadeador-current-studies"), "data"),
+    prevent_initial_call=True,
 )
 def update_current_studies_status_table(studies_data):
     return studies_data
@@ -351,6 +360,7 @@ def update_current_studies_status_table(studies_data):
         "data",
     ),
     Input(CurrentStudiesTable.ids.data("encadeador-current-studies"), "data"),
+    prevent_initial_call=True,
 )
 def update_current_studies_operation_graph(studies_data):
     return studies_data
@@ -362,6 +372,7 @@ def update_current_studies_operation_graph(studies_data):
         "data",
     ),
     Input(CurrentStudiesTable.ids.data("encadeador-current-studies"), "data"),
+    prevent_initial_call=True,
 )
 def update_current_studies_timecosts_graph(studies_data):
     return studies_data
@@ -373,6 +384,7 @@ def update_current_studies_timecosts_graph(studies_data):
         "data",
     ),
     Input(CurrentStudiesTable.ids.data("encadeador-current-studies"), "data"),
+    prevent_initial_call=True,
 )
 def update_current_studies_violation_graph(studies_data):
     return studies_data
@@ -391,6 +403,7 @@ def update_current_studies_violation_graph(studies_data):
         LoadScreenModal.ids.screen_type_str("encadeador-load-screen-modal"),
         "data",
     ),
+    prevent_initial_call=True,
 )
 def update_screen_type_str(path, screen_type_str):
     return db.list_screens(screen_type_str)

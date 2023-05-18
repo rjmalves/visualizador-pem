@@ -1,7 +1,6 @@
-from dash import Output, Input, State, html, dcc, callback, MATCH, ALL
+from dash import Output, Input, State, html, dcc, callback, MATCH
 from src.components.casos.scenariofilters import ScenarioFilters
 import src.utils.plots as plots
-from src.utils.settings import Settings
 import uuid
 
 

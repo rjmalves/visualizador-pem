@@ -1,14 +1,11 @@
 from dash import (
     Output,
     Input,
-    State,
     html,
     dcc,
     callback,
     MATCH,
     dash_table,
-    ctx,
-    no_update,
 )
 import pandas as pd
 import uuid
@@ -61,7 +58,6 @@ class StatusTable(html.Div):
         self,
         aio_id=None,
     ):
-
         if aio_id is None:
             aio_id = str(uuid.uuid4())
 

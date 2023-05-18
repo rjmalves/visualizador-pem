@@ -1,8 +1,7 @@
-from dash import Output, Input, State, html, dcc, callback, MATCH, ALL
+from dash import Output, Input, State, html, dcc, callback, MATCH
 from src.components.casos.operationfilters import OperationFilters
 from src.components.casos.operationfilterstwin import OperationFiltersTwin
 import src.utils.plots as plots
-from src.utils.settings import Settings
 import uuid
 
 

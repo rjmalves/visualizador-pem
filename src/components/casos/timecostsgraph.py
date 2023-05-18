@@ -1,7 +1,6 @@
 from dash import Output, Input, State, html, dcc, callback, MATCH
 from src.components.casos.timecostsfilters import TimeCostsFilters
 import src.utils.plots as plots
-from src.utils.settings import Settings
 import uuid
 
 
@@ -24,7 +23,6 @@ class TimeCostsGraph(html.Div):
         self,
         aio_id=None,
     ):
-
         if aio_id is None:
             aio_id = str(uuid.uuid4())
 

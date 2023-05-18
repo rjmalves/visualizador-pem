@@ -3,7 +3,6 @@ from dash.exceptions import PreventUpdate
 import uuid
 import pandas as pd
 
-from src.utils.settings import Settings
 import src.utils.dropdowns as dropdowns
 import src.utils.data as data
 

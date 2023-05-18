@@ -6,9 +6,7 @@ from dash import (
     dcc,
     callback,
     MATCH,
-    dash_table,
     ctx,
-    no_update,
 )
 from flask_login import current_user
 import dash_bootstrap_components as dbc
@@ -16,7 +14,6 @@ from dash.exceptions import PreventUpdate
 import uuid
 from src.utils.api import API
 from datetime import datetime, timedelta
-from src.utils.log import Log
 
 
 class EditStudyModal(html.Div):

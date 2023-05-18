@@ -3,7 +3,6 @@ from src.components.encadeador.violationfiltersencadeador import (
     ViolationFilters,
 )
 import src.utils.plots as plots
-from src.utils.settings import Settings
 import uuid
 
 
@@ -26,7 +25,6 @@ class ViolationGraph(html.Div):
         self,
         aio_id=None,
     ):
-
         if aio_id is None:
             aio_id = str(uuid.uuid4())
 
@@ -83,15 +81,9 @@ class ViolationGraph(html.Div):
             ViolationFilters.ids.violation_dropdown(MATCH),
             "value",
         ),
-        State(
-            ViolationFilters.ids.filters(MATCH),
-            "data",
-        ),
         State(ids.studies(MATCH), "data"),
     )
-    def generate_tempo_custos_graph(
-        violation_data, violation, filters, studies
-    ):
+    def generate_tempo_custos_graph(violation_data, violation, studies):
         return plots.generate_violation_graph_encadeador(
             violation_data, violation, studies
         )

@@ -31,6 +31,27 @@ def update_variables_options_casos(paths):
     return sorted(unique_variables)
 
 
+def update_variables_options_encadeador(paths):
+    all_variables = set()
+    newaves_paths = []
+    decomps_paths = []
+    for path in paths:
+        newave_path = os.path.join(
+            path, Settings.synthesis_dir, Settings.newave_dir
+        )
+        decomp_path = os.path.join(
+            path, Settings.synthesis_dir, Settings.decomp_dir
+        )
+        newaves_paths.append(newave_path)
+        decomps_paths.append(decomp_path)
+    newave_variables = API.fetch_available_results_list(newaves_paths)
+    decomp_variables = API.fetch_available_results_list(decomps_paths)
+
+    all_variables = all_variables.union(set(newave_variables))
+    all_variables = all_variables.union(set(decomp_variables))
+    return sorted(list(all_variables))
+
+
 def edit_current_study_data(
     add_study_button_clicks,
     edit_study_button_clicks,
@@ -72,7 +93,11 @@ def edit_current_study_data(
                     ]
                 else:
                     color = new_study_color
-                options = update_variables_options_casos([new_study_id])
+                casos_options = update_variables_options_casos([new_study_id])
+                encadeador_options = update_variables_options_encadeador(
+                    [new_study_id]
+                )
+                options = list(set(casos_options).union(encadeador_options))
                 new_data = pd.DataFrame(
                     data={
                         "study_id": [None],
@@ -101,9 +126,14 @@ def edit_current_study_data(
             current_data.loc[
                 current_data["table_id"] == edit_study_id, "color"
             ] = edit_study_color
+            casos_options = update_variables_options_casos([edit_study_path])
+            encadeador_options = update_variables_options_encadeador(
+                [edit_study_path]
+            )
+            options = list(set(casos_options).union(encadeador_options))
             current_data.loc[
                 current_data["table_id"] == edit_study_id, "options"
-            ] = ",".join(update_variables_options_casos([edit_study_path]))
+            ] = ",".join(options)
             return current_data.to_json(orient="split")
     elif ctx.triggered_id == remove_trigger:
         if remove_study_button_clicks:
@@ -119,7 +149,17 @@ def edit_current_study_data(
         if screen_df is not None:
             screen_df["options"] = screen_df.apply(
                 lambda linha: ",".join(
-                    update_variables_options_casos([linha["path"]])
+                    list(
+                        set(
+                            update_variables_options_casos([linha["path"]])
+                        ).union(
+                            set(
+                                update_variables_options_encadeador(
+                                    [linha["path"]]
+                                )
+                            )
+                        )
+                    )
                 ),
                 axis=1,
             )
@@ -567,9 +607,7 @@ def update_cluster_resources_data_casos(
         return df_job.to_json(orient="split")
 
 
-def update_distribution_data_ppq(
-    interval, studies, filters: dict, variable: str
-):
+def update_distribution_data_ppq(studies, filters: dict, variable: str):
     if not studies:
         return None
     if not variable:
@@ -598,7 +636,7 @@ def update_distribution_data_ppq(
 
 
 def update_operation_data_ppq(
-    interval, studies, filters: dict, variable: str, study: str
+    studies, filters: dict, variable: str, study: str
 ):
     if not studies:
         return None

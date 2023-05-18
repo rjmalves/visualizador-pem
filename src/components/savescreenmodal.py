@@ -7,7 +7,6 @@ from dash import (
     callback,
     MATCH,
 )
-from flask_login import current_user
 import dash_bootstrap_components as dbc
 from dash.exceptions import PreventUpdate
 import uuid

@@ -1,4 +1,5 @@
 from dash import html, dcc, callback, Input, State, Output, MATCH
+from dash.exceptions import PreventUpdate
 import uuid
 import pandas as pd
 
@@ -619,7 +620,7 @@ class OperationFiltersEncadeador(html.Div):
     )
     def generate_csv(n_clicks, operation_data, variable):
         if n_clicks is None:
-            return
+            raise PreventUpdate
         if operation_data is not None:
             dados = pd.read_json(operation_data, orient="split")
             dados["dataInicio"] = pd.to_datetime(
