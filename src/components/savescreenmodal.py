@@ -165,7 +165,6 @@ class SaveScreenModal(html.Div):
     @callback(
         Output(ids.screen_type_str(MATCH), "data"),
         Input("page-location", "pathname"),
-        prevent_initial_call=True,
     )
     def update_screen_type_str(path):
         return db.find_screen_type_in_url(path)
