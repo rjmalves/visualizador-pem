@@ -371,7 +371,6 @@ def update_current_studies(studies_data):
     State(
         LoadScreenModal.ids.screen_type_str("casos-load-screen-modal"), "data"
     ),
-    prevent_initial_call=True,
 )
 def update_screen_type_str(path, screen_type_str):
     return db.list_screens(screen_type_str)

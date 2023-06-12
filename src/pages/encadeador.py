@@ -403,7 +403,6 @@ def update_current_studies_violation_graph(studies_data):
         LoadScreenModal.ids.screen_type_str("encadeador-load-screen-modal"),
         "data",
     ),
-    prevent_initial_call=True,
 )
 def update_screen_type_str(path, screen_type_str):
     return db.list_screens(screen_type_str)
