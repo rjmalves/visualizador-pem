@@ -355,6 +355,70 @@ def update_operation_data_encadeador(
         return complete_df.to_json(orient="split")
 
 
+def update_spatial_SBM_data_casos(
+    studies,
+    study: str,
+    filters: dict,
+    preprocess: str = "FULL",
+):
+    if not studies:
+        return None
+    if not study:
+        return None
+    if not all(["estagio" in filters and "cenario" in filters]):
+        return None
+    req_filters = {
+        "estagio": filters["estagio"],
+        "cenario": filters["cenario"],
+    }
+    studies_df = pd.read_json(studies, orient="split")
+    studies_df = pd.read_json(studies, orient="split")
+    path = studies_df.loc[studies_df["name"] == study, "path"].iloc[0]
+    df = API.fetch_study_SBM_spatial_variable_list(
+        path,
+        ["EARPF_SBM_EST", "GHID_SBM_EST", "GTER_SBM_EST", "CMO_SBM_EST"],
+        {**req_filters, "preprocess": preprocess},
+    )
+
+    if df is None:
+        return None
+    if df.empty:
+        return None
+    else:
+        return df.to_json(orient="split")
+
+
+def update_spatial_INT_data_casos(
+    studies,
+    study: str,
+    filters: dict,
+    preprocess: str = "FULL",
+):
+    if not studies:
+        return None
+    if not study:
+        return None
+    if not all(["estagio" in filters and "cenario" in filters]):
+        return None
+    req_filters = {
+        "estagio": filters["estagio"],
+        "cenario": filters["cenario"],
+    }
+    studies_df = pd.read_json(studies, orient="split")
+    path = studies_df.loc[studies_df["name"] == study, "path"].iloc[0]
+    df = API.fetch_study_INT_spatial_variable_list(
+        path,
+        {**req_filters, "preprocess": preprocess},
+    )
+
+    if df is None:
+        return None
+    if df.empty:
+        return None
+    else:
+        return df.to_json(orient="split")
+
+
 def update_operation_data_casos(
     studies,
     filters: dict,

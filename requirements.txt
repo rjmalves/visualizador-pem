@@ -1,5 +1,7 @@
 pandas
 plotly
+networkx
+geopandas
 dash
 dash_bootstrap_components
 python-dotenv

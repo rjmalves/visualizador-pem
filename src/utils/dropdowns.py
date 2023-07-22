@@ -199,3 +199,17 @@ def update_scenario_options_casos(studies, variable: str):
         return None
     else:
         return options
+
+
+def update_spatial_options_casos(studies, study: str):
+    if not studies:
+        return None
+    if not study:
+        return None
+    studies_df = pd.read_json(studies, orient="split")
+    path = studies_df.loc[studies_df["name"] == study, "path"].iloc[0]
+    options = API.fetch_spatial_options_list(path)
+    if len(options) == 0:
+        return None
+    else:
+        return options
