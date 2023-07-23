@@ -30,15 +30,15 @@ def __generate_submercado_graph(
     arestas = constants.ARESTAS_INTERCAMBIOS_NEWAVE
     int_data = np.abs(intercambio_data_df["valor"].to_numpy())
     max_int = np.max(int_data)
-    max_width = 4.5
-    min_width = 1.0
+    max_width = 3.0
+    min_width = 1.5
     for _, line in intercambio_data_df.iterrows():
         arestas[(line["source"], line["target"])] = {
             **arestas[(line["source"], line["target"])],
             "label": line["label"],
             "INT": line["valor"],
             "width": np.abs(line["valor"]) / max_int * max_width + min_width,
-            "color": "rgb(255,250,220)",
+            "color": "rgba(250, 212, 60, 1.0)",
         }
 
     # espessura varia conforme valor absoluto
@@ -60,8 +60,8 @@ def __add_edge(
     lengthFrac=1,
     arrowPos=None,
     arrowLength=0.025,
-    arrowAngle=30,
-    dotSize=20,
+    arrowAngle=20,
+    dotSize=35,
 ):
     x0, y0 = start["pos"]
     x1, y1 = end["pos"]
@@ -154,13 +154,18 @@ def __create_graph_traces_for_plot(
     def make_edge(start, end, edge):
         if edge["INT"] <= 0:
             start, end = end, start
+        arrow_length = 0.75 if edge["INT"] != 0 else 0.0
         edge_x, edge_y = __add_edge(
-            start, end, lengthFrac=0.7, arrowPos="end", arrowLength=0.75
+            start,
+            end,
+            lengthFrac=0.6,
+            arrowPos="end",
+            arrowLength=arrow_length,
         )
         return go.Scattergeo(
             lon=edge_x,
             lat=edge_y,
-            mode="lines+text",
+            mode="lines",
             line={"width": edge["width"], "color": edge["color"]},
             showlegend=False,
         )
@@ -197,7 +202,7 @@ def __create_graph_traces_for_plot(
             line={
                 "color": "black",
             },
-            fillcolor="rgba(230, 215, 181, 1.0)",
+            fillcolor="rgba(247, 237, 203, 1.0)",
             showlegend=False,
         )
         text_trace = go.Scattergeo(
@@ -205,6 +210,9 @@ def __create_graph_traces_for_plot(
             lat=[text_y],
             mode="text",
             text=make_edge_text_info(G.edges[edge]),
+            textfont={
+                "size": 10,
+            },
             showlegend=False,
         )
         edge_traces += [edge_trace, rectangle_trace, text_trace]
@@ -246,6 +254,9 @@ def __create_graph_traces_for_plot(
                 lat=[text_y],
                 mode="text",
                 text=make_node_text_info(node, G.nodes[node]),
+                textfont={
+                    "size": 8.5,
+                },
                 showlegend=False,
             )
             node_traces += [node_trace, rectangle_trace, text_trace]
@@ -254,7 +265,7 @@ def __create_graph_traces_for_plot(
     return edge_traces + node_traces
 
 
-def view_SBM_EST(
+def view_SBM_EST_NEWAVE(
     data_df: dict,
 ) -> go.Figure:
     graph_layout = go.Layout(
@@ -278,7 +289,7 @@ def view_SBM_EST(
         geojson=gdf["geometry"],
         locations=gdf.index,
         color="EARPF",
-        color_continuous_scale="Blues",
+        color_continuous_scale="Tealgrn",
         range_color=[0.0, 100.0],
     )
     fig.update_geos(fitbounds="locations", visible=False)
@@ -287,4 +298,30 @@ def view_SBM_EST(
     fig.update_layout(
         coloraxis_showscale=False, margin={"r": 0, "t": 0, "l": 0, "b": 0}
     )
+    return fig
+
+
+def view_SBM_EST(
+    data_df: dict,
+) -> go.Figure:
+    graph_layout = go.Layout(
+        plot_bgcolor="rgba(158, 149, 128, 0.2)",
+        paper_bgcolor="rgba(255,255,255,1)",
+    )
+    fig = go.Figure()
+    fig.update_layout(graph_layout)
+    if not all(["PROGRAMA" in data_df, "SBM" in data_df, "INT" in data_df]):
+        return fig
+    if any(
+        [
+            data_df["PROGRAMA"] is None,
+            data_df["SBM"] is None,
+            data_df["INT"] is None,
+        ]
+    ):
+        return fig
+    programa_df = pd.read_json(data_df["PROGRAMA"], orient="split")
+    if programa_df["programa"].iloc[0] == "NEWAVE":
+        return view_SBM_EST_NEWAVE(data_df)
+
     return fig

@@ -109,7 +109,6 @@ class API:
         study_path: str,
         filters: dict,
     ) -> Optional[pd.DataFrame]:
-        valid_dfs: List[pd.DataFrame] = []
         df = cls.fetch_result(
             str(pathlib.Path(study_path)), "INT_SBP_EST", filters
         )

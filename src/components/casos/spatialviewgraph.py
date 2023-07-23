@@ -2,6 +2,7 @@ from dash import Output, Input, html, dcc, callback, MATCH
 from src.components.casos.spatialviewfilters import SpatialViewFilters
 import src.utils.spatialplots as plots
 import uuid
+import plotly.graph_objects as go
 
 
 class SpatialViewGraph(html.Div):
@@ -54,6 +55,10 @@ class SpatialViewGraph(html.Div):
                         id="loading-spatialview-graph",
                         children=dcc.Graph(
                             id=self.ids.graph(aio_id),
+                            config={
+                                "displayModeBar": False,
+                                "scrollZoom": False,
+                            },
                             style={"height": "640px"},
                         ),
                         type="default",

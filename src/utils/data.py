@@ -355,6 +355,39 @@ def update_operation_data_encadeador(
         return complete_df.to_json(orient="split")
 
 
+def update_spatial_programa(
+    studies,
+    study: str,
+    filters: dict,
+    preprocess: str = "FULL",
+):
+    if not studies:
+        return None
+    if not study:
+        return None
+    if not all(["estagio" in filters and "cenario" in filters]):
+        return None
+    req_filters = {
+        "estagio": filters["estagio"],
+        "cenario": filters["cenario"],
+    }
+    studies_df = pd.read_json(studies, orient="split")
+    studies_df = pd.read_json(studies, orient="split")
+    path = studies_df.loc[studies_df["name"] == study, "path"].iloc[0]
+    df = API.fetch_result(
+        path,
+        "PROGRAMA",
+        {"preprocess": preprocess},
+    )
+
+    if df is None:
+        return None
+    if df.empty:
+        return None
+    else:
+        return df.to_json(orient="split")
+
+
 def update_spatial_SBM_data_casos(
     studies,
     study: str,

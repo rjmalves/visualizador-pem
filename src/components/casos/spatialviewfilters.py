@@ -208,7 +208,17 @@ class SpatialViewFilters(html.Div):
     def update_cenario_options(options):
         if options:
             if "cenario" in options.keys():
-                return sorted(list(set(options["cenario"])))
+                # Só considera o cenário médio e as séries
+                cens = list(set(options["cenario"]))
+                cens = [c for c in cens if "p" not in c]
+                cens_int = [
+                    c
+                    for c in cens
+                    if c not in ["mean", "median", "min", "max", "std"]
+                ]
+                return ["mean"] + [
+                    str(c) for c in sorted([int(c) for c in cens_int])
+                ]
         raise PreventUpdate
 
     @callback(
@@ -242,6 +252,7 @@ class SpatialViewFilters(html.Div):
     )
     def update_data(studies, study, filters):
         return {
+            "PROGRAMA": data.update_spatial_programa(studies, study, filters),
             "SBM": data.update_spatial_SBM_data_casos(studies, study, filters),
             "INT": data.update_spatial_INT_data_casos(studies, study, filters),
         }
