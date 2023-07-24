@@ -5,10 +5,10 @@ import base62
 import io
 import pathlib
 from src.utils.settings import Settings
+import src.utils.constants as constants
 
 
 class API:
-
     header_key = {"api-key": Settings.api_key}
     session = requests.Session()
     session.headers.update(header_key)
@@ -76,6 +76,88 @@ class API:
             return None
 
     @classmethod
+    def fetch_study_SBM_spatial_variable_list(
+        cls,
+        study_path: str,
+        desired_variables: List[str],
+        filters: dict,
+    ) -> Optional[pd.DataFrame]:
+        ret = {
+            v: cls.fetch_result(str(pathlib.Path(study_path)), v, filters)
+            for v in desired_variables
+        }
+        df_agg = {
+            "NEWAVE": constants.SUBMERCADOS_NEWAVE.copy(),
+            "DECOMP": constants.SUBMERCADOS_DECOMP.copy(),
+        }.get(filters["programa"])
+        if df_agg is None:
+            return None
+        df_agg = df_agg.set_index("nome")
+
+        for v, df in ret.items():
+            if df is not None:
+                df["submercado"] = df.apply(
+                    lambda linha: constants.MAPA_NOMES_SUBMERCADOS.get(
+                        linha["submercado"], linha["submercado"]
+                    ),
+                    axis=1,
+                )
+                df_agg.loc[df["submercado"], v.split("_")[0]] = df[
+                    "valor"
+                ].to_numpy()
+        df_ret = df_agg.fillna(0.0).reset_index().set_index("submercado")
+        return df_ret
+
+    @classmethod
+    def fetch_study_INT_spatial_variable_list(
+        cls,
+        study_path: str,
+        filters: dict,
+    ) -> Optional[pd.DataFrame]:
+        df = cls.fetch_result(
+            str(pathlib.Path(study_path)), "INT_SBP_EST", filters
+        )
+        if df is None:
+            return None
+        filters["programa"]
+        df_agg = {
+            "NEWAVE": constants.INTERCAMBIOS_SUBMERCADOS_NEWAVE.copy(),
+            "DECOMP": constants.INTERCAMBIOS_SUBMERCADOS_DECOMP.copy(),
+        }.get(filters["programa"])
+        if df_agg is None:
+            return None
+
+        for c in ["submercadoDe", "submercadoPara"]:
+            df[c] = df.apply(
+                lambda linha: constants.MAPA_NOMES_SUBMERCADOS.get(
+                    linha[c], linha[c]
+                ),
+                axis=1,
+            )
+
+        valores = []
+        for _, linha in df_agg.iterrows():
+            interc_direto = df.loc[
+                (df["submercadoDe"] == linha["source"])
+                & (df["submercadoPara"] == linha["target"]),
+                "valor",
+            ]
+            interc_direto = (
+                interc_direto.iloc[0] if not interc_direto.empty else 0.0
+            )
+            interc_inverso = df.loc[
+                (df["submercadoDe"] == linha["target"])
+                & (df["submercadoPara"] == linha["source"]),
+                "valor",
+            ]
+            interc_inverso = (
+                interc_inverso.iloc[0] if not interc_inverso.empty else 0.0
+            )
+            valores.append(interc_direto - interc_inverso)
+        df_agg["valor"] = valores
+        return df_agg.fillna(0.0)
+
+    @classmethod
     def fetch_result_options(
         cls, study_path: str, desired_data: str
     ) -> Optional[dict]:
@@ -107,6 +189,20 @@ class API:
                         complete_opts[k] = set(v)
                     else:
                         complete_opts[k].update(v)
+            return {k: list(v) for k, v in complete_opts.items()}
+        else:
+            return None
+
+    @classmethod
+    def fetch_spatial_options_list(cls, path: str) -> Optional[dict]:
+        ret = cls.fetch_result_options(str(path), "EARPF_SBM_EST")
+        if ret:
+            complete_opts = {}
+            for k, v in ret.items():
+                if k not in complete_opts.keys():
+                    complete_opts[k] = set(v)
+                else:
+                    complete_opts[k].update(v)
             return {k: list(v) for k, v in complete_opts.items()}
         else:
             return None

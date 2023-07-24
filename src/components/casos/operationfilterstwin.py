@@ -518,7 +518,6 @@ class OperationFiltersTwin(html.Div):
         Input(ids.submercadoPara_dropdown(MATCH), "value"),
         Input(ids.patamar_dropdown(MATCH), "value"),
         Input(ids.estagio_dropdown(MATCH), "value"),
-        prevent_initial_call=True,
     )
     def update_filters(
         usina: str,
@@ -570,7 +569,6 @@ class OperationFiltersTwin(html.Div):
         Input(ids.studies(MATCH), "data"),
         Input(ids.filters(MATCH), "data"),
         Input(ids.variable_dropdown(MATCH), "value"),
-        prevent_initial_call=True,
     )
     def update_data(studies, filters: dict, variable: str):
         return data.update_operation_data_casos(studies, filters, variable)
