@@ -86,7 +86,12 @@ class API:
             v: cls.fetch_result(str(pathlib.Path(study_path)), v, filters)
             for v in desired_variables
         }
-        df_agg = constants.SUBMERCADOS_NEWAVE.copy()
+        df_agg = {
+            "NEWAVE": constants.SUBMERCADOS_NEWAVE.copy(),
+            "DECOMP": constants.SUBMERCADOS_DECOMP.copy(),
+        }.get(filters["programa"])
+        if df_agg is None:
+            return None
         df_agg = df_agg.set_index("nome")
 
         for v, df in ret.items():
@@ -114,7 +119,13 @@ class API:
         )
         if df is None:
             return None
-        df_agg = constants.INTERCAMBIOS_SUBMERCADOS_NEWAVE.copy()
+        filters["programa"]
+        df_agg = {
+            "NEWAVE": constants.INTERCAMBIOS_SUBMERCADOS_NEWAVE.copy(),
+            "DECOMP": constants.INTERCAMBIOS_SUBMERCADOS_DECOMP.copy(),
+        }.get(filters["programa"])
+        if df_agg is None:
+            return None
 
         for c in ["submercadoDe", "submercadoPara"]:
             df[c] = df.apply(

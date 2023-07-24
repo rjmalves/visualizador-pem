@@ -251,10 +251,15 @@ class SpatialViewFilters(html.Div):
         prevent_initial_call=True,
     )
     def update_data(studies, study, filters):
+        programa = data.update_spatial_programa(studies, study, filters)
         return {
-            "PROGRAMA": data.update_spatial_programa(studies, study, filters),
-            "SBM": data.update_spatial_SBM_data_casos(studies, study, filters),
-            "INT": data.update_spatial_INT_data_casos(studies, study, filters),
+            "PROGRAMA": programa,
+            "SBM": data.update_spatial_SBM_data_casos(
+                studies, study, filters, programa
+            ),
+            "INT": data.update_spatial_INT_data_casos(
+                studies, study, filters, programa
+            ),
         }
 
     @callback(

@@ -392,19 +392,25 @@ def update_spatial_SBM_data_casos(
     studies,
     study: str,
     filters: dict,
+    programa: dict,
     preprocess: str = "FULL",
 ):
     if not studies:
         return None
     if not study:
         return None
+    if not programa:
+        return None
+    if not filters:
+        return None
     if not all(["estagio" in filters and "cenario" in filters]):
         return None
+    programa_df = pd.read_json(programa, orient="split")
     req_filters = {
+        "programa": programa_df["programa"].iloc[0],
         "estagio": filters["estagio"],
         "cenario": filters["cenario"],
     }
-    studies_df = pd.read_json(studies, orient="split")
     studies_df = pd.read_json(studies, orient="split")
     path = studies_df.loc[studies_df["name"] == study, "path"].iloc[0]
     df = API.fetch_study_SBM_spatial_variable_list(
@@ -425,15 +431,22 @@ def update_spatial_INT_data_casos(
     studies,
     study: str,
     filters: dict,
+    programa: dict,
     preprocess: str = "FULL",
 ):
     if not studies:
         return None
     if not study:
         return None
+    if not programa:
+        return None
+    if not filters:
+        return None
     if not all(["estagio" in filters and "cenario" in filters]):
         return None
+    programa_df = pd.read_json(programa, orient="split")
     req_filters = {
+        "programa": programa_df["programa"].iloc[0],
         "estagio": filters["estagio"],
         "cenario": filters["cenario"],
     }

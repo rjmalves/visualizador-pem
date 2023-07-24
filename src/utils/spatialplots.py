@@ -20,14 +20,16 @@ def __load_submercado_shape(
 
 
 def __generate_submercado_graph(
-    submercado_data_df: pd.DataFrame, intercambio_data_df: pd.DataFrame
+    nos: dict,
+    arestas: dict,
+    intercambios: pd.DataFrame,
+    submercado_data_df: pd.DataFrame,
+    intercambio_data_df: pd.DataFrame,
 ) -> nx.Graph:
-    nos = constants.NOS_SUBMERCADOS_NEWAVE
     attrs = submercado_data_df.columns.tolist()
     for _, line in submercado_data_df.iterrows():
         for a in attrs:
             nos[line["nome"]][a] = line[a]
-    arestas = constants.ARESTAS_INTERCAMBIOS_NEWAVE
     int_data = np.abs(intercambio_data_df["valor"].to_numpy())
     max_int = np.max(int_data)
     max_width = 3.0
@@ -45,7 +47,7 @@ def __generate_submercado_graph(
     # cor varia conforme valor relativo ao limite do intercâmbio
 
     submercado_graph = nx.from_pandas_edgelist(
-        constants.INTERCAMBIOS_SUBMERCADOS_NEWAVE,
+        intercambios,
         edge_attr=True,
         create_using=nx.DiGraph,
     )
@@ -265,8 +267,11 @@ def __create_graph_traces_for_plot(
     return edge_traces + node_traces
 
 
-def view_SBM_EST_NEWAVE(
+def view_SBM_EST_PROGRAMA(
     data_df: dict,
+    nos: dict,
+    arestas: dict,
+    intercambios: pd.DataFrame,
 ) -> go.Figure:
     graph_layout = go.Layout(
         plot_bgcolor="rgba(158, 149, 128, 0.2)",
@@ -281,7 +286,11 @@ def view_SBM_EST_NEWAVE(
     submercado_data_df = pd.read_json(data_df["SBM"], orient="split")
     intercambio_data_df = pd.read_json(data_df["INT"], orient="split")
     submercado_graph = __generate_submercado_graph(
-        submercado_data_df, intercambio_data_df
+        nos,
+        arestas,
+        intercambios,
+        submercado_data_df,
+        intercambio_data_df,
     )
     gdf = __load_submercado_shape()
     fig = px.choropleth(
@@ -322,6 +331,14 @@ def view_SBM_EST(
         return fig
     programa_df = pd.read_json(data_df["PROGRAMA"], orient="split")
     if programa_df["programa"].iloc[0] == "NEWAVE":
-        return view_SBM_EST_NEWAVE(data_df)
+        nos = constants.NOS_SUBMERCADOS_NEWAVE
+        arestas = constants.ARESTAS_INTERCAMBIOS_NEWAVE
+        intercambios = constants.INTERCAMBIOS_SUBMERCADOS_NEWAVE
+    elif programa_df["programa"].iloc[0] == "DECOMP":
+        nos = constants.NOS_SUBMERCADOS_DECOMP
+        arestas = constants.ARESTAS_INTERCAMBIOS_DECOMP
+        intercambios = constants.INTERCAMBIOS_SUBMERCADOS_DECOMP
+    else:
+        return fig
 
-    return fig
+    return view_SBM_EST_PROGRAMA(data_df, nos, arestas, intercambios)
