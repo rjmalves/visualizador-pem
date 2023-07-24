@@ -132,7 +132,7 @@ def __create_graph_traces_for_plot(
     G: nx.Graph,
     node_attrs: List[str] = ["EARPF", "GHID", "GTER", "EVER", "MERL", "CMO"],
     edge_attrs: List[str] = ["INT"],
-) -> list[go.Trace]:
+) -> List[go.Trace]:
     def make_node_text_info(label, node) -> str:
         text = f"<br><b>{label}</b></br>"
         for a in node_attrs:
