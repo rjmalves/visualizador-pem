@@ -415,7 +415,14 @@ def update_spatial_SBM_data_casos(
     path = studies_df.loc[studies_df["name"] == study, "path"].iloc[0]
     df = API.fetch_study_SBM_spatial_variable_list(
         path,
-        ["EARPF_SBM_EST", "GHID_SBM_EST", "GTER_SBM_EST", "CMO_SBM_EST"],
+        [
+            "EARPF_SBM_EST",
+            "GHID_SBM_EST",
+            "GTER_SBM_EST",
+            "EVER_SBM_EST",
+            "CMO_SBM_EST",
+            "MERL_SBM_EST",
+        ],
         {**req_filters, "preprocess": preprocess},
     )
 

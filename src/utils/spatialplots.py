@@ -69,7 +69,7 @@ def __add_edge(
     x1, y1 = end["pos"]
 
     length = math.sqrt((x1 - x0) ** 2 + (y1 - y0) ** 2)
-    dotSizeConversion = 0.0565 / 20
+    dotSizeConversion = 2 / dotSize
     convertedDotDiameter = dotSize * dotSizeConversion
     lengthFracReduction = convertedDotDiameter / length
     lengthFrac = lengthFrac - lengthFracReduction
@@ -130,17 +130,21 @@ def __add_edge(
 
 def __create_graph_traces_for_plot(
     G: nx.Graph,
-    node_attrs: List[str] = ["EARPF", "GHID", "GTER", "CMO"],
+    node_attrs: List[str] = ["EARPF", "GHID", "GTER", "EVER", "MERL", "CMO"],
     edge_attrs: List[str] = ["INT"],
 ) -> list[go.Trace]:
     def make_node_text_info(label, node) -> str:
         text = f"<br><b>{label}</b></br>"
         for a in node_attrs:
-            text += (
-                f"{a}:".ljust(7)
-                + f"{node[a]:.2f} {constants.VARIABLE_UNITS[a]}".rjust(15)
-                + "<br>"
-            )
+            if a in node:
+                a_str = (
+                    f"{constants.VARIABLE_NAMES[a]}: ".ljust(20)
+                    + f"{node[a]:.2f} {constants.VARIABLE_UNITS[a]}".rjust(20)
+                    + "<br>"
+                )
+                if a == "MERL":
+                    a_str = "<b>" + a_str + "</b>"
+                text += a_str
         return text
 
     def make_edge_text_info(edge) -> str:
@@ -160,9 +164,10 @@ def __create_graph_traces_for_plot(
         edge_x, edge_y = __add_edge(
             start,
             end,
-            lengthFrac=0.6,
+            lengthFrac=0.9,
             arrowPos="end",
             arrowLength=arrow_length,
+            dotSize=max([start["size"], end["size"]]) + 5,
         )
         return go.Scattergeo(
             lon=edge_x,
