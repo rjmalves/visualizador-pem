@@ -172,9 +172,12 @@ NOT_SCENARIO_COLUMNS = [
 
 
 def pivot_df_for_plot(df: pd.DataFrame, col: str = "valor") -> pd.DataFrame:
-    index_cols = [c for c in df.columns if c in NOT_SCENARIO_COLUMNS]
-    df_plot = df.pivot(index=index_cols, columns="cenario", values=col)
-    return df_plot.reset_index()
+    if "cenario" in df.columns:
+        index_cols = [c for c in df.columns if c in NOT_SCENARIO_COLUMNS]
+        df_plot = df.pivot(index=index_cols, columns="cenario", values=col)
+        return df_plot.reset_index()
+    else:
+        return df.rename(columns={col: "mean"})
 
 
 def hex_to_rgb(value):
@@ -229,34 +232,36 @@ def generate_operation_graph_casos(
                         legendgrouptitle_text="mean",
                     )
                 )
-                fig.add_trace(
-                    go.Scatter(
-                        x=dados_estudo["dataInicio"],
-                        y=dados_estudo["p10"],
-                        line_color=cor_fundo,
-                        line_shape=line_shape,
-                        mode=mode,
-                        legendgroup="p10",
-                        legendgrouptitle_text="p10",
-                        name=estudo,
-                        visible=visibilidade_p,
+                if "p10" in dados_estudo.columns:
+                    fig.add_trace(
+                        go.Scatter(
+                            x=dados_estudo["dataInicio"],
+                            y=dados_estudo["p10"],
+                            line_color=cor_fundo,
+                            line_shape=line_shape,
+                            mode=mode,
+                            legendgroup="p10",
+                            legendgrouptitle_text="p10",
+                            name=estudo,
+                            visible=visibilidade_p,
+                        )
                     )
-                )
-                fig.add_trace(
-                    go.Scatter(
-                        x=dados_estudo["dataInicio"],
-                        y=dados_estudo["p90"],
-                        line_color=cor_fundo,
-                        fillcolor=cor_fundo,
-                        line_shape=line_shape,
-                        mode=mode,
-                        fill="tonexty",
-                        legendgroup="p90",
-                        legendgrouptitle_text="p90",
-                        name=estudo,
-                        visible=visibilidade_p,
+                if "p90" in dados_estudo.columns:
+                    fig.add_trace(
+                        go.Scatter(
+                            x=dados_estudo["dataInicio"],
+                            y=dados_estudo["p90"],
+                            line_color=cor_fundo,
+                            fillcolor=cor_fundo,
+                            line_shape=line_shape,
+                            mode=mode,
+                            fill="tonexty",
+                            legendgroup="p90",
+                            legendgrouptitle_text="p90",
+                            name=estudo,
+                            visible=visibilidade_p,
+                        )
                     )
-                )
 
     if variable is not None:
         fig.update_layout(
@@ -336,32 +341,34 @@ def generate_operation_graph_casos_twinx(
                     legendgrouptitle_text=dados_legend,
                 )
             )
-            fig.add_trace(
-                go.Scatter(
-                    x=dados_estudo["dataInicio"],
-                    y=dados_estudo["p10"],
-                    line_color=cor_fundo,
-                    line_shape=line_shape,
-                    mode=mode,
-                    name="p10",
-                    legendgroup=dados_legend,
-                    visible=visibilidade_p,
+            if "p10" in dados_estudo.columns:
+                fig.add_trace(
+                    go.Scatter(
+                        x=dados_estudo["dataInicio"],
+                        y=dados_estudo["p10"],
+                        line_color=cor_fundo,
+                        line_shape=line_shape,
+                        mode=mode,
+                        name="p10",
+                        legendgroup=dados_legend,
+                        visible=visibilidade_p,
+                    )
                 )
-            )
-            fig.add_trace(
-                go.Scatter(
-                    x=dados_estudo["dataInicio"],
-                    y=dados_estudo["p90"],
-                    line_color=cor_fundo,
-                    fillcolor=cor_fundo,
-                    line_shape=line_shape,
-                    mode=mode,
-                    fill="tonexty",
-                    name="p90",
-                    legendgroup=dados_legend,
-                    visible=visibilidade_p,
+            if "p90" in dados_estudo.columns:
+                fig.add_trace(
+                    go.Scatter(
+                        x=dados_estudo["dataInicio"],
+                        y=dados_estudo["p90"],
+                        line_color=cor_fundo,
+                        fillcolor=cor_fundo,
+                        line_shape=line_shape,
+                        mode=mode,
+                        fill="tonexty",
+                        name="p90",
+                        legendgroup=dados_legend,
+                        visible=visibilidade_p,
+                    )
                 )
-            )
 
         dados_estudo = pivot_df_for_plot(
             dados_twinx.loc[dados_twinx["estudo"] == estudo]
@@ -383,7 +390,8 @@ def generate_operation_graph_casos_twinx(
                 ),
                 secondary_y=True,
             )
-            fig.add_trace(
+            if "p10" in dados_estudo.columns:
+                fig.add_trace(
                 go.Scatter(
                     x=dados_estudo["dataInicio"],
                     y=dados_estudo["p10"],
@@ -395,7 +403,8 @@ def generate_operation_graph_casos_twinx(
                 ),
                 secondary_y=True,
             )
-            fig.add_trace(
+            if "p90" in dados_estudo.columns:
+                fig.add_trace(
                 go.Scatter(
                     x=dados_estudo["dataInicio"],
                     y=dados_estudo["p90"],
