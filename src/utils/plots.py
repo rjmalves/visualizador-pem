@@ -3,7 +3,7 @@ import plotly.express as px
 from plotly.subplots import make_subplots
 import pandas as pd
 import numpy as np
-from typing import List
+from typing import List, Dict
 from datetime import timedelta
 from src.utils.log import Log
 from src.utils.data import DISCRETE_COLOR_PALLETE
@@ -32,26 +32,40 @@ VARIABLE_NAMES = {
     "EARPI": "Energia Armazenada Inicial",
     "EARMF": "Energia Armazenada Final",
     "EARPF": "Energia Armazenada Final",
+    "EDESR": "Energia de Desvio em Reservatórios",
+    "EDESF": "Energia de Desvio em Fio d'Água",
+    "EVMIN": "Energia de Defluência Mínima",
+    "EDESF": "Energia de Desvio em Fio d'Água",
+    "EVMOR": "Energia de Volume Morto",
+    "EEVAP": "Energia de Evaporação",
     "ENAA": "Energia Natural Afluente",
-    "ENAM": "Energia Natural Afluente",
+    "ENAAR": "Energia Natural Afluente em Reservatórios",
+    "ENAAF": "Energia Natural Afluente em Fio d'Água",
     "EVER": "Energia Vertida",
     "EVERNT": "Energia Vertida Não-Turbinável",
     "EVERT": "Energia Vertida Turbinável",
     "EVERR": "Energia Vertida em Reservatórios",
-    "EVERF": "Energia Vertida Fio d'Água",
-    "EVERRT": "Energia Vertida em Reservatórios Turbinável",
-    "EVERRNT": "Energia Vertida em Reservatórios Não-Turbinável",
-    "EVERFT": "Energia Vertida Fio d'Água Turbinável",
-    "EVERFNT": "Energia Vertida Fio d'Água Não-Turbinável",
+    "EVERF": "Energia Vertida em Fio d'Água",
+    "EVERRT": "Energia Vertida Turbinável em Reservatórios",
+    "EVERRNT": "Energia Vertida Não-Turbinável em Reservatórios",
+    "EVERFT": "Energia Vertida Turbinável em Fio d'Água",
+    "EVERFNT": "Energia Vertida Não-Turbinável em Fio d'Água",
     "GHID": "Geração Hidráulica",
+    "GHIDR": "Geração Hidráulica em Reservatórios",
+    "GHIDF": "Geração Hidráulica em Fio d'Água",
     "GTER": "Geração Térmica",
     "GEOL": "Geração Eólica",
+    "HMON": "Cota de Montante",
+    "HJUS": "Cota de Jusante",
+    "HLIQ": "Queda Líquida",
     "INT": "Intercâmbio",
     "MER": "Mercado",
     "MERL": "Mercado Líquido",
     "QAFL": "Vazão Afluente",
     "QDEF": "Vazão Defluente",
-    "QINC": "Vazão Afluente Incremental",
+    "QDES": "Vazão Desviada",
+    "QINC": "Vazão Incremental",
+    "QRET": "Vazão Retirada",
     "QTUR": "Vazão Turbinada",
     "QVER": "Vazão Vertida",
     "VAGUA": "Valor da Água",
@@ -59,6 +73,11 @@ VARIABLE_NAMES = {
     "VARMF": "Volume Armazenado Final",
     "VARPI": "Volume Armazenado Inicial",
     "VARPF": "Volume Armazenado Final",
+    "VAFL": "Volume Afluente",
+    "VDEF": "Volume Defluente",
+    "VDES": "Volume Desviado",
+    "VINC": "Volume Incremental",
+    "VRET": "Volume Retirado",
     "VTUR": "Volume Turbinado",
     "VVER": "Volume Vertido",
     "VENTO": "Velocidade do Vento",
@@ -156,6 +175,237 @@ VARIABLE_UNITS = {
     "VEOL": "MWmed",
 }
 
+
+VARIABLE_UNITS_NEWAVE = {
+    "COP": "10^6 R$",
+    "CFU": "10^6 R$",
+    "CMO": "R$ / MWh",
+    "CTER": "10^6 R$",
+    "DEF": "MWmes",
+    "EARMI": "MWmes",
+    "EARPI": "%",
+    "EARMF": "MWmes",
+    "EARPF": "%",
+    "EDESR": "MWmes",
+    "EDESF": "MWmes",
+    "EVMIN": "MWmes",
+    "EVMOR": "MWmes",
+    "EEVAP": "MWmes",
+    "ENAA": "MWmes",
+    "ENAAR": "MWmes",
+    "ENAAF": "MWmes",
+    "EVER": "MWmes",
+    "EVERT": "MWmes",
+    "EVERNT": "MWmes",
+    "EVERR": "MWmes",
+    "EVERRT": "MWmes",
+    "EVERRNT": "MWmes",
+    "EVERF": "MWmes",
+    "EVERFT": "MWmes",
+    "EVERFNT": "MWmes",
+    "GHID": "MWmes",
+    "GHIDR": "MWmes",
+    "GHIDF": "MWmes",
+    "GTER": "MWmes",
+    "GEOL": "MWmes",
+    "HMON": "m",
+    "HJUS": "m",
+    "HLIQ": "m",
+    "INT": "MWmes",
+    "MER": "MWmes",
+    "MERL": "MWmes",
+    "QAFL": "m3/s",
+    "QDEF": "m3/s",
+    "QDES": "m3/s",
+    "QINC": "m3/s",
+    "QRET": "m3/s",
+    "QTUR": "m3/s",
+    "QVER": "m3/s",
+    "VAGUA": "R$ / hm3 (UHE) | R$ / MWh (REE)",
+    "VARMI": "hm3",
+    "VARMF": "hm3",
+    "VARPI": "%",
+    "VARPF": "%",
+    "VAFL": "hm3",
+    "VDEF": "hm3",
+    "VDES": "hm3",
+    "VINC": "hm3",
+    "VRET": "hm3",
+    "VTUR": "hm3",
+    "VVER": "hm3",
+    "VENTO": "m/s",
+    "VDEFMIN": "m3/s",
+    "VDEFMAX": "m3/s",
+    "VTURMIN": "m3/s",
+    "VTURMAX": "m3/s",
+    "VEVMIN": "MWmes",
+    "VVMINOP": "MWmes",
+    "VFPHA": "MWmes",
+    "VEOL": "MWmes",
+}
+
+
+VARIABLE_UNITS_DECOMP = {
+    "COP": "10^3 R$",
+    "CFU": "10^3 R$",
+    "CMO": "R$ / MWh",
+    "CTER": "10^3 R$",
+    "DEF": "MWmed",
+    "EARMI": "MWmes",
+    "EARPI": "%",
+    "EARMF": "MWmes",
+    "EARPF": "%",
+    "EDESR": "MWmed",
+    "EDESF": "MWmed",
+    "EVMIN": "MWmed",
+    "EVMOR": "MWmed",
+    "EEVAP": "MWmed",
+    "ENAA": "MWmes",
+    "ENAAR": "MWmes",
+    "ENAAF": "MWmes",
+    "EVER": "MWmed",
+    "EVERT": "MWmed",
+    "EVERNT": "MWmed",
+    "EVERR": "MWmed",
+    "EVERRT": "MWmed",
+    "EVERRNT": "MWmed",
+    "EVERF": "MWmed",
+    "EVERFT": "MWmed",
+    "EVERFNT": "MWmed",
+    "GHID": "MWmed",
+    "GHIDR": "MWmed",
+    "GHIDF": "MWmed",
+    "GTER": "MWmed",
+    "GEOL": "MWmed",
+    "HMON": "m",
+    "HJUS": "m",
+    "HLIQ": "m",
+    "INT": "MWmed",
+    "MER": "MWmed",
+    "MERL": "MWmed",
+    "QAFL": "m3/s",
+    "QDEF": "m3/s",
+    "QDES": "m3/s",
+    "QINC": "m3/s",
+    "QRET": "m3/s",
+    "QTUR": "m3/s",
+    "QVER": "m3/s",
+    "VAGUA": "R$ / hm3 (UHE) | R$ / MWh (REE)",
+    "VARMI": "hm3",
+    "VARMF": "hm3",
+    "VARPI": "%",
+    "VARPF": "%",
+    "VAFL": "hm3",
+    "VDEF": "hm3",
+    "VDES": "hm3",
+    "VINC": "hm3",
+    "VRET": "hm3",
+    "VTUR": "hm3",
+    "VVER": "hm3",
+    "VENTO": "m/s",
+    "VDEFMIN": "m3/s",
+    "VDEFMAX": "m3/s",
+    "VTURMIN": "m3/s",
+    "VTURMAX": "m3/s",
+    "VEVMIN": "MWmes",
+    "VVMINOP": "MWmes",
+    "VFPHA": "MWmes",
+    "VEOL": "MWmes",
+}
+
+
+VARIABLE_UNITS_DESSEM = {
+    "COP": "10^3 R$",
+    "CFU": "10^3 R$",
+    "CMO": "R$ / MWh",
+    "CTER": "10^3 R$",
+    "DEF": "MWmed",
+    "EARMI": "MWmes",
+    "EARPI": "%",
+    "EARMF": "MWmes",
+    "EARPF": "%",
+    "EDESR": "MWmed",
+    "EDESF": "MWmed",
+    "EVMIN": "MWmed",
+    "EVMOR": "MWmed",
+    "EEVAP": "MWmed",
+    "ENAA": "MWmes",
+    "ENAAR": "MWmes",
+    "ENAAF": "MWmes",
+    "EVER": "MWmed",
+    "EVERT": "MWmed",
+    "EVERNT": "MWmed",
+    "EVERR": "MWmed",
+    "EVERRT": "MWmed",
+    "EVERRNT": "MWmed",
+    "EVERF": "MWmed",
+    "EVERFT": "MWmed",
+    "EVERFNT": "MWmed",
+    "GHID": "MWmed",
+    "GHIDR": "MWmed",
+    "GHIDF": "MWmed",
+    "GTER": "MWmed",
+    "GEOL": "MWmed",
+    "HMON": "m",
+    "HJUS": "m",
+    "HLIQ": "m",
+    "INT": "MWmed",
+    "MER": "MWmed",
+    "MERL": "MWmed",
+    "QAFL": "m3/s",
+    "QDEF": "m3/s",
+    "QDES": "m3/s",
+    "QINC": "m3/s",
+    "QRET": "m3/s",
+    "QTUR": "m3/s",
+    "QVER": "m3/s",
+    "VAGUA": "R$ / hm3 (UHE) | R$ / MWh (REE)",
+    "VARMI": "hm3",
+    "VARMF": "hm3",
+    "VARPI": "%",
+    "VARPF": "%",
+    "VAFL": "hm3",
+    "VDEF": "hm3",
+    "VDES": "hm3",
+    "VINC": "hm3",
+    "VRET": "hm3",
+    "VTUR": "hm3",
+    "VVER": "hm3",
+    "VENTO": "m/s",
+    "VDEFMIN": "m3/s",
+    "VDEFMAX": "m3/s",
+    "VTURMIN": "m3/s",
+    "VTURMAX": "m3/s",
+    "VEVMIN": "MWmes",
+    "VVMINOP": "MWmes",
+    "VFPHA": "MWmes",
+    "VEOL": "MWmes",
+}
+
+
+def _get_variable_units(program: str) -> Dict[str, str]:
+    return {
+        "NEWAVE": VARIABLE_UNITS_NEWAVE,
+        "DECOMP": VARIABLE_UNITS_DECOMP,
+        "DESSEM": VARIABLE_UNITS_DESSEM,
+    }.get(program, VARIABLE_UNITS)
+
+
+def _generate_yaxis_title(variable: str, programs: List[str]) -> str:
+    programs_units = {
+        p: _get_variable_units(p).get(variable, "")
+        for p in programs
+        if p is not None
+    }
+    unique_units = list(set(list(programs_units.values())))
+    if len(unique_units) == 0:
+        return VARIABLE_UNITS.get(variable, "")
+    elif len(unique_units) == 1:
+        return unique_units[0]
+    else:
+        return " | ".join([f"{v} ({k})" for k, v in programs_units.items()])
+
+
 NOT_SCENARIO_COLUMNS = [
     "iteracao",
     "estudo",
@@ -205,7 +455,7 @@ def generate_operation_graph_casos(
     dados["dataInicio"] = pd.to_datetime(dados["dataInicio"], unit="ms")
     dados["dataFim"] = pd.to_datetime(dados["dataFim"], unit="ms")
     df_estudos = pd.read_json(studies_data, orient="split")
-
+    programas = df_estudos["program"].unique().tolist()
     line_shape = "linear"
     mode = "lines"
     visibilidade_p = __background_area_visibility(df_estudos["name"])
@@ -269,7 +519,9 @@ def generate_operation_graph_casos(
         fig.update_layout(
             title=__make_operation_plot_title(variable, filters),
             xaxis_title="Data",
-            yaxis_title=VARIABLE_UNITS.get(variable.split("_")[0], ""),
+            yaxis_title=_generate_yaxis_title(
+                variable.split("_")[0], programas
+            ),
             hovermode="x unified",
             legend=dict(groupclick="toggleitem"),
         )
@@ -311,6 +563,7 @@ def generate_operation_graph_casos_twinx(
     )
     dados_twinx["dataFim"] = pd.to_datetime(dados_twinx["dataFim"], unit="ms")
     df_estudos = pd.read_json(studies_data, orient="split")
+    programas = df_estudos["program"].unique().tolist()
 
     line_shape = "linear"
     mode = "lines"
@@ -394,35 +647,35 @@ def generate_operation_graph_casos_twinx(
             )
             if "p10" in dados_estudo.columns:
                 fig.add_trace(
-                go.Scatter(
-                    x=dados_estudo["dataInicio"],
-                    y=dados_estudo["p10"],
-                    line_color=cor_fundo,
-                    line_shape=line_shape,
-                    name="p10",
-                    legendgroup=dados_twinx_legend,
-                    visible=visibilidade_p,
-                ),
-                secondary_y=True,
-            )
+                    go.Scatter(
+                        x=dados_estudo["dataInicio"],
+                        y=dados_estudo["p10"],
+                        line_color=cor_fundo,
+                        line_shape=line_shape,
+                        name="p10",
+                        legendgroup=dados_twinx_legend,
+                        visible=visibilidade_p,
+                    ),
+                    secondary_y=True,
+                )
             if "p90" in dados_estudo.columns:
                 fig.add_trace(
-                go.Scatter(
-                    x=dados_estudo["dataInicio"],
-                    y=dados_estudo["p90"],
-                    line_color=cor_fundo,
-                    fillcolor=cor_fundo,
-                    line_shape=line_shape,
-                    fill="tonexty",
-                    fillpattern=go.scatter.Fillpattern(
-                        bgcolor=cor_fundo, shape="."
+                    go.Scatter(
+                        x=dados_estudo["dataInicio"],
+                        y=dados_estudo["p90"],
+                        line_color=cor_fundo,
+                        fillcolor=cor_fundo,
+                        line_shape=line_shape,
+                        fill="tonexty",
+                        fillpattern=go.scatter.Fillpattern(
+                            bgcolor=cor_fundo, shape="."
+                        ),
+                        name="p90",
+                        legendgroup=dados_twinx_legend,
+                        visible=visibilidade_p,
                     ),
-                    name="p90",
-                    legendgroup=dados_twinx_legend,
-                    visible=visibilidade_p,
-                ),
-                secondary_y=True,
-            )
+                    secondary_y=True,
+                )
 
     full_title = (
         f"{__make_operation_plot_title(variable, filters)}"
@@ -431,12 +684,14 @@ def generate_operation_graph_casos_twinx(
     fig.update_layout(
         title=full_title,
         xaxis_title="Data",
-        yaxis_title=VARIABLE_UNITS.get(variable.split("_")[0], ""),
+        yaxis_title=_generate_yaxis_title(variable.split("_")[0], programas),
         hovermode="x unified",
         legend=dict(groupclick="toggleitem"),
     )
     fig.update_yaxes(
-        title_text=VARIABLE_UNITS.get(variable_twinx.split("_")[0], ""),
+        title_text=_generate_yaxis_title(
+            variable_twinx.split("_")[0], programas
+        ),
         secondary_y=True,
     )
 
@@ -505,6 +760,7 @@ def generate_operation_graph_encadeador(
     dados["dataInicio"] = pd.to_datetime(dados["dataInicio"], unit="ms")
     dados["dataFim"] = pd.to_datetime(dados["dataFim"], unit="ms")
     df_estudos = pd.read_json(studies_data, orient="split")
+    programas = df_estudos["program"].unique().tolist()
 
     filtro_newave = dados["programa"] == "NEWAVE"
     filtro_decomp = dados["programa"] == "DECOMP"
@@ -678,7 +934,7 @@ def generate_operation_graph_ppq(
         fig.update_layout(
             title=__make_operation_plot_title(variable, filters),
             xaxis_title="Data",
-            yaxis_title=VARIABLE_UNITS.get(variable.split("_")[0], ""),
+            yaxis_title=VARIABLE_UNITS_NEWAVE.get(variable.split("_")[0], ""),
             hovermode="x unified",
             legend=dict(groupclick="toggleitem"),
         )
@@ -714,7 +970,7 @@ def generate_distribution_graph_ppq(
     fig.update_layout(
         title=__make_operation_plot_title(variable, filters),
         xaxis_title="Iteracao",
-        yaxis_title=VARIABLE_UNITS.get(variable.split("_")[0], ""),
+        yaxis_title=VARIABLE_UNITS_NEWAVE.get(variable.split("_")[0], ""),
         hovermode="x unified",
         legend=dict(groupclick="toggleitem"),
     )
@@ -752,6 +1008,7 @@ def generate_acumprob_graph_casos(
         return fig
     dados = pd.read_json(operation_data, orient="split")
     df_estudos = pd.read_json(studies_data, orient="split")
+    programas = df_estudos["program"].unique().tolist()
     line_shape = "hv"
     for _, linha_df in df_estudos.iterrows():
         estudo = linha_df["name"]
@@ -775,7 +1032,9 @@ def generate_acumprob_graph_casos(
         fig.update_layout(
             title=__make_operation_plot_title(variable, filters),
             xaxis_title="%",
-            yaxis_title=VARIABLE_UNITS.get(variable.split("_")[0], ""),
+            yaxis_title=_generate_yaxis_title(
+                variable.split("_")[0], programas
+            ),
             hovermode="x unified",
             legend=dict(groupclick="toggleitem"),
         )
