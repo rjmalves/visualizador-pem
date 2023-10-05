@@ -334,12 +334,12 @@ def view_SBM_EST(
         ]
     ):
         return fig
-    programa_df = pd.read_json(data_df["PROGRAMA"], orient="split")
-    if programa_df["programa"].iloc[0] == "NEWAVE":
+    programa = data_df["PROGRAMA"]
+    if programa == "NEWAVE":
         nos = constants.NOS_SUBMERCADOS_NEWAVE
         arestas = constants.ARESTAS_INTERCAMBIOS_NEWAVE
         intercambios = constants.INTERCAMBIOS_SUBMERCADOS_NEWAVE
-    elif programa_df["programa"].iloc[0] == "DECOMP":
+    elif programa == "DECOMP":
         nos = constants.NOS_SUBMERCADOS_DECOMP
         arestas = constants.ARESTAS_INTERCAMBIOS_DECOMP
         intercambios = constants.INTERCAMBIOS_SUBMERCADOS_DECOMP

@@ -3,7 +3,7 @@ import plotly.express as px
 from plotly.subplots import make_subplots
 import pandas as pd
 import numpy as np
-from typing import List
+from typing import List, Dict
 from datetime import timedelta
 from src.utils.log import Log
 from src.utils.data import DISCRETE_COLOR_PALLETE
@@ -383,6 +383,29 @@ VARIABLE_UNITS_DESSEM = {
 }
 
 
+def _get_variable_units(program: str) -> Dict[str, str]:
+    return {
+        "NEWAVE": VARIABLE_UNITS_NEWAVE,
+        "DECOMP": VARIABLE_UNITS_DECOMP,
+        "DESSEM": VARIABLE_UNITS_DESSEM,
+    }.get(program, VARIABLE_UNITS)
+
+
+def _generate_yaxis_title(variable: str, programs: List[str]) -> str:
+    programs_units = {
+        p: _get_variable_units(p).get(variable, "")
+        for p in programs
+        if p is not None
+    }
+    unique_units = list(set(list(programs_units.values())))
+    if len(unique_units) == 0:
+        return VARIABLE_UNITS.get(variable, "")
+    elif len(unique_units) == 1:
+        return unique_units[0]
+    else:
+        return " | ".join([f"{v} ({k})" for k, v in programs_units.items()])
+
+
 NOT_SCENARIO_COLUMNS = [
     "iteracao",
     "estudo",
@@ -432,7 +455,7 @@ def generate_operation_graph_casos(
     dados["dataInicio"] = pd.to_datetime(dados["dataInicio"], unit="ms")
     dados["dataFim"] = pd.to_datetime(dados["dataFim"], unit="ms")
     df_estudos = pd.read_json(studies_data, orient="split")
-
+    programas = df_estudos["program"].unique().tolist()
     line_shape = "linear"
     mode = "lines"
     visibilidade_p = __background_area_visibility(df_estudos["name"])
@@ -496,7 +519,9 @@ def generate_operation_graph_casos(
         fig.update_layout(
             title=__make_operation_plot_title(variable, filters),
             xaxis_title="Data",
-            yaxis_title=VARIABLE_UNITS.get(variable.split("_")[0], ""),
+            yaxis_title=_generate_yaxis_title(
+                variable.split("_")[0], programas
+            ),
             hovermode="x unified",
             legend=dict(groupclick="toggleitem"),
         )
@@ -538,6 +563,7 @@ def generate_operation_graph_casos_twinx(
     )
     dados_twinx["dataFim"] = pd.to_datetime(dados_twinx["dataFim"], unit="ms")
     df_estudos = pd.read_json(studies_data, orient="split")
+    programas = df_estudos["program"].unique().tolist()
 
     line_shape = "linear"
     mode = "lines"
@@ -658,12 +684,14 @@ def generate_operation_graph_casos_twinx(
     fig.update_layout(
         title=full_title,
         xaxis_title="Data",
-        yaxis_title=VARIABLE_UNITS.get(variable.split("_")[0], ""),
+        yaxis_title=_generate_yaxis_title(variable.split("_")[0], programas),
         hovermode="x unified",
         legend=dict(groupclick="toggleitem"),
     )
     fig.update_yaxes(
-        title_text=VARIABLE_UNITS.get(variable_twinx.split("_")[0], ""),
+        title_text=_generate_yaxis_title(
+            variable_twinx.split("_")[0], programas
+        ),
         secondary_y=True,
     )
 
@@ -732,6 +760,7 @@ def generate_operation_graph_encadeador(
     dados["dataInicio"] = pd.to_datetime(dados["dataInicio"], unit="ms")
     dados["dataFim"] = pd.to_datetime(dados["dataFim"], unit="ms")
     df_estudos = pd.read_json(studies_data, orient="split")
+    programas = df_estudos["program"].unique().tolist()
 
     filtro_newave = dados["programa"] == "NEWAVE"
     filtro_decomp = dados["programa"] == "DECOMP"
@@ -905,7 +934,7 @@ def generate_operation_graph_ppq(
         fig.update_layout(
             title=__make_operation_plot_title(variable, filters),
             xaxis_title="Data",
-            yaxis_title=VARIABLE_UNITS.get(variable.split("_")[0], ""),
+            yaxis_title=VARIABLE_UNITS_NEWAVE.get(variable.split("_")[0], ""),
             hovermode="x unified",
             legend=dict(groupclick="toggleitem"),
         )
@@ -941,7 +970,7 @@ def generate_distribution_graph_ppq(
     fig.update_layout(
         title=__make_operation_plot_title(variable, filters),
         xaxis_title="Iteracao",
-        yaxis_title=VARIABLE_UNITS.get(variable.split("_")[0], ""),
+        yaxis_title=VARIABLE_UNITS_NEWAVE.get(variable.split("_")[0], ""),
         hovermode="x unified",
         legend=dict(groupclick="toggleitem"),
     )
@@ -979,6 +1008,7 @@ def generate_acumprob_graph_casos(
         return fig
     dados = pd.read_json(operation_data, orient="split")
     df_estudos = pd.read_json(studies_data, orient="split")
+    programas = df_estudos["program"].unique().tolist()
     line_shape = "hv"
     for _, linha_df in df_estudos.iterrows():
         estudo = linha_df["name"]
@@ -1002,7 +1032,9 @@ def generate_acumprob_graph_casos(
         fig.update_layout(
             title=__make_operation_plot_title(variable, filters),
             xaxis_title="%",
-            yaxis_title=VARIABLE_UNITS.get(variable.split("_")[0], ""),
+            yaxis_title=_generate_yaxis_title(
+                variable.split("_")[0], programas
+            ),
             hovermode="x unified",
             legend=dict(groupclick="toggleitem"),
         )

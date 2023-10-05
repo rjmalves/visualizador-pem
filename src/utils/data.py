@@ -3,7 +3,7 @@ import pathlib
 import os
 from datetime import timedelta
 from src.utils.api import API
-from typing import List
+from typing import List, Optional
 from datetime import timedelta
 import src.utils.validation as validation
 from src.utils.settings import Settings
@@ -110,6 +110,7 @@ def edit_current_study_data(
                         "color": [color],
                         "created_date": [datetime.now()],
                         "options": [",".join(options)],
+                        "program": [_get_programa(new_study_id)],
                     }
                 )
                 return pd.concat(
@@ -137,6 +138,9 @@ def edit_current_study_data(
             current_data.loc[
                 current_data["table_id"] == edit_study_id, "options"
             ] = ",".join(options)
+            current_data.loc[
+                current_data["table_id"] == edit_study_id, "program"
+            ] = _get_programa(edit_study_path)
             return current_data.to_json(orient="split")
     elif ctx.triggered_id == remove_trigger:
         if remove_study_button_clicks:
@@ -355,11 +359,26 @@ def update_operation_data_encadeador(
         return complete_df.to_json(orient="split")
 
 
+def _get_programa(
+    path: str,
+) -> Optional[str]:
+    df = API.fetch_result(
+        path,
+        "PROGRAMA",
+        {"preprocess": "FULL"},
+    )
+    if df is None:
+        return None
+    if df.empty:
+        return None
+    else:
+        return df["programa"].iloc[0]
+
+
 def update_spatial_programa(
     studies,
     study: str,
     filters: dict,
-    preprocess: str = "FULL",
 ):
     if not studies:
         return None
@@ -367,32 +386,16 @@ def update_spatial_programa(
         return None
     if not all(["estagio" in filters and "cenario" in filters]):
         return None
-    req_filters = {
-        "estagio": filters["estagio"],
-        "cenario": filters["cenario"],
-    }
-    studies_df = pd.read_json(studies, orient="split")
-    studies_df = pd.read_json(studies, orient="split")
-    path = studies_df.loc[studies_df["name"] == study, "path"].iloc[0]
-    df = API.fetch_result(
-        path,
-        "PROGRAMA",
-        {"preprocess": preprocess},
-    )
 
-    if df is None:
-        return None
-    if df.empty:
-        return None
-    else:
-        return df.to_json(orient="split")
+    studies_df = pd.read_json(studies, orient="split")
+    return studies_df.loc[studies_df["name"] == study, "program"].iloc[0]
 
 
 def update_spatial_SBM_data_casos(
     studies,
     study: str,
     filters: dict,
-    programa: dict,
+    programa: str,
     preprocess: str = "FULL",
 ):
     if not studies:
@@ -405,9 +408,8 @@ def update_spatial_SBM_data_casos(
         return None
     if not all(["estagio" in filters and "cenario" in filters]):
         return None
-    programa_df = pd.read_json(programa, orient="split")
     req_filters = {
-        "programa": programa_df["programa"].iloc[0],
+        "programa": programa,
         "estagio": filters["estagio"],
         "cenario": filters["cenario"],
     }
@@ -438,7 +440,7 @@ def update_spatial_INT_data_casos(
     studies,
     study: str,
     filters: dict,
-    programa: dict,
+    programa: str,
     preprocess: str = "FULL",
 ):
     if not studies:
@@ -451,9 +453,8 @@ def update_spatial_INT_data_casos(
         return None
     if not all(["estagio" in filters and "cenario" in filters]):
         return None
-    programa_df = pd.read_json(programa, orient="split")
     req_filters = {
-        "programa": programa_df["programa"].iloc[0],
+        "programa": programa,
         "estagio": filters["estagio"],
         "cenario": filters["cenario"],
     }

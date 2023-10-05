@@ -23,9 +23,10 @@ data_df = pd.DataFrame(
         "color",
         "created_date",
         "options",
+        "program",
     ]
 )
-table_df = pd.DataFrame(columns=["id", "CAMINHO", "NOME", "COR"])
+table_df = pd.DataFrame(columns=["id", "PROGRAMA", "CAMINHO", "NOME", "COR"])
 
 
 class CurrentStudiesTable(html.Div):
@@ -203,11 +204,12 @@ class CurrentStudiesTable(html.Div):
                 "path": "CAMINHO",
                 "name": "NOME",
                 "color": "COR",
+                "program": "PROGRAMA",
             }
         )
-        return renamed_data[["id", "CAMINHO", "NOME", "COR"]].to_dict(
-            "records"
-        )
+        return renamed_data[
+            ["id", "PROGRAMA", "CAMINHO", "NOME", "COR"]
+        ].to_dict("records")
 
     @callback(
         Output(ids.selected(MATCH), "data"),
