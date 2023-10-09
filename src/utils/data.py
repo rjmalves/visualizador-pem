@@ -170,6 +170,9 @@ def edit_current_study_data(
                 ),
                 axis=1,
             )
+            screen_df["program"] = screen_df.apply(
+                lambda linha: _get_programa(linha["path"]), axis=1
+            )
             return screen_df.to_json(orient="split")
         else:
             return current_studies
