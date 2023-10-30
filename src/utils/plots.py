@@ -359,7 +359,7 @@ VARIABLE_UNITS_DESSEM = {
     "QRET": "m3/s",
     "QTUR": "m3/s",
     "QVER": "m3/s",
-    "VAGUA": "R$ / hm3 (UHE) | R$ / MWh (REE)",
+    "VAGUA": "R$ / MWh",
     "VARMI": "hm3",
     "VARMF": "hm3",
     "VARPI": "%",
