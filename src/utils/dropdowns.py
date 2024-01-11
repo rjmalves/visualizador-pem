@@ -28,6 +28,9 @@ NOT_OPERATION_FILES = (
         "RECURSOS_CLUSTER",
         "RECURSOS_JOB",
         "PROGRAMA",
+        "CASOS",
+        "RODADAS",
+        "ESTUDO",
     ]
     + SYSTEM_FILES
     + POLICY_FILES
