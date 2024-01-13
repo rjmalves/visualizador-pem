@@ -1,14 +1,3 @@
-pandas
-plotly
-networkx
-geopandas
-dash
-dash_bootstrap_components
-python-dotenv
-waitress
-pybase62
-pyarrow
-requests
-aiohttp
-SQLAlchemy
-flask_login
+panel
+jupyter_bokeh
+hvplot
