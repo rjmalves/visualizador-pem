@@ -1105,6 +1105,8 @@ def generate_timecosts_graph_encadeador(time_costs, variable, studies_data):
         y_col = "mean"
         title = "Custos de Operação"
         unit = "Custo ($)"
+        # CI de 95%
+        dados["std"] *= 1.96
         error_y = "std"
 
     fig = px.bar(
@@ -1174,6 +1176,8 @@ def generate_timecosts_graph_casos(time_costs, variable, studies_data):
         color_col = "parcela"
         title = "Custos de Operação"
         unit = "Custo ($)"
+        # CI de 95%
+        dados["std"] *= 1.96
         error_y = "std"
 
         fig = px.bar(
