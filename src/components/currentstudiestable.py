@@ -11,6 +11,7 @@ from dash import (
 from dash.exceptions import PreventUpdate
 import pandas as pd
 import uuid
+from io import StringIO
 from src.utils.settings import Settings
 from flask_login import current_user
 
@@ -197,7 +198,7 @@ class CurrentStudiesTable(html.Div):
     )
     def update_current_studies_table(current_data):
         # Atribui renomeando as colunas e filtrando as informações
-        all_data = pd.read_json(current_data, orient="split")
+        all_data = pd.read_json(StringIO(current_data), orient="split")
         renamed_data = all_data.rename(
             columns={
                 "table_id": "id",

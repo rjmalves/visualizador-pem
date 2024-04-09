@@ -1,6 +1,7 @@
 import pandas as pd
 import pathlib
 import os
+from io import StringIO
 from datetime import timedelta
 from src.utils.api import API
 from typing import List, Optional
@@ -80,7 +81,9 @@ def edit_current_study_data(
                 return current_studies
             elif len(new_study_id) == 0:
                 return current_studies
-            current_data = pd.read_json(current_studies, orient="split")
+            current_data = pd.read_json(
+                StringIO(current_studies), orient="split"
+            )
             if new_study_id in current_data["path"].tolist():
                 return current_studies
             else:
@@ -120,7 +123,9 @@ def edit_current_study_data(
             return current_studies
     elif ctx.triggered_id == edit_trigger:
         if edit_study_button_clicks:
-            current_data = pd.read_json(current_studies, orient="split")
+            current_data = pd.read_json(
+                StringIO(current_studies), orient="split"
+            )
             current_data.loc[
                 current_data["table_id"] == edit_study_id, "path"
             ] = edit_study_path
@@ -144,7 +149,9 @@ def edit_current_study_data(
             return current_data.to_json(orient="split")
     elif ctx.triggered_id == remove_trigger:
         if remove_study_button_clicks:
-            current_data = pd.read_json(current_studies, orient="split")
+            current_data = pd.read_json(
+                StringIO(current_studies), orient="split"
+            )
             new_data = current_data.loc[
                 ~current_data["table_id"].isin(selected_study)
             ]
@@ -184,7 +191,7 @@ def extract_selected_study_data(
     selected_study,
     current_studies,
 ) -> dict:
-    current_data = pd.read_json(current_studies, orient="split")
+    current_data = pd.read_json(StringIO(current_studies), orient="split")
     if selected_study is None:
         return None
     elif len(selected_study) == 0:
@@ -239,7 +246,7 @@ def update_status_data_encadeador(interval, studies):
     if not studies:
         return None
 
-    studies_df = pd.read_json(studies, orient="split")
+    studies_df = pd.read_json(StringIO(studies), orient="split")
     paths = studies_df["path"].tolist()
     labels = studies_df["name"].tolist()
     study_df = API.fetch_result_list(
@@ -316,7 +323,7 @@ def update_operation_data_encadeador(
         return None
     Log.log().info(f"Obtendo dados - ENCADEADOR ({variable}, {filters})")
     fetch_filters = {**req_filters, "estagio": 1, "preprocess": "STATISTICS"}
-    studies_df = pd.read_json(studies, orient="split")
+    studies_df = pd.read_json(StringIO(studies), orient="split")
     paths = studies_df["path"].tolist()
     labels = studies_df["name"].tolist()
     complete_df = pd.DataFrame()
@@ -390,7 +397,7 @@ def update_spatial_programa(
     if not all(["estagio" in filters and "cenario" in filters]):
         return None
 
-    studies_df = pd.read_json(studies, orient="split")
+    studies_df = pd.read_json(StringIO(studies), orient="split")
     return studies_df.loc[studies_df["name"] == study, "program"].iloc[0]
 
 
@@ -416,7 +423,7 @@ def update_spatial_SBM_data_casos(
         "estagio": filters["estagio"],
         "cenario": filters["cenario"],
     }
-    studies_df = pd.read_json(studies, orient="split")
+    studies_df = pd.read_json(StringIO(studies), orient="split")
     path = studies_df.loc[studies_df["name"] == study, "path"].iloc[0]
     df = API.fetch_study_SBM_spatial_variable_list(
         path,
@@ -461,7 +468,7 @@ def update_spatial_INT_data_casos(
         "estagio": filters["estagio"],
         "cenario": filters["cenario"],
     }
-    studies_df = pd.read_json(studies, orient="split")
+    studies_df = pd.read_json(StringIO(studies), orient="split")
     path = studies_df.loc[studies_df["name"] == study, "path"].iloc[0]
     df = API.fetch_study_INT_spatial_variable_list(
         path,
@@ -492,7 +499,7 @@ def update_operation_data_casos(
     )
     if req_filters is None:
         return None
-    studies_df = pd.read_json(studies, orient="split")
+    studies_df = pd.read_json(StringIO(studies), orient="split")
     paths = studies_df["path"].tolist()
     labels = studies_df["name"].tolist()
     df = API.fetch_result_list(
@@ -501,7 +508,6 @@ def update_operation_data_casos(
         variable,
         {**req_filters, "preprocess": preprocess},
     )
-
     if df is None:
         return None
     if df.empty:
@@ -526,7 +532,7 @@ def update_scenario_data_casos(
     )
     if req_filters is None:
         return None
-    studies_df = pd.read_json(studies, orient="split")
+    studies_df = pd.read_json(StringIO(studies), orient="split")
     paths = studies_df["path"].tolist()
     labels = studies_df["name"].tolist()
     df = API.fetch_result_list(
@@ -558,7 +564,7 @@ def update_custos_tempo_data_encadeador(
     if programa is None:
         return None
     Log.log().info(f"Obtendo dados - ENCADEADOR ({variable}, {filters})")
-    studies_df = pd.read_json(studies, orient="split")
+    studies_df = pd.read_json(StringIO(studies), orient="split")
     paths = studies_df["path"].tolist()
     labels = studies_df["name"].tolist()
     dir = {"NEWAVE": Settings.newave_dir, "DECOMP": Settings.decomp_dir}.get(
@@ -591,7 +597,7 @@ def update_violation_data_encadeador(
     if programa is None:
         return None
     Log.log().info(f"Obtendo dados - ENCADEADOR ({violation}, {filters})")
-    studies_df = pd.read_json(studies, orient="split")
+    studies_df = pd.read_json(StringIO(studies), orient="split")
     paths = studies_df["path"].tolist()
     labels = studies_df["name"].tolist()
     dir = {"NEWAVE": Settings.newave_dir, "DECOMP": Settings.decomp_dir}.get(
@@ -623,7 +629,7 @@ def update_custos_tempo_data_casos(
         return None
     if not variable:
         return None
-    studies_df = pd.read_json(studies, orient="split")
+    studies_df = pd.read_json(StringIO(studies), orient="split")
     paths = studies_df["path"].tolist()
     labels = studies_df["name"].tolist()
     df = API.fetch_result_list(
@@ -646,7 +652,7 @@ def update_runtime_data_casos(
 ):
     if not studies:
         return None
-    studies_df = pd.read_json(studies, orient="split")
+    studies_df = pd.read_json(StringIO(studies), orient="split")
     paths = studies_df["path"].tolist()
     labels = studies_df["name"].tolist()
     df = API.fetch_result_list(
@@ -668,7 +674,7 @@ def update_convergence_data_casos(
 ):
     if not studies:
         return None
-    studies_df = pd.read_json(studies, orient="split")
+    studies_df = pd.read_json(StringIO(studies), orient="split")
     paths = studies_df["path"].tolist()
     labels = studies_df["name"].tolist()
     df = API.fetch_result_list(
@@ -691,7 +697,7 @@ def update_job_resources_data_casos(
 ):
     if not studies:
         return None
-    studies_df = pd.read_json(studies, orient="split")
+    studies_df = pd.read_json(StringIO(studies), orient="split")
     paths = studies_df["path"].tolist()
     labels = studies_df["name"].tolist()
     df_cluster = API.fetch_result_list(
@@ -714,7 +720,7 @@ def update_cluster_resources_data_casos(
 ):
     if not studies:
         return None
-    studies_df = pd.read_json(studies, orient="split")
+    studies_df = pd.read_json(StringIO(studies), orient="split")
     paths = studies_df["path"].tolist()
     labels = studies_df["name"].tolist()
     df_job = API.fetch_result_list(
@@ -741,7 +747,7 @@ def update_distribution_data_ppq(studies, filters: dict, variable: str):
     )
     if req_filters is None:
         return None
-    studies_df = pd.read_json(studies, orient="split")
+    studies_df = pd.read_json(StringIO(studies), orient="split")
     paths = studies_df["path"].tolist()
     labels = studies_df["name"].tolist()
     df = API.fetch_result_list(
@@ -771,7 +777,7 @@ def update_operation_data_ppq(
     req_filters = validation.validate_required_filters(variable, filters)
     if req_filters is None:
         return None
-    studies_df = pd.read_json(studies, orient="split")
+    studies_df = pd.read_json(StringIO(studies), orient="split")
     paths = studies_df["path"].tolist()
     labels = studies_df["name"].tolist()
     df = API.fetch_result_list(

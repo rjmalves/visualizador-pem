@@ -2,7 +2,7 @@ from dash import html, dcc, callback, Input, State, Output, MATCH
 from dash.exceptions import PreventUpdate
 import uuid
 import pandas as pd
-
+from io import StringIO
 import src.utils.dropdowns as dropdowns
 import src.utils.data as data
 
@@ -584,7 +584,7 @@ class OperationFiltersTwin(html.Div):
         if n_clicks is None:
             raise PreventUpdate
         if operation_data is not None:
-            dados = pd.read_json(operation_data, orient="split")
+            dados = pd.read_json(StringIO(operation_data), orient="split")
             dados["dataInicio"] = pd.to_datetime(
                 dados["dataInicio"], unit="ms"
             )

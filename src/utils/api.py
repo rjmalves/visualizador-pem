@@ -47,7 +47,8 @@ class API:
             if r.status_code != 200:
                 return None
             else:
-                return pd.read_parquet(io.BytesIO(r.content))
+                df = pd.read_parquet(io.BytesIO(r.content))
+                return df
 
     @classmethod
     def fetch_result_list(

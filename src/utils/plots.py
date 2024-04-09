@@ -7,6 +7,7 @@ from typing import List, Dict
 from datetime import timedelta
 from src.utils.log import Log
 from src.utils.data import DISCRETE_COLOR_PALLETE
+from io import StringIO
 
 DISCRETE_COLOR_PALLETE_COSTS = [
     "rgba(249, 65, 68, 1)",
@@ -451,10 +452,10 @@ def generate_operation_graph_casos(
     fig.update_layout(graph_layout)
     if operation_data is None:
         return fig
-    dados = pd.read_json(operation_data, orient="split")
+    dados = pd.read_json(StringIO(operation_data), orient="split")
     dados["dataInicio"] = pd.to_datetime(dados["dataInicio"], unit="ms")
     dados["dataFim"] = pd.to_datetime(dados["dataFim"], unit="ms")
-    df_estudos = pd.read_json(studies_data, orient="split")
+    df_estudos = pd.read_json(StringIO(studies_data), orient="split")
     programas = df_estudos["program"].unique().tolist()
     line_shape = "linear"
     mode = "lines"
@@ -554,15 +555,15 @@ def generate_operation_graph_casos_twinx(
             operation_data_twinx, variable_twinx, filters_twinx, studies_data
         )
 
-    dados = pd.read_json(operation_data, orient="split")
+    dados = pd.read_json(StringIO(operation_data), orient="split")
     dados["dataInicio"] = pd.to_datetime(dados["dataInicio"], unit="ms")
     dados["dataFim"] = pd.to_datetime(dados["dataFim"], unit="ms")
-    dados_twinx = pd.read_json(operation_data_twinx, orient="split")
+    dados_twinx = pd.read_json(StringIO(operation_data_twinx), orient="split")
     dados_twinx["dataInicio"] = pd.to_datetime(
         dados_twinx["dataInicio"], unit="ms"
     )
     dados_twinx["dataFim"] = pd.to_datetime(dados_twinx["dataFim"], unit="ms")
-    df_estudos = pd.read_json(studies_data, orient="split")
+    df_estudos = pd.read_json(StringIO(studies_data), orient="split")
     programas = df_estudos["program"].unique().tolist()
 
     line_shape = "linear"
@@ -717,7 +718,7 @@ def generate_scenario_graph_casos(
         c for c in all_scenarios if "p" in str(c)
     ]
 
-    df_estudos = pd.read_json(studies_data, orient="split")
+    df_estudos = pd.read_json(StringIO(studies_data), orient="split")
 
     nomes_estudos = df_estudos["name"].tolist()
     cores_estudos = df_estudos["color"].tolist()
@@ -756,10 +757,10 @@ def generate_operation_graph_encadeador(
     if operation_data is None:
         return fig
     Log.log().info(f"Plotando gráfico - ENCADEADOR ({variable}, {filters})")
-    dados = pd.read_json(operation_data, orient="split")
+    dados = pd.read_json(StringIO(operation_data), orient="split")
     dados["dataInicio"] = pd.to_datetime(dados["dataInicio"], unit="ms")
     dados["dataFim"] = pd.to_datetime(dados["dataFim"], unit="ms")
-    df_estudos = pd.read_json(studies_data, orient="split")
+    df_estudos = pd.read_json(StringIO(studies_data), orient="split")
     programas = df_estudos["program"].unique().tolist()
 
     filtro_newave = dados["programa"] == "NEWAVE"
@@ -863,7 +864,7 @@ def generate_operation_graph_ppq(
     fig.update_layout(graph_layout)
     if operation_data is None:
         return fig
-    dados = pd.read_json(operation_data, orient="split")
+    dados = pd.read_json(StringIO(operation_data), orient="split")
     dados["dataInicio"] = pd.to_datetime(dados["dataInicio"], unit="ms")
     dados["dataFim"] = pd.to_datetime(dados["dataFim"], unit="ms")
 
@@ -952,8 +953,8 @@ def generate_distribution_graph_ppq(
     fig.update_layout(graph_layout)
     if operation_data is None:
         return fig
-    dados = pd.read_json(operation_data, orient="split")
-    df_estudos = pd.read_json(studies_data, orient="split")
+    dados = pd.read_json(StringIO(operation_data), orient="split")
+    df_estudos = pd.read_json(StringIO(studies_data), orient="split")
     mapa_cor = {
         linha["name"]: linha["color"] for _, linha in df_estudos.iterrows()
     }
@@ -1006,8 +1007,8 @@ def generate_acumprob_graph_casos(
     fig.update_layout(graph_layout)
     if operation_data is None:
         return fig
-    dados = pd.read_json(operation_data, orient="split")
-    df_estudos = pd.read_json(studies_data, orient="split")
+    dados = pd.read_json(StringIO(operation_data), orient="split")
+    df_estudos = pd.read_json(StringIO(studies_data), orient="split")
     programas = df_estudos["program"].unique().tolist()
     line_shape = "hv"
     for _, linha_df in df_estudos.iterrows():
@@ -1053,7 +1054,7 @@ def generate_timecosts_graph_encadeador(time_costs, variable, studies_data):
     Log.log().info(f"Plotando gráfico - ENCADEADOR ({variable})")
     dados = pd.read_json(time_costs, orient="split")
     ordem_estudos = dados["estudo"].unique().tolist()
-    df_estudos = pd.read_json(studies_data, orient="split")
+    df_estudos = pd.read_json(StringIO(studies_data), orient="split")
     mapa_cor = {
         linha["name"]: linha["color"] for _, linha in df_estudos.iterrows()
     }
@@ -1143,7 +1144,7 @@ def generate_timecosts_graph_casos(time_costs, variable, studies_data):
         return fig
     Log.log().info(f"Plotando gráfico - ENCADEADOR ({variable})")
     dados = pd.read_json(time_costs, orient="split")
-    df_estudos = pd.read_json(studies_data, orient="split")
+    df_estudos = pd.read_json(StringIO(studies_data), orient="split")
     mapa_cor = {
         linha["name"]: linha["color"] for _, linha in df_estudos.iterrows()
     }
@@ -1216,7 +1217,7 @@ def generate_violation_graph_encadeador(
     Log.log().info(f"Plotando gráfico - ENCADEADOR ({violation})")
     dados = pd.read_json(violation_data, orient="split")
 
-    df_estudos = pd.read_json(studies_data, orient="split")
+    df_estudos = pd.read_json(StringIO(studies_data), orient="split")
     mapa_cor = {
         linha["name"]: linha["color"] for _, linha in df_estudos.iterrows()
     }
@@ -1281,7 +1282,7 @@ def generate_convergence_graph_casos(convergence_data, variable, studies_data):
         go.Bar(x=dados[x_col], y=dados["tempo"], name="tempo"),
         secondary_y=True,
     )
-    df_estudos = pd.read_json(studies_data, orient="split")
+    df_estudos = pd.read_json(StringIO(studies_data), orient="split")
     mapa_cor = {
         linha["name"]: linha["color"] for _, linha in df_estudos.iterrows()
     }
@@ -1335,13 +1336,13 @@ def generate_resources_graph_casos(
         return fig
     if convergence_data is None:
         return fig
-    master = pd.read_json(cluster_data, orient="split")
+    master = pd.read_json(StringIO(cluster_data), orient="split")
     master = master.loc[master["estudo"] == study, :]
-    job = pd.read_json(job_data, orient="split")
+    job = pd.read_json(StringIO(job_data), orient="split")
     job = job.loc[job["estudo"] == study, :]
-    tim = pd.read_json(time_data, orient="split")
+    tim = pd.read_json(StringIO(time_data), orient="split")
     tim = tim.loc[tim["estudo"] == study, :]
-    conv = pd.read_json(convergence_data, orient="split")
+    conv = pd.read_json(StringIO(convergence_data), orient="split")
     conv = conv.loc[conv["estudo"] == study, :]
     if master.empty:
         return fig

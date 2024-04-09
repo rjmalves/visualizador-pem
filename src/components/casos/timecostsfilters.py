@@ -1,7 +1,7 @@
 from dash import html, dcc, callback, Input, State, Output, MATCH
 import uuid
 import pandas as pd
-
+from io import StringIO
 import src.utils.dropdowns as dropdowns
 import src.utils.data as data
 
@@ -136,5 +136,5 @@ class TimeCostsFilters(html.Div):
         if n_clicks is None:
             return
         if operation_data is not None:
-            dados = pd.read_json(operation_data, orient="split")
+            dados = pd.read_json(StringIO(operation_data), orient="split")
             return dcc.send_data_frame(dados.to_csv, f"{variable}.csv")
