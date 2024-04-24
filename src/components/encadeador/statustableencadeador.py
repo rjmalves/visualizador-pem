@@ -9,6 +9,7 @@ from dash import (
 )
 import pandas as pd
 import uuid
+from io import StringIO
 import src.utils.data as data
 from src.utils.settings import Settings
 
@@ -144,4 +145,6 @@ class StatusTable(html.Div):
         Input(ids.data(MATCH), "data"),
     )
     def generate_status_table(status_data):
-        return pd.read_json(status_data, orient="split").to_dict("records")
+        return pd.read_json(StringIO(status_data), orient="split").to_dict(
+            "records"
+        )

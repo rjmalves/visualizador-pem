@@ -758,8 +758,8 @@ def generate_operation_graph_encadeador(
         return fig
     Log.log().info(f"Plotando gráfico - ENCADEADOR ({variable}, {filters})")
     dados = pd.read_json(StringIO(operation_data), orient="split")
-    dados["dataInicio"] = pd.to_datetime(dados["dataInicio"], unit="ms")
-    dados["dataFim"] = pd.to_datetime(dados["dataFim"], unit="ms")
+    dados["dataInicio"] = pd.to_datetime(dados["dataInicio"], unit="s")
+    dados["dataFim"] = pd.to_datetime(dados["dataFim"], unit="s")
     df_estudos = pd.read_json(StringIO(studies_data), orient="split")
     programas = df_estudos["program"].unique().tolist()
 
@@ -1052,7 +1052,7 @@ def generate_timecosts_graph_encadeador(time_costs, variable, studies_data):
     if time_costs is None:
         return fig
     Log.log().info(f"Plotando gráfico - ENCADEADOR ({variable})")
-    dados = pd.read_json(time_costs, orient="split")
+    dados = pd.read_json(StringIO(time_costs), orient="split")
     ordem_estudos = dados["estudo"].unique().tolist()
     df_estudos = pd.read_json(StringIO(studies_data), orient="split")
     mapa_cor = {
