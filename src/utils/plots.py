@@ -758,8 +758,8 @@ def generate_operation_graph_encadeador(
         return fig
     Log.log().info(f"Plotando gráfico - ENCADEADOR ({variable}, {filters})")
     dados = pd.read_json(StringIO(operation_data), orient="split")
-    dados["dataInicio"] = pd.to_datetime(dados["dataInicio"], unit="s")
-    dados["dataFim"] = pd.to_datetime(dados["dataFim"], unit="s")
+    dados["dataInicio"] = pd.to_datetime(dados["dataInicio"], unit="ms")
+    dados["dataFim"] = pd.to_datetime(dados["dataFim"], unit="ms")
     df_estudos = pd.read_json(StringIO(studies_data), orient="split")
     programas = df_estudos["program"].unique().tolist()
 

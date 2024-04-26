@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import pathlib
 import os
 from io import StringIO
@@ -366,7 +367,12 @@ def update_operation_data_encadeador(
     if complete_df.empty:
         return None
     else:
-        return complete_df.to_json(orient="split")
+        for col in ["dataInicio", "dataFim"]:
+            if col in complete_df.columns:
+                complete_df[col] = complete_df[col].astype("datetime64[ns]")
+        return complete_df.to_json(
+            orient="split", date_format="epoch", date_unit="ms"
+        )
 
 
 def _get_programa(
