@@ -7,20 +7,13 @@ from typing import Optional
 
 pn.extension(design="material", template="fast")
 
-data_file_sin = (
-    "/home/rogerio/git/visualizador-pem/data/newave/EARPF_SIN_EST.parquet.gzip"
-)
+data_file_sin = "/home/rogerio/git/visualizador-pem/data/newave/sintese/ESTATISTICAS_OPERACAO_SIN.parquet"
 data_sin = pd.read_parquet(data_file_sin)
-
-data_file_sbm = (
-    "/home/rogerio/git/visualizador-pem/data/newave/CMO_SBM_EST.parquet.gzip"
-)
-data_sbm = pd.read_parquet(data_file_sbm)
 
 MAPA_NOMES = {
     "estagio": "Estágio",
-    "dataInicio": "Data Início",
-    "valor": "EARM (%)",
+    "data_inicio": "Data Início",
+    "valor": "VARM (hm3)",
 }
 
 
@@ -31,7 +24,7 @@ def view_timeseries(
         x=x_axis,
         y=y_axis,
         by=color,
-        title="Evolução do EARM SIN",
+        title="Evolução do VARM SIN",
         xlabel=MAPA_NOMES[x_axis],
         ylabel=MAPA_NOMES[y_axis],
         legend="bottom_right",
@@ -43,7 +36,7 @@ def view_timeseries(
 
 def plot_sin_distribution(
     data: pd.DataFrame,
-    variable="dataInicio",
+    variable="data_inicio",
     lower_perc=10,
     upper_perc=90,
     view_fn=view_timeseries,
@@ -63,22 +56,16 @@ def plot_sin_distribution(
         if upper_perc not in [0, 50, 100]
         else special_names[upper_perc]
     )
-    mean_data = data.loc[data["cenario"].isin([lower_col, "mean", upper_col])]
+    mean_data = data.loc[
+        data["cenario"].isin([lower_col, "mean", upper_col])
+        & (data["variavel"] == "VARMF")
+    ]
     return view_fn(mean_data, variable, "valor", color="cenario")
-
-
-def plot_sbm_mean(
-    data: pd.DataFrame,
-    variable="dataInicio",
-    view_fn=view_timeseries,
-):
-    mean_data = data.loc[data["cenario"].isin(["mean"])]
-    return view_fn(mean_data, variable, "valor", color="submercado")
 
 
 class TimeseriesEvolution(param.Parameterized):
     variable = param.Selector(
-        default="dataInicio", objects=list(data_sin.columns)
+        default="data_inicio", objects=list(data_sin.columns)
     )
     lower_percentile = param.Integer(default=10, bounds=(0, 100), step=5)
     upper_percentile = param.Integer(default=90, bounds=(0, 100), step=5)
@@ -93,25 +80,10 @@ class TimeseriesEvolution(param.Parameterized):
         )
 
 
-class TimeseriesEvolutionSBM(param.Parameterized):
-    variable = param.Selector(
-        default="dataInicio", objects=list(data_sbm.columns)
-    )
-    lower_percentile = param.Integer(default=10, bounds=(0, 100), step=5)
-    upper_percentile = param.Integer(default=90, bounds=(0, 100), step=5)
-
-    def view(self):
-        return plot_sbm_mean(
-            data_sbm,
-            self.variable,
-            view_fn=view_timeseries,
-        )
-
-
 obj_sin = TimeseriesEvolution()
-obj_sbm = TimeseriesEvolutionSBM()
+obj_sin2 = TimeseriesEvolution()
 
 pn.Column(
     pn.Row(obj_sin.param, obj_sin.view),
-    pn.Row(obj_sbm.param, obj_sbm.view),
+    pn.Row(obj_sin2.param, obj_sin2.view),
 ).servable()
