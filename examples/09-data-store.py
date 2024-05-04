@@ -24,7 +24,8 @@ class DataStore(Viewer):
 
     def __init__(self, **params):
         super().__init__(**params)
-        dfx = self.param.data.rx()
+        print(self.param)
+        dfx: pd.DataFrame = self.param.data.rx()
         widgets = []
         for filt in self.filters:
             dtype = self.data.dtypes[filt]
@@ -67,3 +68,148 @@ class DataStore(Viewer):
             stylesheets=[CARD_STYLE.format(padding="5px 10px")],
             margin=10
         )
+
+
+import altair as alt
+import param
+from panel.viewable import Viewer
+import panel as pn
+
+
+class View(Viewer):
+    data_store = param.ClassSelector(class_=DataStore)
+
+
+class Table(View):
+    columns = param.List(
+        default=[
+            "p_name",
+            "p_year",
+            "t_state",
+            "t_county",
+            "t_manu",
+            "t_cap",
+            "p_cap",
+        ]
+    )
+
+    def __panel__(self):
+        data = self.data_store.filtered[self.param.columns]
+        return pn.widgets.Tabulator(
+            data,
+            pagination="remote",
+            page_size=13,
+            stylesheets=[CARD_STYLE.format(padding="10px")],
+            margin=10,
+        )
+
+
+class Histogram(View):
+    def __panel__(self):
+        df = self.data_store.filtered
+        df = df[df.t_manu.isin(self.data_store.top_manufacturers)]
+        fig = (
+            pn.rx(alt.Chart)(
+                (df.rx.len() > 5000).rx.where(df.sample(5000), df),
+                title="Capacity by Manufacturer",
+            )
+            .mark_circle(size=8)
+            .encode(
+                y="t_manu:N",
+                x="p_cap:Q",
+                yOffset="jitter:Q",
+                color=alt.Color("t_manu:N").legend(None),
+            )
+            .transform_calculate(
+                jitter="sqrt(-2*log(random()))*cos(2*PI*random())"
+            )
+            .properties(
+                height=400,
+                width=600,
+            )
+        )
+        return pn.pane.Vega(
+            fig, stylesheets=[CARD_STYLE.format(padding="0")], margin=10
+        )
+
+
+class Indicators(View):
+    def __panel__(self):
+        style = {"stylesheets": [CARD_STYLE.format(padding="10px")]}
+        return pn.FlexBox(
+            pn.indicators.Number(
+                value=self.data_store.total_capacity / 1e6,
+                name="Total Capacity (TW)",
+                format="{value:,.2f}",
+                **style
+            ),
+            pn.indicators.Number(
+                value=self.data_store.count,
+                name="Count",
+                format="{value:,.0f}",
+                **style
+            ),
+            pn.indicators.Number(
+                value=self.data_store.avg_capacity,
+                name="Avg. Capacity (kW)",
+                format="{value:,.2f}",
+                **style
+            ),
+            pn.indicators.Number(
+                value=self.data_store.avg_rotor_diameter,
+                name="Avg. Rotor Diameter (m)",
+                format="{value:,.2f}",
+                **style
+            ),
+        )
+
+
+import param
+from panel.viewable import Viewer
+import panel as pn
+
+pn.extension("tabulator", "vega", throttled=True)
+
+
+class App(Viewer):
+    data_store = param.ClassSelector(class_=DataStore)
+
+    title = param.String()
+
+    views = param.List()
+
+    def __init__(self, **params):
+        super().__init__(**params)
+        updating = self.data_store.filtered.rx.updating()
+        updating.rx.watch(
+            lambda updating: (
+                pn.state.curdoc.hold()
+                if updating
+                else pn.state.curdoc.unhold()
+            )
+        )
+        self._views = pn.FlexBox(
+            *(view(data_store=self.data_store) for view in self.views),
+            loading=updating
+        )
+        self._template = pn.template.MaterialTemplate(title=self.title)
+        self._template.sidebar.append(self.data_store)
+        self._template.main.append(self._views)
+
+    def servable(self):
+        if pn.state.served:
+            return self._template.servable()
+        return self
+
+    def __panel__(self):
+        return pn.Row(self.data_store, self._views)
+
+
+data = get_turbines()
+ds = DataStore(data=data, filters=["p_year", "p_cap", "t_manu"])
+
+App(
+    data_store=ds,
+    views=[Indicators, Histogram, Table],
+    title="Windturbine Explorer",
+).servable()
