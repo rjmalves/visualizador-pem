@@ -572,7 +572,7 @@ class AcumProbFilters(html.Div):
             studies,
             filters,
             variable,
-            preprocess="SCENARIO",
+            kind="SCENARIO",
             needs_stage=True,
         )
 
@@ -587,8 +587,8 @@ class AcumProbFilters(html.Div):
             raise PreventUpdate
         if operation_data is not None:
             dados = pd.read_json(StringIO(operation_data), orient="split")
-            dados["dataInicio"] = pd.to_datetime(
-                dados["dataInicio"], unit="ms"
+            dados["data_inicio"] = pd.to_datetime(
+                dados["data_inicio"], unit="ms"
             )
-            dados["dataFim"] = pd.to_datetime(dados["dataFim"], unit="ms")
+            dados["data_fim"] = pd.to_datetime(dados["data_fim"], unit="ms")
             return dcc.send_data_frame(dados.to_csv, f"{variable}.csv")

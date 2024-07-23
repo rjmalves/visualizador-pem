@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Dict
 import requests
 import pandas as pd
 import base62
@@ -26,13 +26,33 @@ class API:
     @classmethod
     def fetch_available_results_list(
         cls, studies_paths: List[str]
-    ) -> List[str]:
-        unique_variables = set()
-        ret = [cls.fetch_available_results(p) for p in studies_paths]
-        for variables in ret:
-            if variables:
-                unique_variables = unique_variables.union(set(variables))
-        return list(unique_variables)
+    ) -> Dict[str, List[str]]:
+        ret = {p: cls.fetch_available_results(p) for p in studies_paths}
+        metadata_names = constants.SYNTHESIS_METADATA_NAMES
+        available_variables: Dict[str, pd.DataFrame] = {
+            cat: [pd.DataFrame()] for cat in metadata_names.keys()
+        }
+        for p, results in ret.items():
+            if results is None:
+                continue
+            for cat, metadata_file in metadata_names.items():
+                if metadata_file in results:
+                    metadata = cls.fetch_result(
+                        p, metadata_file, {"preprocess": "FULL"}
+                    )
+                    metadata["estudo"] = p
+                    if metadata is not None:
+                        available_variables[cat].append(metadata)
+        for cat in available_variables.keys():
+            available_variables[cat] = pd.concat(
+                available_variables[cat], ignore_index=True
+            )
+            available_variables[cat] = (
+                available_variables[cat]
+                .drop_duplicates(subset=["chave", "estudo"], ignore_index=True)
+                .to_json(orient="split")
+            )
+        return available_variables
 
     @classmethod
     def fetch_result(
@@ -47,7 +67,10 @@ class API:
             if r.status_code != 200:
                 return None
             else:
-                df = pd.read_parquet(io.BytesIO(r.content))
+                try:
+                    df = pd.read_parquet(io.BytesIO(r.content))
+                except Exception:
+                    return None
                 return df
 
     @classmethod

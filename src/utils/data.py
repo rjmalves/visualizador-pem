@@ -8,6 +8,7 @@ from src.utils.api import API
 from typing import List, Optional
 from datetime import timedelta
 import src.utils.validation as validation
+from src.utils.constants import SYNTHESIS_METADATA_NAMES
 from src.utils.settings import Settings
 from dash import ctx
 from src.utils.log import Log
@@ -32,7 +33,7 @@ ENCADEADOR_TABLES = ["ESTUDO", "CASOS", "RODADAS"]
 
 def update_variables_options_casos(paths):
     unique_variables = API.fetch_available_results_list(paths)
-    return sorted(unique_variables)
+    return unique_variables
 
 
 def update_variables_options_encadeador(paths):
@@ -51,10 +52,57 @@ def update_variables_options_encadeador(paths):
     newave_variables = API.fetch_available_results_list(newaves_paths)
     decomp_variables = API.fetch_available_results_list(decomps_paths)
 
-    all_variables = all_variables.union(set(newave_variables))
-    all_variables = all_variables.union(set(decomp_variables))
-    all_variables = [a for a in all_variables if a not in ENCADEADOR_TABLES]
-    return sorted(list(all_variables))
+    # TODO - retomar suporte
+    # all_variables = all_variables.union(set(newave_variables))
+    # all_variables = all_variables.union(set(decomp_variables))
+    # all_variables = [a for a in all_variables if a not in ENCADEADOR_TABLES]
+    return {
+        k: pd.DataFrame().to_json(orient="split")
+        for k in SYNTHESIS_METADATA_NAMES.keys()
+    }
+
+
+def update_system_entities_casos(path, options):
+    system_metadata = pd.read_json(StringIO(options["sistema"]), orient="split")
+    system_entities = {
+        e: API.fetch_result(path, e, {"preprocess": "FULL"})
+        for e in system_metadata["chave"].tolist()
+    }
+    return {
+        e: df.to_json(orient="split")
+        for e, df in system_entities.items()
+        if isinstance(df, pd.DataFrame)
+    }
+
+
+def update_system_entities_encadeador(paths, options):
+    # TODO - retomar suporte
+    return {}
+
+
+def __merge_casos_encadeador_options(
+    casos_options: dict, encadeador_options: dict
+) -> dict:
+    casos_keys = list(casos_options.keys())
+    encadeador_keys = list(encadeador_options.keys())
+    all_keys = list(set(casos_keys + encadeador_keys))
+    options = {k: pd.DataFrame().to_json(orient="split") for k in all_keys}
+    for k in all_keys:
+        if k in casos_options and k in encadeador_options:
+            options[k] = pd.concat(
+                [
+                    pd.read_json(StringIO(casos_options[k]), orient="split"),
+                    pd.read_json(
+                        StringIO(encadeador_options[k]), orient="split"
+                    ),
+                ],
+                ignore_index=True,
+            ).to_json(orient="split")
+        elif k in casos_options:
+            options[k] = casos_options[k]
+        elif k in encadeador_options:
+            options[k] = encadeador_options[k]
+    return options
 
 
 def edit_current_study_data(
@@ -104,7 +152,18 @@ def edit_current_study_data(
                 encadeador_options = update_variables_options_encadeador(
                     [new_study_id]
                 )
-                options = list(set(casos_options).union(encadeador_options))
+                options = __merge_casos_encadeador_options(
+                    casos_options, encadeador_options
+                )
+                casos_system = update_system_entities_casos(
+                    new_study_id, casos_options
+                )
+                encadeador_system = update_system_entities_encadeador(
+                    new_study_id, encadeador_options
+                )
+                system = __merge_casos_encadeador_options(
+                    casos_system, encadeador_system
+                )
                 new_data = pd.DataFrame(
                     data={
                         "study_id": [None],
@@ -113,7 +172,8 @@ def edit_current_study_data(
                         "name": [label],
                         "color": [color],
                         "created_date": [datetime.now()],
-                        "options": [",".join(options)],
+                        "options": [options],
+                        "system": [system],
                         "program": [_get_programa(new_study_id)],
                     }
                 )
@@ -140,10 +200,24 @@ def edit_current_study_data(
             encadeador_options = update_variables_options_encadeador(
                 [edit_study_path]
             )
-            options = list(set(casos_options).union(encadeador_options))
+            options = __merge_casos_encadeador_options(
+                casos_options, encadeador_options
+            )
+            casos_system = update_system_entities_casos(
+                edit_study_path, casos_options
+            )
+            encadeador_system = update_system_entities_encadeador(
+                edit_study_path, encadeador_options
+            )
+            system = __merge_casos_encadeador_options(
+                casos_system, encadeador_system
+            )
             current_data.loc[
                 current_data["table_id"] == edit_study_id, "options"
-            ] = ",".join(options)
+            ] = options
+            current_data.loc[
+                current_data["table_id"] == edit_study_id, "system"
+            ] = system
             current_data.loc[
                 current_data["table_id"] == edit_study_id, "program"
             ] = _get_programa(edit_study_path)
@@ -163,18 +237,16 @@ def edit_current_study_data(
         screen_df = db.load_screen(screen, screen_type_str)
         if screen_df is not None:
             screen_df["options"] = screen_df.apply(
-                lambda linha: ",".join(
-                    list(
-                        set(
-                            update_variables_options_casos([linha["path"]])
-                        ).union(
-                            set(
-                                update_variables_options_encadeador(
-                                    [linha["path"]]
-                                )
-                            )
-                        )
-                    )
+                lambda linha: __merge_casos_encadeador_options(
+                    update_variables_options_casos([linha["path"]]),
+                    update_variables_options_encadeador([linha["path"]]),
+                ),
+                axis=1,
+            )
+            screen_df["system"] = screen_df.apply(
+                lambda linha: __merge_casos_encadeador_options(
+                    update_system_entities_casos([linha["options"]]),
+                    update_system_entities_encadeador([linha["options"]]),
                 ),
                 axis=1,
             )
@@ -215,9 +287,7 @@ def extract_selected_study_data(
 
 def get_statistics_scenarios(all_scenarios: List[str]) -> List[str]:
     scenarios = [
-        s
-        for s in all_scenarios
-        if s in ["min", "max", "median", "mean", "std"]
+        s for s in all_scenarios if s in ["min", "max", "median", "mean", "std"]
     ]
     scenarios = [s for s in scenarios if "p" in s]
     return scenarios
@@ -489,36 +559,79 @@ def update_spatial_INT_data_casos(
         return df.to_json(orient="split")
 
 
+def _get_operation_data_filename(
+    studies_df: pd.DataFrame,
+    kind: str,
+    variable: str,
+    aggregation: str,
+    filters: dict,
+) -> tuple[str, str, dict]:
+    options_df = pd.concat(
+        [
+            pd.read_json(StringIO(opt["operacao"]), orient="split")
+            for opt in studies_df["options"]
+        ],
+        ignore_index=True,
+    )
+    metadata_line = options_df.loc[
+        (options_df["nome_longo_variavel"] == variable)
+        & (options_df["nome_longo_agregacao"] == aggregation)
+    ]
+    if metadata_line.empty:
+        return "", "", {}
+    unit = metadata_line["unidade"].iloc[0]
+    chave = metadata_line["chave"].iloc[0]
+    if kind == "STATISTICS":
+        return (
+            "ESTATISTICAS_OPERACAO_" + chave.split("_")[1],
+            unit,
+            {**filters, "variavel": chave.split("_")[0]},
+        )
+    elif kind == "SCENARIOS":
+        return chave, unit, filters
+    else:
+        return "", "", {}
+
+
 def update_operation_data_casos(
     studies,
     filters: dict,
     variable: str,
-    preprocess: str = "STATISTICS",
+    kind: str = "STATISTICS",
     needs_stage: bool = False,
 ):
     if not studies:
         return None
     if not variable:
         return None
-    req_filters = validation.validate_required_filters(
-        variable, filters, ppq=needs_stage
+    req_filters = validation.validate_required_filters_operation(
+        variable, filters, needs_stage=needs_stage
     )
     if req_filters is None:
         return None
     studies_df = pd.read_json(StringIO(studies), orient="split")
     paths = studies_df["path"].tolist()
     labels = studies_df["name"].tolist()
+    aggregation = req_filters.pop("agregacao")
+    data_filename, unit, data_filters = _get_operation_data_filename(
+        studies_df, kind, variable, aggregation, req_filters
+    )
+    if aggregation == "Usina Hidroelétrica":
+        data_filters["codigo_usina"] = data_filters["codigo_uhe"]
+    elif aggregation == "Usina Termelétrica":
+        data_filters["codigo_usina"] = data_filters["codigo_ute"]
     df = API.fetch_result_list(
         paths,
         labels,
-        variable,
-        {**req_filters, "preprocess": preprocess},
+        data_filename,
+        data_filters,
     )
     if df is None:
         return None
     if df.empty:
         return None
     else:
+        df["unidade"] = unit
         return df.to_json(orient="split")
 
 

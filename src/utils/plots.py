@@ -22,6 +22,11 @@ DISCRETE_COLOR_PALLETE_COSTS = [
     "rgba(248, 150, 30, 1)",
 ]
 
+START_DATE_COLUMN = "data_inicio"
+END_DATE_COLUMN = "data_fim"
+SCENARIO_COLUMN = "cenario"
+UNIT_COLUMN = "unidade"
+
 
 VARIABLE_NAMES = {
     "COP": "Custo de Operação",
@@ -392,19 +397,24 @@ def _get_variable_units(program: str) -> Dict[str, str]:
     }.get(program, VARIABLE_UNITS)
 
 
-def _generate_yaxis_title(variable: str, programs: List[str]) -> str:
-    programs_units = {
-        p: _get_variable_units(p).get(variable, "")
-        for p in programs
-        if p is not None
-    }
-    unique_units = list(set(list(programs_units.values())))
-    if len(unique_units) == 0:
-        return VARIABLE_UNITS.get(variable, "")
-    elif len(unique_units) == 1:
-        return unique_units[0]
-    else:
-        return " | ".join([f"{v} ({k})" for k, v in programs_units.items()])
+def _generate_yaxis_title(
+    variable: str, filters: dict, studies: pd.DataFrame
+) -> str:
+    aggregation = filters["agregacao"]
+    operation_options_df = pd.concat(
+        [
+            pd.read_json(StringIO(opt["operacao"]), orient="split")
+            for opt in studies["options"]
+        ],
+        ignore_index=True,
+    )
+    units = operation_options_df.loc[
+        (operation_options_df["nome_longo_variavel"] == variable)
+        & (operation_options_df["nome_longo_agregacao"] == aggregation),
+        "unidade",
+    ].tolist()
+    units = list(set(units))
+    return " | ".join(units)
 
 
 NOT_SCENARIO_COLUMNS = [
@@ -412,15 +422,18 @@ NOT_SCENARIO_COLUMNS = [
     "estudo",
     "caso",
     "estagio",
-    "submercado",
-    "submercadoDe",
-    "submercadoPara",
-    "ree",
-    "pee",
-    "usina",
+    "codigo_submercado",
+    "codigo_submercado_de",
+    "codigo_submercado_para",
+    "codigo_ree",
+    "codigo_usina",
     "patamar",
-    "dataInicio",
-    "dataFim",
+    "duracao_patamar",
+    "limite_inferior",
+    "limite_superior",
+    "data_inicio",
+    "data_fim",
+    "unidade",
 ]
 
 
@@ -436,9 +449,7 @@ def pivot_df_for_plot(df: pd.DataFrame, col: str = "valor") -> pd.DataFrame:
 def hex_to_rgb(value):
     value = value.lstrip("#")
     lv = len(value)
-    return tuple(
-        int(value[i : i + lv // 3], 16) for i in range(0, lv, lv // 3)
-    )
+    return tuple(int(value[i : i + lv // 3], 16) for i in range(0, lv, lv // 3))
 
 
 def generate_operation_graph_casos(
@@ -453,14 +464,15 @@ def generate_operation_graph_casos(
     if operation_data is None:
         return fig
     dados = pd.read_json(StringIO(operation_data), orient="split")
-    dados["dataInicio"] = pd.to_datetime(dados["dataInicio"], unit="ms")
-    dados["dataFim"] = pd.to_datetime(dados["dataFim"], unit="ms")
-    df_estudos = pd.read_json(StringIO(studies_data), orient="split")
-    programas = df_estudos["program"].unique().tolist()
+    dados[START_DATE_COLUMN] = pd.to_datetime(
+        dados[START_DATE_COLUMN], unit="ms"
+    )
+    dados[END_DATE_COLUMN] = pd.to_datetime(dados[END_DATE_COLUMN], unit="ms")
+    studies_df = pd.read_json(StringIO(studies_data), orient="split")
     line_shape = "linear"
     mode = "lines"
-    visibilidade_p = __background_area_visibility(df_estudos["name"])
-    for _, linha_df in df_estudos.iterrows():
+    visibilidade_p = __background_area_visibility(studies_df["name"])
+    for _, linha_df in studies_df.iterrows():
         estudo = linha_df["name"]
         rgb = hex_to_rgb(linha_df["color"])
         cor = f"rgba({rgb[0]},{rgb[1]},{rgb[2]}, 1.0)"
@@ -472,7 +484,7 @@ def generate_operation_graph_casos(
             if not dados_estudo.empty:
                 fig.add_trace(
                     go.Scatter(
-                        x=dados_estudo["dataInicio"],
+                        x=dados_estudo[START_DATE_COLUMN],
                         y=dados_estudo["mean"],
                         line={
                             "color": cor,
@@ -488,7 +500,7 @@ def generate_operation_graph_casos(
                 if "p10" in dados_estudo.columns:
                     fig.add_trace(
                         go.Scatter(
-                            x=dados_estudo["dataInicio"],
+                            x=dados_estudo[START_DATE_COLUMN],
                             y=dados_estudo["p10"],
                             line_color=cor_fundo,
                             line_shape=line_shape,
@@ -502,7 +514,7 @@ def generate_operation_graph_casos(
                 if "p90" in dados_estudo.columns:
                     fig.add_trace(
                         go.Scatter(
-                            x=dados_estudo["dataInicio"],
+                            x=dados_estudo[START_DATE_COLUMN],
                             y=dados_estudo["p90"],
                             line_color=cor_fundo,
                             fillcolor=cor_fundo,
@@ -518,11 +530,9 @@ def generate_operation_graph_casos(
 
     if variable is not None:
         fig.update_layout(
-            title=__make_operation_plot_title(variable, filters),
+            title=__make_operation_plot_title(variable, filters, studies_df),
             xaxis_title="Data",
-            yaxis_title=_generate_yaxis_title(
-                variable.split("_")[0], programas
-            ),
+            yaxis_title=_generate_yaxis_title(variable, filters, studies_df),
             hovermode="x unified",
             legend=dict(groupclick="toggleitem"),
         )
@@ -556,35 +566,38 @@ def generate_operation_graph_casos_twinx(
         )
 
     dados = pd.read_json(StringIO(operation_data), orient="split")
-    dados["dataInicio"] = pd.to_datetime(dados["dataInicio"], unit="ms")
-    dados["dataFim"] = pd.to_datetime(dados["dataFim"], unit="ms")
-    dados_twinx = pd.read_json(StringIO(operation_data_twinx), orient="split")
-    dados_twinx["dataInicio"] = pd.to_datetime(
-        dados_twinx["dataInicio"], unit="ms"
+    dados[START_DATE_COLUMN] = pd.to_datetime(
+        dados[START_DATE_COLUMN], unit="ms"
     )
-    dados_twinx["dataFim"] = pd.to_datetime(dados_twinx["dataFim"], unit="ms")
-    df_estudos = pd.read_json(StringIO(studies_data), orient="split")
-    programas = df_estudos["program"].unique().tolist()
+    dados[END_DATE_COLUMN] = pd.to_datetime(dados[END_DATE_COLUMN], unit="ms")
+    dados_twinx = pd.read_json(StringIO(operation_data_twinx), orient="split")
+    dados_twinx[START_DATE_COLUMN] = pd.to_datetime(
+        dados_twinx[START_DATE_COLUMN], unit="ms"
+    )
+    dados_twinx[END_DATE_COLUMN] = pd.to_datetime(
+        dados_twinx[END_DATE_COLUMN], unit="ms"
+    )
+    studies_df = pd.read_json(StringIO(studies_data), orient="split")
 
     line_shape = "linear"
     mode = "lines"
-    visibilidade_p = __background_area_visibility(df_estudos["name"])
-    for _, linha_df in df_estudos.iterrows():
+    visibilidade_p = __background_area_visibility(studies_df["name"])
+    for _, linha_df in studies_df.iterrows():
         estudo = linha_df["name"]
         rgb = hex_to_rgb(linha_df["color"])
         cor = f"rgba({rgb[0]},{rgb[1]},{rgb[2]}, 1.0)"
         cor_fundo = f"rgba({rgb[0]},{rgb[1]},{rgb[2]}, 0.3)"
         dados_estudo = pivot_df_for_plot(dados.loc[dados["estudo"] == estudo])
         dados_legend = __make_operation_plot_legend_name(
-            df_estudos["name"].tolist(), estudo, variable, filters
+            estudo, variable, filters, studies_df
         )
         dados_twinx_legend = __make_operation_plot_legend_name(
-            df_estudos["name"].tolist(), estudo, variable_twinx, filters_twinx
+            estudo, variable_twinx, filters_twinx, studies_df
         )
         if not dados_estudo.empty:
             fig.add_trace(
                 go.Scatter(
-                    x=dados_estudo["dataInicio"],
+                    x=dados_estudo[START_DATE_COLUMN],
                     y=dados_estudo["mean"],
                     line={
                         "color": cor,
@@ -600,7 +613,7 @@ def generate_operation_graph_casos_twinx(
             if "p10" in dados_estudo.columns:
                 fig.add_trace(
                     go.Scatter(
-                        x=dados_estudo["dataInicio"],
+                        x=dados_estudo[START_DATE_COLUMN],
                         y=dados_estudo["p10"],
                         line_color=cor_fundo,
                         line_shape=line_shape,
@@ -613,7 +626,7 @@ def generate_operation_graph_casos_twinx(
             if "p90" in dados_estudo.columns:
                 fig.add_trace(
                     go.Scatter(
-                        x=dados_estudo["dataInicio"],
+                        x=dados_estudo[START_DATE_COLUMN],
                         y=dados_estudo["p90"],
                         line_color=cor_fundo,
                         fillcolor=cor_fundo,
@@ -632,7 +645,7 @@ def generate_operation_graph_casos_twinx(
         if not dados_estudo.empty:
             fig.add_trace(
                 go.Scatter(
-                    x=dados_estudo["dataInicio"],
+                    x=dados_estudo[START_DATE_COLUMN],
                     y=dados_estudo["mean"],
                     line={
                         "color": cor,
@@ -649,7 +662,7 @@ def generate_operation_graph_casos_twinx(
             if "p10" in dados_estudo.columns:
                 fig.add_trace(
                     go.Scatter(
-                        x=dados_estudo["dataInicio"],
+                        x=dados_estudo[START_DATE_COLUMN],
                         y=dados_estudo["p10"],
                         line_color=cor_fundo,
                         line_shape=line_shape,
@@ -662,7 +675,7 @@ def generate_operation_graph_casos_twinx(
             if "p90" in dados_estudo.columns:
                 fig.add_trace(
                     go.Scatter(
-                        x=dados_estudo["dataInicio"],
+                        x=dados_estudo[START_DATE_COLUMN],
                         y=dados_estudo["p90"],
                         line_color=cor_fundo,
                         fillcolor=cor_fundo,
@@ -679,19 +692,19 @@ def generate_operation_graph_casos_twinx(
                 )
 
     full_title = (
-        f"{__make_operation_plot_title(variable, filters)}"
-        + f" | {__make_operation_plot_title(variable_twinx, filters_twinx)}"
+        f"{__make_operation_plot_title(variable, filters, studies_df)}"
+        + f" | {__make_operation_plot_title(variable_twinx, filters_twinx, studies_df)}"
     )
     fig.update_layout(
         title=full_title,
         xaxis_title="Data",
-        yaxis_title=_generate_yaxis_title(variable.split("_")[0], programas),
+        yaxis_title=_generate_yaxis_title(variable, filters, studies_df),
         hovermode="x unified",
         legend=dict(groupclick="toggleitem"),
     )
     fig.update_yaxes(
         title_text=_generate_yaxis_title(
-            variable_twinx.split("_")[0], programas
+            variable_twinx, filters_twinx, studies_df
         ),
         secondary_y=True,
     )
@@ -1529,44 +1542,76 @@ def generate_resources_graph_casos(
         range=[0, 1.1 * job["memoryPerCore"].max()],
         secondary_y=True,
     )
-    fig.update_layout(
-        title=f"Uso de Recursos - {study}", hovermode="x unified"
-    )
+    fig.update_layout(title=f"Uso de Recursos - {study}", hovermode="x unified")
     return fig
 
 
-def __make_operation_plot_title(variable: str, filters: dict) -> str:
-    variable_data = variable.split("_")
-    name = variable_data[0]
-    spatial_res = variable_data[1]
-    temporal_res = variable_data[2]
+def __get_system_element_name(
+    system_options_df: pd.DataFrame, system_elem: str, filters: dict
+) -> str:
+    if system_elem == "EST":
+        return system_options_df.loc[
+            system_options_df["estagio"] == int(filters["estagio"]), "estagio"
+        ].iloc[0]
+    elif system_elem == "PAT":
+        return system_options_df.loc[
+            system_options_df["patamar"] == int(filters["patamar"]), "patamar"
+        ].iloc[0]
+    elif system_elem == "SBM":
+        return system_options_df.loc[
+            system_options_df["codigo_submercado"]
+            == int(filters["codigo_submercado"]),
+            "submercado",
+        ].iloc[0]
+    elif system_elem == "REE":
+        return system_options_df.loc[
+            system_options_df["codigo_ree"] == int(filters["codigo_ree"]), "ree"
+        ].iloc[0]
+    elif system_elem == "UHE":
+        return system_options_df.loc[
+            system_options_df["codigo_usina"] == int(filters["codigo_uhe"]),
+            "usina",
+        ].iloc[0]
+    elif system_elem == "UTE":
+        return system_options_df.loc[
+            system_options_df["codigo_usina"] == int(filters["codigo_ute"]),
+            "usina",
+        ].iloc[0]
+    elif system_elem == "SIN":
+        return ""
 
-    full_name = VARIABLE_NAMES.get(name)
-    full_spatial_res = SPATIAL_RES_NAMES.get(spatial_res)
-    full_temporal_res = TEMPORAL_RES_NAMES.get(temporal_res)
-    title = ""
-    if full_name:
-        title += full_name
 
-    if spatial_res == "SIN":
-        title += " - SIN"
-    elif spatial_res == "SBP":
-        sbm_de = filters["submercadoDe"].split("|")[0].strip("'")
-        sbm_para = filters["submercadoPara"].split("|")[0].strip("'")
-        title += f" - {full_spatial_res} {sbm_de} -> {sbm_para}"
-    elif spatial_res == "SBM":
-        sbm = filters["submercado"].split("|")[0].strip("'")
-        title += f" - {full_spatial_res} {sbm}"
-    elif full_spatial_res:
-        title += f" - {full_spatial_res} {filters[SPATIAL_RES_FILTER_NAMES[spatial_res]]}"
+def __make_operation_plot_title(
+    variable: str, filters: dict, studies: pd.DataFrame
+) -> str:
+    aggregation = filters["agregacao"]
+    pat = int(filters["patamar"])
+    patamar_str = "" if pat == 0 else f" - Patamar {pat}"
+    operation_options_df = pd.concat(
+        [
+            pd.read_json(StringIO(opt["operacao"]), orient="split")
+            for opt in studies["options"]
+        ],
+        ignore_index=True,
+    )
+    system_elem = operation_options_df.loc[
+        operation_options_df["nome_longo_agregacao"] == aggregation,
+        "nome_curto_agregacao",
+    ].iloc[0]
+    if system_elem == "SIN":
+        return variable + " - " + f"{aggregation}" + patamar_str
+    system_options_df = pd.concat(
+        [
+            pd.read_json(StringIO(opt[system_elem]), orient="split")
+            for opt in studies["system"]
+        ],
+        ignore_index=True,
+    )
+    elem_name = __get_system_element_name(
+        system_options_df, system_elem, filters
+    )
 
-    if temporal_res in ["EST", "SF"]:
-        pass
-    elif full_temporal_res:
-        title += f" - {full_temporal_res} {filters[TEMPORAL_RES_FILTER_NAMES[temporal_res]]}"
-
-    if "estagio" in filters:
-        title += f" - Estagio {filters['estagio']}"
+    title = variable + " - " + f"{aggregation} {elem_name}" + patamar_str
 
     return title
 
@@ -1575,39 +1620,9 @@ def __background_area_visibility(estudos: list) -> str:
     return "legendonly" if len(estudos) > 2 else None
 
 
-def __add_final_date_line_to_df(df: pd.DataFrame) -> pd.DataFrame:
-    new_df = df.copy()
-    last_index = df.index.tolist()[-1]
-    new_df.loc[last_index + 1, :] = df.loc[last_index, :]
-    new_df.loc[last_index + 1, "dataInicio"] = df.loc[last_index, "dataFim"]
-    return new_df
-
-
 def __make_operation_plot_legend_name(
-    estudos: List[str], estudo: str, variable: str, filters: dict
+    estudo: str, variable: str, filters: dict, studies: pd.DataFrame
 ) -> str:
-    variable_data = variable.split("_")
-    name = variable_data[0]
-    spatial_res = variable_data[1]
-    temporal_res = variable_data[2]
-
-    legend = f"{estudo} - {name}" if len(estudos) > 1 else f"{name}"
-
-    if spatial_res == "SIN":
-        legend += " - SIN"
-    elif spatial_res == "SBP":
-        sbm_de = filters["submercadoDe"].split("|")[0].strip("'")
-        sbm_para = filters["submercadoPara"].split("|")[0].strip("'")
-        legend += f" - {spatial_res} {sbm_de} -> {sbm_para}"
-    elif spatial_res == "SBM":
-        sbm = filters["submercado"].split("|")[0].strip("'")
-        legend += f" - SBM {sbm}"
-    else:
-        legend += f" - {spatial_res} {filters[SPATIAL_RES_FILTER_NAMES[spatial_res]]}"
-
-    if temporal_res == "EST":
-        pass
-    else:
-        legend += f" - {temporal_res} {filters[TEMPORAL_RES_FILTER_NAMES[temporal_res]]}"
-
-    return legend
+    return (
+        estudo + " - " + __make_operation_plot_title(variable, filters, studies)
+    )

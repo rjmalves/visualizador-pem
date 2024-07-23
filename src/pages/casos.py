@@ -12,7 +12,8 @@ from src.components.casos.scenariograph import ScenarioGraph
 from src.components.casos.acumprobgraph import AcumProbGraph
 from src.components.casos.timecostsgraph import TimeCostsGraph
 from src.components.casos.convergencegraph import ConvergenceGraph
-from src.components.casos.resourcesgraph import ResourcesGraph
+
+# from src.components.casos.resourcesgraph import ResourcesGraph
 from src.components.savescreenmodal import SaveScreenModal
 from src.components.loadscreenmodal import LoadScreenModal
 from flask_login import current_user
@@ -43,10 +44,10 @@ def layout(screen_id=None):
             OperationGraph(aio_id="casos-operation-graph"),
             AcumProbGraph(aio_id="casos-permanencia-graph"),
             SpatialViewGraph(aio_id="casos-espacial-graph"),
-            ScenarioGraph(aio_id="casos-scenario-graph"),
-            TimeCostsGraph(aio_id="casos-tempo-custos-graph"),
+            # ScenarioGraph(aio_id="casos-scenario-graph"),
+            # TimeCostsGraph(aio_id="casos-tempo-custos-graph"),
             ConvergenceGraph(aio_id="casos-convergence-graph"),
-            ResourcesGraph(aio_id="casos-resources-graph"),
+            # ResourcesGraph(aio_id="casos-resources-graph"),
             SaveScreenModal(aio_id="casos-save-screen-modal"),
             LoadScreenModal(aio_id="casos-load-screen-modal"),
             dcc.Store("casos-screen", storage_type="memory", data=screen_id),
@@ -324,22 +325,22 @@ def update_current_studies(studies_data):
     return studies_data
 
 
-@callback(
-    Output(TimeCostsGraph.ids.studies("casos-tempo-custos-graph"), "data"),
-    Input(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
-    prevent_initial_call=True,
-)
-def update_current_studies(studies_data):
-    return studies_data
+# @callback(
+#     Output(TimeCostsGraph.ids.studies("casos-tempo-custos-graph"), "data"),
+#     Input(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
+#     prevent_initial_call=True,
+# )
+# def update_current_studies(studies_data):
+#     return studies_data
 
 
-@callback(
-    Output(ScenarioGraph.ids.studies("casos-scenario-graph"), "data"),
-    Input(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
-    prevent_initial_call=True,
-)
-def update_current_studies(studies_data):
-    return studies_data
+# @callback(
+#     Output(ScenarioGraph.ids.studies("casos-scenario-graph"), "data"),
+#     Input(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
+#     prevent_initial_call=True,
+# )
+# def update_current_studies(studies_data):
+#     return studies_data
 
 
 @callback(
@@ -351,13 +352,13 @@ def update_current_studies(studies_data):
     return studies_data
 
 
-@callback(
-    Output(ResourcesGraph.ids.studies("casos-resources-graph"), "data"),
-    Input(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
-    prevent_initial_call=True,
-)
-def update_current_studies(studies_data):
-    return studies_data
+# @callback(
+#     Output(ResourcesGraph.ids.studies("casos-resources-graph"), "data"),
+#     Input(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
+#     prevent_initial_call=True,
+# )
+# def update_current_studies(studies_data):
+#     return studies_data
 
 
 @callback(

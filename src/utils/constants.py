@@ -1,5 +1,15 @@
 import pandas as pd
 
+
+SYNTHESIS_METADATA_NAMES = {
+    "operacao": "METADADOS_OPERACAO",
+    "cenarios": "METADADOS_CENARIOS",
+    "politica": "METADADOS_POLITICA",
+    "execucao": "METADADOS_EXECUCAO",
+    "sistema": "METADADOS_SISTEMA",
+}
+
+
 VARIABLE_UNITS = {
     "EARPF": "%",
     "GHID": "MWmed",

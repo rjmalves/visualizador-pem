@@ -24,6 +24,7 @@ data_df = pd.DataFrame(
         "color",
         "created_date",
         "options",
+        "system",
         "program",
     ]
 )
@@ -118,9 +119,7 @@ class CurrentStudiesTable(html.Div):
                                             disabled=True,
                                         ),
                                         html.Div(
-                                            id=self.ids.button_type_div(
-                                                aio_id
-                                            ),
+                                            id=self.ids.button_type_div(aio_id),
                                             style={
                                                 "border-right": "6px solid #a3b18a",
                                                 "height": "auto",
