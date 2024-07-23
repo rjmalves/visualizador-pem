@@ -63,7 +63,9 @@ def update_variables_options_encadeador(paths):
 
 
 def update_system_entities_casos(path, options):
-    system_metadata = pd.read_json(StringIO(options["sistema"]), orient="split")
+    system_metadata = pd.read_json(
+        StringIO(options["sistema"]), orient="split"
+    )
     system_entities = {
         e: API.fetch_result(path, e, {"preprocess": "FULL"})
         for e in system_metadata["chave"].tolist()
@@ -287,7 +289,9 @@ def extract_selected_study_data(
 
 def get_statistics_scenarios(all_scenarios: List[str]) -> List[str]:
     scenarios = [
-        s for s in all_scenarios if s in ["min", "max", "median", "mean", "std"]
+        s
+        for s in all_scenarios
+        if s in ["min", "max", "median", "mean", "std"]
     ]
     scenarios = [s for s in scenarios if "p" in s]
     return scenarios
@@ -593,6 +597,42 @@ def _get_operation_data_filename(
         return "", "", {}
 
 
+def _get_scenario_data_filename(
+    studies_df: pd.DataFrame,
+    kind: str,
+    variable: str,
+    aggregation: str,
+    step: str,
+    filters: dict,
+) -> tuple[str, str, dict]:
+    options_df = pd.concat(
+        [
+            pd.read_json(StringIO(opt["cenarios"]), orient="split")
+            for opt in studies_df["options"]
+        ],
+        ignore_index=True,
+    )
+    metadata_line = options_df.loc[
+        (options_df["nome_longo_variavel"] == variable)
+        & (options_df["nome_longo_agregacao"] == aggregation)
+        & (options_df["nome_longo_etapa"] == step)
+    ]
+    if metadata_line.empty:
+        return "", "", {}
+    unit = metadata_line["unidade"].iloc[0]
+    chave = metadata_line["chave"].iloc[0]
+    if kind == "STATISTICS":
+        return (
+            "ESTATISTICAS_CENARIOS_" + chave.split("_")[1],
+            unit,
+            {**filters, "variavel": chave.split("_")[0]},
+        )
+    elif kind == "SCENARIOS":
+        return chave, unit, filters
+    else:
+        return "", "", {}
+
+
 def update_operation_data_casos(
     studies,
     filters: dict,
@@ -620,6 +660,7 @@ def update_operation_data_casos(
         data_filters["codigo_usina"] = data_filters["codigo_uhe"]
     elif aggregation == "Usina Termelétrica":
         data_filters["codigo_usina"] = data_filters["codigo_ute"]
+    Log.log().info(f"Obtendo dados - CASOS ({variable}, {filters})")
     df = API.fetch_result_list(
         paths,
         labels,
@@ -639,26 +680,36 @@ def update_scenario_data_casos(
     studies,
     filters: dict,
     variable: str,
-    preprocess: str = "FULL",
-    needs_stage: bool = False,
+    kind: str = "SCENARIOS",
 ):
     if not studies:
         return None
     if not variable:
         return None
-    req_filters = validation.validate_required_filters(
-        variable, filters, ppq=needs_stage
+    needs_iteration = (
+        filters["etapa"] in ["Forward", "Backward"]
+        if "etapa" in filters
+        else False
+    )
+    req_filters = validation.validate_required_filters_scenarios(
+        variable, filters, needs_iteration=needs_iteration
     )
     if req_filters is None:
         return None
     studies_df = pd.read_json(StringIO(studies), orient="split")
     paths = studies_df["path"].tolist()
     labels = studies_df["name"].tolist()
+    aggregation = req_filters.pop("agregacao")
+    step = req_filters.pop("etapa")
+    data_filename, unit, data_filters = _get_scenario_data_filename(
+        studies_df, kind, variable, aggregation, step, req_filters
+    )
+    Log.log().info(f"Obtendo dados - CASOS ({variable}, {filters})")
     df = API.fetch_result_list(
         paths,
         labels,
-        variable,
-        {**req_filters, "preprocess": preprocess},
+        data_filename,
+        data_filters,
     )
 
     if df is None:
@@ -666,6 +717,7 @@ def update_scenario_data_casos(
     if df.empty:
         return None
     else:
+        df["unidade"] = unit
         return df.to_json(orient="split")
 
 

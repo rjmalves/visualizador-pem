@@ -28,375 +28,6 @@ SCENARIO_COLUMN = "cenario"
 UNIT_COLUMN = "unidade"
 
 
-VARIABLE_NAMES = {
-    "COP": "Custo de Operação",
-    "CFU": "Custo Futuro",
-    "CMO": "Custo Marginal de Operação",
-    "CTER": "Custo de Geração Térmica",
-    "DEF": "Déficit",
-    "EARMI": "Energia Armazenada Inicial",
-    "EARPI": "Energia Armazenada Inicial",
-    "EARMF": "Energia Armazenada Final",
-    "EARPF": "Energia Armazenada Final",
-    "EDESR": "Energia de Desvio em Reservatórios",
-    "EDESF": "Energia de Desvio em Fio d'Água",
-    "EVMIN": "Energia de Defluência Mínima",
-    "EDESF": "Energia de Desvio em Fio d'Água",
-    "EVMOR": "Energia de Volume Morto",
-    "EEVAP": "Energia de Evaporação",
-    "ENAA": "Energia Natural Afluente",
-    "ENAAR": "Energia Natural Afluente em Reservatórios",
-    "ENAAF": "Energia Natural Afluente em Fio d'Água",
-    "EVER": "Energia Vertida",
-    "EVERNT": "Energia Vertida Não-Turbinável",
-    "EVERT": "Energia Vertida Turbinável",
-    "EVERR": "Energia Vertida em Reservatórios",
-    "EVERF": "Energia Vertida em Fio d'Água",
-    "EVERRT": "Energia Vertida Turbinável em Reservatórios",
-    "EVERRNT": "Energia Vertida Não-Turbinável em Reservatórios",
-    "EVERFT": "Energia Vertida Turbinável em Fio d'Água",
-    "EVERFNT": "Energia Vertida Não-Turbinável em Fio d'Água",
-    "GHID": "Geração Hidráulica",
-    "GHIDR": "Geração Hidráulica em Reservatórios",
-    "GHIDF": "Geração Hidráulica em Fio d'Água",
-    "GTER": "Geração Térmica",
-    "GEOL": "Geração Eólica",
-    "HMON": "Cota de Montante",
-    "HJUS": "Cota de Jusante",
-    "HLIQ": "Queda Líquida",
-    "INT": "Intercâmbio",
-    "MER": "Mercado",
-    "MERL": "Mercado Líquido",
-    "QAFL": "Vazão Afluente",
-    "QDEF": "Vazão Defluente",
-    "QDES": "Vazão Desviada",
-    "QINC": "Vazão Incremental",
-    "QRET": "Vazão Retirada",
-    "QTUR": "Vazão Turbinada",
-    "QVER": "Vazão Vertida",
-    "VAGUA": "Valor da Água",
-    "VARMI": "Volume Armazenado Inicial",
-    "VARMF": "Volume Armazenado Final",
-    "VARPI": "Volume Armazenado Inicial",
-    "VARPF": "Volume Armazenado Final",
-    "VAFL": "Volume Afluente",
-    "VDEF": "Volume Defluente",
-    "VDES": "Volume Desviado",
-    "VINC": "Volume Incremental",
-    "VRET": "Volume Retirado",
-    "VTUR": "Volume Turbinado",
-    "VVER": "Volume Vertido",
-    "VENTO": "Velocidade do Vento",
-    "VDEFMIN": "Violação de Restrições de Defluência Mínima",
-    "VDEFMAX": "Violação de Restrições de Defluência Máxima",
-    "VTURMIN": "Violação de Restrições de Turbinamento Mínimo",
-    "VTURMAX": "Violação de Restrições de Turbinamento Máximo",
-    "VEVMIN": "Violação de Energia de Vazão Mínima",
-    "VVMINOP": "Violação do Volume Mínimo Operativo",
-    "VFPHA": "Violação das Restrições da FPHA",
-    "VEOL": "Corte de Geração Eólica",
-}
-
-SPATIAL_RES_NAMES = {
-    "SIN": "SIN",
-    "SBM": "Submercado",
-    "SBP": "Submercados",
-    "REE": "REE",
-    "PEE": "PEE",
-    "UHE": "UHE",
-    "UTE": "UTE",
-    "UEE": "UEE",
-}
-
-SPATIAL_RES_FILTER_NAMES = {
-    "SIN": "SIN",
-    "SBM": "submercado",
-    "REE": "ree",
-    "PEE": "pee",
-    "UHE": "usina",
-    "UTE": "usina",
-    "UEE": "usina",
-}
-
-TEMPORAL_RES_NAMES = {
-    "PAT": "Patamar",
-    "FOR": "Iteração",
-    "BKW": "Iteração",
-    "SF": "Simulação Final",
-}
-
-TEMPORAL_RES_FILTER_NAMES = {
-    "PAT": "patamar",
-    "FOR": "iteracao",
-    "BKW": "iteracao",
-}
-
-VARIABLE_UNITS = {
-    "COP": "R$",
-    "CFU": "R$",
-    "CMO": "R$ / MWh",
-    "CTER": "R$",
-    "DEF": "MWmed",
-    "EARMI": "MWmed",
-    "EARPI": "%",
-    "EARMF": "MWmed",
-    "EARPF": "%",
-    "ENAA": "MWmed",
-    "ENAM": "%",
-    "EVER": "MWmed",
-    "EVERT": "MWmed",
-    "EVERNT": "MWmed",
-    "EVERR": "MWmed",
-    "EVERRT": "MWmed",
-    "EVERRNT": "MWmed",
-    "EVERF": "MWmed",
-    "EVERFT": "MWmed",
-    "EVERFNT": "MWmed",
-    "GHID": "MWmed",
-    "GTER": "MWmed",
-    "GEOL": "MWmed",
-    "INT": "MWmed",
-    "MER": "MWmed",
-    "MERL": "MWmed",
-    "QAFL": "m3/s",
-    "QDEF": "m3/s",
-    "QINC": "m3/s",
-    "QTUR": "m3/s",
-    "QVER": "m3/s",
-    "VAGUA": "R$ / hm3",
-    "VARMI": "hm3",
-    "VARMF": "hm3",
-    "VARPI": "%",
-    "VARPF": "%",
-    "VTUR": "hm3",
-    "VVER": "hm3",
-    "VENTO": "m/s",
-    "VDEFMIN": "m3/s",
-    "VDEFMAX": "m3/s",
-    "VTURMIN": "m3/s",
-    "VTURMAX": "m3/s",
-    "VEVMIN": "MWmed",
-    "VVMINOP": "MWmed",
-    "VFPHA": "MWmed",
-    "VEOL": "MWmed",
-}
-
-
-VARIABLE_UNITS_NEWAVE = {
-    "COP": "10^6 R$",
-    "CFU": "10^6 R$",
-    "CMO": "R$ / MWh",
-    "CTER": "10^6 R$",
-    "DEF": "MWmes",
-    "EARMI": "MWmes",
-    "EARPI": "%",
-    "EARMF": "MWmes",
-    "EARPF": "%",
-    "EDESR": "MWmes",
-    "EDESF": "MWmes",
-    "EVMIN": "MWmes",
-    "EVMOR": "MWmes",
-    "EEVAP": "MWmes",
-    "ENAA": "MWmes",
-    "ENAAR": "MWmes",
-    "ENAAF": "MWmes",
-    "EVER": "MWmes",
-    "EVERT": "MWmes",
-    "EVERNT": "MWmes",
-    "EVERR": "MWmes",
-    "EVERRT": "MWmes",
-    "EVERRNT": "MWmes",
-    "EVERF": "MWmes",
-    "EVERFT": "MWmes",
-    "EVERFNT": "MWmes",
-    "GHID": "MWmes",
-    "GHIDR": "MWmes",
-    "GHIDF": "MWmes",
-    "GTER": "MWmes",
-    "GEOL": "MWmes",
-    "HMON": "m",
-    "HJUS": "m",
-    "HLIQ": "m",
-    "INT": "MWmes",
-    "MER": "MWmes",
-    "MERL": "MWmes",
-    "QAFL": "m3/s",
-    "QDEF": "m3/s",
-    "QDES": "m3/s",
-    "QINC": "m3/s",
-    "QRET": "m3/s",
-    "QTUR": "m3/s",
-    "QVER": "m3/s",
-    "VAGUA": "R$ / hm3 (UHE) | R$ / MWh (REE)",
-    "VARMI": "hm3",
-    "VARMF": "hm3",
-    "VARPI": "%",
-    "VARPF": "%",
-    "VAFL": "hm3",
-    "VDEF": "hm3",
-    "VDES": "hm3",
-    "VINC": "hm3",
-    "VRET": "hm3",
-    "VTUR": "hm3",
-    "VVER": "hm3",
-    "VENTO": "m/s",
-    "VDEFMIN": "m3/s",
-    "VDEFMAX": "m3/s",
-    "VTURMIN": "m3/s",
-    "VTURMAX": "m3/s",
-    "VEVMIN": "MWmes",
-    "VVMINOP": "MWmes",
-    "VFPHA": "MWmes",
-    "VEOL": "MWmes",
-}
-
-
-VARIABLE_UNITS_DECOMP = {
-    "COP": "10^3 R$",
-    "CFU": "10^3 R$",
-    "CMO": "R$ / MWh",
-    "CTER": "10^3 R$",
-    "DEF": "MWmed",
-    "EARMI": "MWmes",
-    "EARPI": "%",
-    "EARMF": "MWmes",
-    "EARPF": "%",
-    "EDESR": "MWmed",
-    "EDESF": "MWmed",
-    "EVMIN": "MWmed",
-    "EVMOR": "MWmed",
-    "EEVAP": "MWmed",
-    "ENAA": "MWmes",
-    "ENAAR": "MWmes",
-    "ENAAF": "MWmes",
-    "EVER": "MWmed",
-    "EVERT": "MWmed",
-    "EVERNT": "MWmed",
-    "EVERR": "MWmed",
-    "EVERRT": "MWmed",
-    "EVERRNT": "MWmed",
-    "EVERF": "MWmed",
-    "EVERFT": "MWmed",
-    "EVERFNT": "MWmed",
-    "GHID": "MWmed",
-    "GHIDR": "MWmed",
-    "GHIDF": "MWmed",
-    "GTER": "MWmed",
-    "GEOL": "MWmed",
-    "HMON": "m",
-    "HJUS": "m",
-    "HLIQ": "m",
-    "INT": "MWmed",
-    "MER": "MWmed",
-    "MERL": "MWmed",
-    "QAFL": "m3/s",
-    "QDEF": "m3/s",
-    "QDES": "m3/s",
-    "QINC": "m3/s",
-    "QRET": "m3/s",
-    "QTUR": "m3/s",
-    "QVER": "m3/s",
-    "VAGUA": "R$ / hm3 (UHE) | R$ / MWh (REE)",
-    "VARMI": "hm3",
-    "VARMF": "hm3",
-    "VARPI": "%",
-    "VARPF": "%",
-    "VAFL": "hm3",
-    "VDEF": "hm3",
-    "VDES": "hm3",
-    "VINC": "hm3",
-    "VRET": "hm3",
-    "VTUR": "hm3",
-    "VVER": "hm3",
-    "VENTO": "m/s",
-    "VDEFMIN": "m3/s",
-    "VDEFMAX": "m3/s",
-    "VTURMIN": "m3/s",
-    "VTURMAX": "m3/s",
-    "VEVMIN": "MWmes",
-    "VVMINOP": "MWmes",
-    "VFPHA": "MWmes",
-    "VEOL": "MWmes",
-}
-
-
-VARIABLE_UNITS_DESSEM = {
-    "COP": "10^3 R$",
-    "CFU": "10^3 R$",
-    "CMO": "R$ / MWh",
-    "CTER": "10^3 R$",
-    "DEF": "MWmed",
-    "EARMI": "MWmes",
-    "EARPI": "%",
-    "EARMF": "MWmes",
-    "EARPF": "%",
-    "EDESR": "MWmed",
-    "EDESF": "MWmed",
-    "EVMIN": "MWmed",
-    "EVMOR": "MWmed",
-    "EEVAP": "MWmed",
-    "ENAA": "MWmes",
-    "ENAAR": "MWmes",
-    "ENAAF": "MWmes",
-    "EVER": "MWmed",
-    "EVERT": "MWmed",
-    "EVERNT": "MWmed",
-    "EVERR": "MWmed",
-    "EVERRT": "MWmed",
-    "EVERRNT": "MWmed",
-    "EVERF": "MWmed",
-    "EVERFT": "MWmed",
-    "EVERFNT": "MWmed",
-    "GHID": "MWmed",
-    "GHIDR": "MWmed",
-    "GHIDF": "MWmed",
-    "GTER": "MWmed",
-    "GEOL": "MWmed",
-    "HMON": "m",
-    "HJUS": "m",
-    "HLIQ": "m",
-    "INT": "MWmed",
-    "MER": "MWmed",
-    "MERL": "MWmed",
-    "QAFL": "m3/s",
-    "QDEF": "m3/s",
-    "QDES": "m3/s",
-    "QINC": "m3/s",
-    "QRET": "m3/s",
-    "QTUR": "m3/s",
-    "QVER": "m3/s",
-    "VAGUA": "R$ / hm3 (UHE) | R$ / MWh (REE)",
-    "VARMI": "hm3",
-    "VARMF": "hm3",
-    "VARPI": "%",
-    "VARPF": "%",
-    "VAFL": "hm3",
-    "VDEF": "hm3",
-    "VDES": "hm3",
-    "VINC": "hm3",
-    "VRET": "hm3",
-    "VTUR": "hm3",
-    "VVER": "hm3",
-    "VENTO": "m/s",
-    "VDEFMIN": "m3/s",
-    "VDEFMAX": "m3/s",
-    "VTURMIN": "m3/s",
-    "VTURMAX": "m3/s",
-    "VEVMIN": "MWmes",
-    "VVMINOP": "MWmes",
-    "VFPHA": "MWmes",
-    "VEOL": "MWmes",
-}
-
-
-def _get_variable_units(program: str) -> Dict[str, str]:
-    return {
-        "NEWAVE": VARIABLE_UNITS_NEWAVE,
-        "DECOMP": VARIABLE_UNITS_DECOMP,
-        "DESSEM": VARIABLE_UNITS_DESSEM,
-    }.get(program, VARIABLE_UNITS)
-
-
 def _generate_yaxis_title(
     variable: str, filters: dict, studies: pd.DataFrame
 ) -> str:
@@ -449,7 +80,9 @@ def pivot_df_for_plot(df: pd.DataFrame, col: str = "valor") -> pd.DataFrame:
 def hex_to_rgb(value):
     value = value.lstrip("#")
     lv = len(value)
-    return tuple(int(value[i : i + lv // 3], 16) for i in range(0, lv, lv // 3))
+    return tuple(
+        int(value[i : i + lv // 3], 16) for i in range(0, lv, lv // 3)
+    )
 
 
 def generate_operation_graph_casos(
@@ -463,6 +96,7 @@ def generate_operation_graph_casos(
     fig.update_layout(graph_layout)
     if operation_data is None:
         return fig
+    Log.log().info(f"Plotando gráfico - CASOS ({variable}, {filters})")
     dados = pd.read_json(StringIO(operation_data), orient="split")
     dados[START_DATE_COLUMN] = pd.to_datetime(
         dados[START_DATE_COLUMN], unit="ms"
@@ -565,6 +199,7 @@ def generate_operation_graph_casos_twinx(
             operation_data_twinx, variable_twinx, filters_twinx, studies_data
         )
 
+    Log.log().info(f"Plotando gráfico - CASOS ({variable}, {filters})")
     dados = pd.read_json(StringIO(operation_data), orient="split")
     dados[START_DATE_COLUMN] = pd.to_datetime(
         dados[START_DATE_COLUMN], unit="ms"
@@ -723,13 +358,12 @@ def generate_scenario_graph_casos(
     fig.update_layout(graph_layout)
     if scenario_data is None:
         return fig
-    dados = pd.read_json(scenario_data, orient="split")
-    dados["dataInicio"] = pd.to_datetime(dados["dataInicio"], unit="ms")
-    dados["dataFim"] = pd.to_datetime(dados["dataFim"], unit="ms")
-    all_scenarios = dados["cenario"].unique().tolist()
-    stats_scenarios = ["mean", "min", "max", "median", "std"] + [
-        c for c in all_scenarios if "p" in str(c)
-    ]
+    Log.log().info(f"Plotando gráfico - CASOS ({variable}, {filters})")
+    dados = pd.read_json(StringIO(scenario_data), orient="split")
+    dados[START_DATE_COLUMN] = pd.to_datetime(
+        dados[START_DATE_COLUMN], unit="ms"
+    )
+    dados[END_DATE_COLUMN] = pd.to_datetime(dados[END_DATE_COLUMN], unit="ms")
 
     df_estudos = pd.read_json(StringIO(studies_data), orient="split")
 
@@ -740,16 +374,16 @@ def generate_scenario_graph_casos(
         rgb = hex_to_rgb(cor)
         mapas_cores[nome] = f"rgba({rgb[0]},{rgb[1]},{rgb[2]}, 1.0)"
     fig = px.box(
-        dados.loc[~dados["cenario"].isin(stats_scenarios)],
-        x="dataInicio",
-        y="valorMlt",
+        dados,
+        x=START_DATE_COLUMN,
+        y="valor_mlt",
         color="estudo",
         color_discrete_map=mapas_cores,
     )
     fig.update_layout(graph_layout)
     if variable is not None:
         fig.update_layout(
-            title=__make_operation_plot_title(variable, filters),
+            title=__make_scenario_plot_title(variable, filters, df_estudos),
             xaxis_title="Data",
             yaxis_title="% MLT",
             hovermode="x unified",
@@ -1022,7 +656,6 @@ def generate_acumprob_graph_casos(
         return fig
     dados = pd.read_json(StringIO(operation_data), orient="split")
     df_estudos = pd.read_json(StringIO(studies_data), orient="split")
-    programas = df_estudos["program"].unique().tolist()
     line_shape = "hv"
     for _, linha_df in df_estudos.iterrows():
         estudo = linha_df["name"]
@@ -1044,11 +677,9 @@ def generate_acumprob_graph_casos(
 
     if variable is not None:
         fig.update_layout(
-            title=__make_operation_plot_title(variable, filters),
+            title=__make_operation_plot_title(variable, filters, df_estudos),
             xaxis_title="%",
-            yaxis_title=_generate_yaxis_title(
-                variable.split("_")[0], programas
-            ),
+            yaxis_title=_generate_yaxis_title(variable, filters, df_estudos),
             hovermode="x unified",
             legend=dict(groupclick="toggleitem"),
         )
@@ -1155,14 +786,13 @@ def generate_timecosts_graph_casos(time_costs, variable, studies_data):
     fig.update_layout(graph_layout)
     if time_costs is None:
         return fig
-    Log.log().info(f"Plotando gráfico - ENCADEADOR ({variable})")
-    dados = pd.read_json(time_costs, orient="split")
+    Log.log().info(f"Plotando gráfico - CASOS ({variable})")
+    dados = pd.read_json(StringIO(time_costs), orient="split")
     df_estudos = pd.read_json(StringIO(studies_data), orient="split")
     mapa_cor = {
         linha["name"]: linha["color"] for _, linha in df_estudos.iterrows()
     }
     if "etapa" in dados.columns:
-        dados = dados.loc[dados["etapa"] != "Tempo Total", :]
         dados["tempo"] = pd.to_timedelta(dados["tempo"], unit="s") / timedelta(
             hours=1
         )
@@ -1184,15 +814,15 @@ def generate_timecosts_graph_casos(time_costs, variable, studies_data):
             text="label",
         )
     else:
-        dados = dados.loc[dados["mean"] > 0, :]
-        dados["label"] = dados["mean"]
-        y_col = "mean"
+        dados = dados.loc[dados["valor_esperado"] > 0, :]
+        dados["label"] = dados["valor_esperado"]
+        y_col = "valor_esperado"
         color_col = "parcela"
         title = "Custos de Operação"
         unit = "Custo ($)"
         # CI de 95%
-        dados["std"] *= 1.96
-        error_y = "std"
+        dados["desvio_padrao"] *= 1.96
+        error_y = "desvio_padrao"
 
         fig = px.bar(
             dados,
@@ -1211,7 +841,7 @@ def generate_timecosts_graph_casos(time_costs, variable, studies_data):
             title=title,
             yaxis_title=unit,
         )
-    Log.log().info(f"Gráfico plotado - ENCADEADOR ({variable})")
+    Log.log().info(f"Gráfico plotado - CASOS ({variable})")
     return fig
 
 
@@ -1289,7 +919,7 @@ def generate_convergence_graph_casos(convergence_data, variable, studies_data):
         return fig
     dados["tempo"] = pd.to_timedelta(dados["tempo"], unit="s")
     dados["tempo"] /= timedelta(minutes=1)
-    x_col = "iter"
+    x_col = "iteracao"
     fig = make_subplots(specs=[[{"secondary_y": True}]])
     fig.add_trace(
         go.Bar(x=dados[x_col], y=dados["tempo"], name="tempo"),
@@ -1319,10 +949,10 @@ def generate_convergence_graph_casos(convergence_data, variable, studies_data):
                 color="estudo",
                 color_discrete_map=mapa_cor,
             )
-            unit = "" if variable != "dZinf" else "(%)"
+            unit = "" if variable != "delta_zinf" else "(%)"
         fig.update_layout(
             title=f"Convergência - {variable}",
-            xaxis_title="iteração",
+            xaxis_title="Iteração",
             hovermode="x unified",
         )
         fig.update_layout(graph_layout)
@@ -1542,7 +1172,9 @@ def generate_resources_graph_casos(
         range=[0, 1.1 * job["memoryPerCore"].max()],
         secondary_y=True,
     )
-    fig.update_layout(title=f"Uso de Recursos - {study}", hovermode="x unified")
+    fig.update_layout(
+        title=f"Uso de Recursos - {study}", hovermode="x unified"
+    )
     return fig
 
 
@@ -1563,9 +1195,22 @@ def __get_system_element_name(
             == int(filters["codigo_submercado"]),
             "submercado",
         ].iloc[0]
+    elif system_elem == "SBP":
+        src = system_options_df.loc[
+            system_options_df["codigo_submercado"]
+            == int(filters["codigo_submercado_de"]),
+            "submercado",
+        ].iloc[0]
+        dst = system_options_df.loc[
+            system_options_df["codigo_submercado"]
+            == int(filters["codigo_submercado_para"]),
+            "submercado",
+        ].iloc[0]
+        return f"{src} -> {dst}"
     elif system_elem == "REE":
         return system_options_df.loc[
-            system_options_df["codigo_ree"] == int(filters["codigo_ree"]), "ree"
+            system_options_df["codigo_ree"] == int(filters["codigo_ree"]),
+            "ree",
         ].iloc[0]
     elif system_elem == "UHE":
         return system_options_df.loc[
@@ -1600,9 +1245,12 @@ def __make_operation_plot_title(
     ].iloc[0]
     if system_elem == "SIN":
         return variable + " - " + f"{aggregation}" + patamar_str
+    system_elem_for_options = "SBM" if system_elem == "SBP" else system_elem
     system_options_df = pd.concat(
         [
-            pd.read_json(StringIO(opt[system_elem]), orient="split")
+            pd.read_json(
+                StringIO(opt[system_elem_for_options]), orient="split"
+            )
             for opt in studies["system"]
         ],
         ignore_index=True,
@@ -1616,6 +1264,60 @@ def __make_operation_plot_title(
     return title
 
 
+def __make_scenario_plot_title(
+    variable: str, filters: dict, studies: pd.DataFrame
+) -> str:
+    aggregation = filters["agregacao"]
+    step = filters["etapa"]
+    iteration = filters["iteracao"] if "iteracao" in filters else None
+    iteration_str = f" - Iteração {iteration}" if iteration else ""
+    scenario_options_df = pd.concat(
+        [
+            pd.read_json(StringIO(opt["cenarios"]), orient="split")
+            for opt in studies["options"]
+        ],
+        ignore_index=True,
+    )
+    system_elem = scenario_options_df.loc[
+        scenario_options_df["nome_longo_agregacao"] == aggregation,
+        "nome_curto_agregacao",
+    ].iloc[0]
+
+    if system_elem == "SIN":
+        return (
+            variable
+            + " - "
+            + f"{step}"
+            + " - "
+            + f"{aggregation}"
+            + iteration_str
+        )
+    system_elem_for_options = "SBM" if system_elem == "SBP" else system_elem
+    system_options_df = pd.concat(
+        [
+            pd.read_json(
+                StringIO(opt[system_elem_for_options]), orient="split"
+            )
+            for opt in studies["system"]
+        ],
+        ignore_index=True,
+    )
+    elem_name = __get_system_element_name(
+        system_options_df, system_elem, filters
+    )
+
+    title = (
+        variable
+        + " - "
+        + f"{step}"
+        + " - "
+        + f"{aggregation} {elem_name}"
+        + iteration_str
+    )
+
+    return title
+
+
 def __background_area_visibility(estudos: list) -> str:
     return "legendonly" if len(estudos) > 2 else None
 
@@ -1624,5 +1326,7 @@ def __make_operation_plot_legend_name(
     estudo: str, variable: str, filters: dict, studies: pd.DataFrame
 ) -> str:
     return (
-        estudo + " - " + __make_operation_plot_title(variable, filters, studies)
+        estudo
+        + " - "
+        + __make_operation_plot_title(variable, filters, studies)
     )

@@ -280,6 +280,9 @@ class OperationFiltersTwin(html.Div):
             ree_dropdown_props["children"] = dcc.Dropdown(
                 id=self.ids.ree_dropdown(aio_id),
                 options=[],
+                style={
+                    "width": "150px",
+                },
                 value=None,
                 placeholder="REE",
                 className="variable-dropdown",
@@ -288,6 +291,9 @@ class OperationFiltersTwin(html.Div):
             submercado_dropdown_props["children"] = dcc.Dropdown(
                 id=self.ids.submercado_dropdown(aio_id),
                 options=[],
+                style={
+                    "width": "150px",
+                },
                 value=None,
                 placeholder="Submercado",
                 className="variable-dropdown",
@@ -296,6 +302,9 @@ class OperationFiltersTwin(html.Div):
             submercado_de_dropdown_props["children"] = dcc.Dropdown(
                 id=self.ids.submercado_de_dropdown(aio_id),
                 options=[],
+                style={
+                    "width": "150px",
+                },
                 value=None,
                 placeholder="Submercado De",
                 className="variable-dropdown",
@@ -304,6 +313,9 @@ class OperationFiltersTwin(html.Div):
             submercado_para_dropdown_props["children"] = dcc.Dropdown(
                 id=self.ids.submercado_para_dropdown(aio_id),
                 options=[],
+                style={
+                    "width": "150px",
+                },
                 value=None,
                 placeholder="Submercado Para",
                 className="variable-dropdown",
@@ -312,6 +324,9 @@ class OperationFiltersTwin(html.Div):
             patamar_dropdown_props["children"] = dcc.Dropdown(
                 id=self.ids.patamar_dropdown(aio_id),
                 options=[],
+                style={
+                    "width": "100px",
+                },
                 value=None,
                 placeholder="Patamar",
                 className="variable-dropdown",
@@ -320,6 +335,9 @@ class OperationFiltersTwin(html.Div):
             estagio_dropdown_props["children"] = dcc.Dropdown(
                 id=self.ids.estagio_dropdown(aio_id),
                 options=[],
+                style={
+                    "width": "100px",
+                },
                 value=None,
                 placeholder="Estagio",
                 className="variable-dropdown",
@@ -499,7 +517,9 @@ class OperationFiltersTwin(html.Div):
     )
     def update_display_resolution_dropdown(variavel: str):
         return (
-            {"display": "flex"} if variavel is not None else {"display": "none"}
+            {"display": "flex"}
+            if variavel is not None
+            else {"display": "none"}
         )
 
     @callback(

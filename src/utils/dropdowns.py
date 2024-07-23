@@ -76,9 +76,14 @@ def update_operation_resolution_dropdown_options_casos(studies_data, variable):
         ],
         ignore_index=True,
     )
-    return options_df.loc[
-        options_df["nome_longo_variavel"] == variable, "nome_longo_agregacao"
-    ].tolist()
+    return (
+        options_df.loc[
+            options_df["nome_longo_variavel"] == variable,
+            "nome_longo_agregacao",
+        ]
+        .unique()
+        .tolist()
+    )
 
 
 def update_operation_variables_dropdown_options_casos(studies_data):
@@ -101,17 +106,67 @@ def update_scenario_variables_dropdown_options_casos(studies_data):
     if studies_data is None:
         return []
     studies = pd.read_json(StringIO(studies_data), orient="split")
-    options = studies["options"].tolist()
-    unique_variables = [o.split(",") for o in options]
-    unique_variables = list(
-        set(list(itertools.chain.from_iterable(unique_variables)))
+    if studies.empty:
+        return []
+    options_df = pd.concat(
+        [
+            pd.read_json(StringIO(opt["cenarios"]), orient="split")
+            for opt in studies["options"]
+        ],
+        ignore_index=True,
     )
-    unique_variables = [
-        a
-        for a in unique_variables
-        if any([s in a for s in SCENARIO_FILE_PATTERNS])
-    ]
-    return sorted(unique_variables)
+    if options_df.empty:
+        return []
+    return options_df["nome_longo_variavel"].unique().tolist()
+
+
+def update_scenarios_resolution_dropdown_options_casos(studies_data, variable):
+    if studies_data is None:
+        return []
+    studies = pd.read_json(StringIO(studies_data), orient="split")
+    if studies.empty:
+        return []
+    options_df = pd.concat(
+        [
+            pd.read_json(StringIO(opt["cenarios"]), orient="split")
+            for opt in studies["options"]
+        ],
+        ignore_index=True,
+    )
+    return (
+        options_df.loc[
+            options_df["nome_longo_variavel"] == variable,
+            "nome_longo_agregacao",
+        ]
+        .unique()
+        .tolist()
+    )
+
+
+def update_scenarios_etapa_dropdown_options_casos(
+    studies_data, variable, resolution
+):
+    if studies_data is None:
+        return []
+    studies = pd.read_json(StringIO(studies_data), orient="split")
+    if studies.empty:
+        return []
+    options_df = pd.concat(
+        [
+            pd.read_json(StringIO(opt["cenarios"]), orient="split")
+            for opt in studies["options"]
+        ],
+        ignore_index=True,
+    )
+    return (
+        options_df.loc[
+            (options_df["nome_longo_variavel"] == variable)
+            & (options_df["nome_longo_agregacao"] == resolution),
+            "nome_longo_etapa",
+        ]
+        .unique()
+        .tolist()
+    )
 
 
 def update_costs_time_variables_dropdown_options_encadeador(
@@ -133,13 +188,20 @@ def update_costs_time_variables_dropdown_options_casos(studies_data):
     if studies_data is None:
         return []
     studies = pd.read_json(StringIO(studies_data), orient="split")
-    options = studies["options"].tolist()
-    unique_variables = [o.split(",") for o in options]
-    unique_variables = list(
-        set(list(itertools.chain.from_iterable(unique_variables)))
+    if studies.empty:
+        return []
+    options_df = pd.concat(
+        [
+            pd.read_json(StringIO(opt["execucao"]), orient="split")
+            for opt in studies["options"]
+        ],
+        ignore_index=True,
     )
-    unique_variables = [a for a in unique_variables if a in COSTS_TIME_FILES]
-    return sorted(unique_variables)
+    return [
+        o
+        for o in options_df["chave"].unique().tolist()
+        if o in ["TEMPO", "CUSTOS"]
+    ]
 
 
 def update_studies_names_dropdown_options_encadeador(interval, studies_data):
@@ -192,17 +254,21 @@ def update_operation_options_encadeador(interval, studies, variable: str):
         return complete_options
 
 
-def update_operation_dropdown_system_entity_options_casos(studies, entity: str):
+def update_operation_dropdown_system_entity_options_casos(
+    studies, entity: str
+):
     def __postproc_entity_df(
         entity_df: pd.DataFrame, entity: str
     ) -> pd.DataFrame:
         if entity == "EST":
             return {
-                v: k for k, v in zip(entity_df["estagio"], entity_df["estagio"])
+                v: k
+                for k, v in zip(entity_df["estagio"], entity_df["estagio"])
             }
         elif entity == "PAT":
             return {
-                v: k for k, v in zip(entity_df["patamar"], entity_df["patamar"])
+                v: k
+                for k, v in zip(entity_df["patamar"], entity_df["patamar"])
             }
         elif entity == "SBM":
             return {

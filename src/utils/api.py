@@ -21,7 +21,10 @@ class API:
             if r.status_code != 200:
                 return None
             else:
-                return r.json()
+                if r.headers["Content-Type"] == "application/json":
+                    return r.json()
+                else:
+                    return None
 
     @classmethod
     def fetch_available_results_list(
@@ -86,7 +89,6 @@ class API:
             cls.fetch_result(str(pathlib.Path(p)), desired_data, filters)
             for p in studies_paths
         ]
-
         for study, df in zip(studies_labels, ret):
             if df is not None:
                 df_cols = df.columns.to_list()
