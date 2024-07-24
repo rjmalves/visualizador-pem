@@ -1,13 +1,15 @@
 import plotly.graph_objects as go
 import plotly.express as px
+import plotly.io as pio
 from plotly.subplots import make_subplots
 import pandas as pd
 import numpy as np
-from typing import List, Dict
 from datetime import timedelta
 from src.utils.log import Log
 from src.utils.data import DISCRETE_COLOR_PALLETE
 from io import StringIO
+
+pio.templates.default = "plotly_white"
 
 DISCRETE_COLOR_PALLETE_COSTS = [
     "rgba(249, 65, 68, 1)",
@@ -26,27 +28,10 @@ START_DATE_COLUMN = "data_inicio"
 END_DATE_COLUMN = "data_fim"
 SCENARIO_COLUMN = "cenario"
 UNIT_COLUMN = "unidade"
-
-
-def _generate_yaxis_title(
-    variable: str, filters: dict, studies: pd.DataFrame
-) -> str:
-    aggregation = filters["agregacao"]
-    operation_options_df = pd.concat(
-        [
-            pd.read_json(StringIO(opt["operacao"]), orient="split")
-            for opt in studies["options"]
-        ],
-        ignore_index=True,
-    )
-    units = operation_options_df.loc[
-        (operation_options_df["nome_longo_variavel"] == variable)
-        & (operation_options_df["nome_longo_agregacao"] == aggregation),
-        "unidade",
-    ].tolist()
-    units = list(set(units))
-    return " | ".join(units)
-
+LINE_WIDTH = 2
+YAXIS_TICKFORMAT = ",.2f"
+X_TITLE_POS = 0.05
+Y_TITLE_POS = 0.9
 
 NOT_SCENARIO_COLUMNS = [
     "iteracao",
@@ -66,6 +51,27 @@ NOT_SCENARIO_COLUMNS = [
     "data_fim",
     "unidade",
 ]
+
+
+def _generate_yaxis_title(
+    variable: str, filters: dict, studies: pd.DataFrame
+) -> str:
+    aggregation = filters["agregacao"]
+    operation_options_df = pd.concat(
+        [
+            pd.read_json(StringIO(opt["operacao"]), orient="split")
+            for opt in studies["options"]
+        ],
+        ignore_index=True,
+    )
+    units = operation_options_df.loc[
+        (operation_options_df["nome_longo_variavel"] == variable)
+        & (operation_options_df["nome_longo_agregacao"] == aggregation),
+        "unidade",
+    ].tolist()
+    units = list(set(units))
+    axis_text = " | ".join(units)
+    return axis_text
 
 
 def pivot_df_for_plot(df: pd.DataFrame, col: str = "valor") -> pd.DataFrame:
@@ -88,12 +94,7 @@ def hex_to_rgb(value):
 def generate_operation_graph_casos(
     operation_data, variable, filters, studies_data
 ):
-    graph_layout = go.Layout(
-        plot_bgcolor="rgba(158, 149, 128, 0.2)",
-        paper_bgcolor="rgba(255,255,255,1)",
-    )
     fig = go.Figure()
-    fig.update_layout(graph_layout)
     if operation_data is None:
         return fig
     Log.log().info(f"Plotando gráfico - CASOS ({variable}, {filters})")
@@ -122,7 +123,7 @@ def generate_operation_graph_casos(
                         y=dados_estudo["mean"],
                         line={
                             "color": cor,
-                            "width": 3,
+                            "width": LINE_WIDTH,
                             "shape": line_shape,
                         },
                         mode=mode,
@@ -164,9 +165,16 @@ def generate_operation_graph_casos(
 
     if variable is not None:
         fig.update_layout(
-            title=__make_operation_plot_title(variable, filters, studies_df),
+            title={
+                "text": __make_operation_plot_title(
+                    variable, filters, studies_df
+                ),
+                "x": X_TITLE_POS,
+                "y": Y_TITLE_POS,
+            },
             xaxis_title="Data",
             yaxis_title=_generate_yaxis_title(variable, filters, studies_df),
+            yaxis_tickformat=YAXIS_TICKFORMAT,
             hovermode="x unified",
             legend=dict(groupclick="toggleitem"),
         )
@@ -182,12 +190,7 @@ def generate_operation_graph_casos_twinx(
     filters_twinx,
     studies_data,
 ):
-    graph_layout = go.Layout(
-        plot_bgcolor="rgba(158, 149, 128, 0.2)",
-        paper_bgcolor="rgba(255,255,255,1)",
-    )
     fig = make_subplots(specs=[[{"secondary_y": True}]])
-    fig.update_layout(graph_layout)
     if operation_data is None and operation_data_twinx is None:
         return fig
     if operation_data is not None and operation_data_twinx is None:
@@ -236,7 +239,7 @@ def generate_operation_graph_casos_twinx(
                     y=dados_estudo["mean"],
                     line={
                         "color": cor,
-                        "width": 3,
+                        "width": LINE_WIDTH,
                         "shape": line_shape,
                     },
                     mode=mode,
@@ -284,7 +287,7 @@ def generate_operation_graph_casos_twinx(
                     y=dados_estudo["mean"],
                     line={
                         "color": cor,
-                        "width": 3,
+                        "width": LINE_WIDTH,
                         "shape": line_shape,
                         "dash": "dash",
                     },
@@ -331,9 +334,10 @@ def generate_operation_graph_casos_twinx(
         + f" | {__make_operation_plot_title(variable_twinx, filters_twinx, studies_df)}"
     )
     fig.update_layout(
-        title=full_title,
+        title={"text": full_title, "x": X_TITLE_POS, "y": Y_TITLE_POS},
         xaxis_title="Data",
         yaxis_title=_generate_yaxis_title(variable, filters, studies_df),
+        yaxis_tickformat=YAXIS_TICKFORMAT,
         hovermode="x unified",
         legend=dict(groupclick="toggleitem"),
     )
@@ -341,6 +345,7 @@ def generate_operation_graph_casos_twinx(
         title_text=_generate_yaxis_title(
             variable_twinx, filters_twinx, studies_df
         ),
+        yaxis_tickformat=YAXIS_TICKFORMAT,
         secondary_y=True,
     )
 
@@ -350,12 +355,7 @@ def generate_operation_graph_casos_twinx(
 def generate_scenario_graph_casos(
     scenario_data, variable, filters, studies_data
 ):
-    graph_layout = go.Layout(
-        plot_bgcolor="rgba(158, 149, 128, 0.2)",
-        paper_bgcolor="rgba(255,255,255,1)",
-    )
     fig = go.Figure()
-    fig.update_layout(graph_layout)
     if scenario_data is None:
         return fig
     Log.log().info(f"Plotando gráfico - CASOS ({variable}, {filters})")
@@ -380,12 +380,18 @@ def generate_scenario_graph_casos(
         color="estudo",
         color_discrete_map=mapas_cores,
     )
-    fig.update_layout(graph_layout)
     if variable is not None:
         fig.update_layout(
-            title=__make_scenario_plot_title(variable, filters, df_estudos),
+            title={
+                "text": __make_scenario_plot_title(
+                    variable, filters, df_estudos
+                ),
+                "x": X_TITLE_POS,
+                "y": Y_TITLE_POS,
+            },
             xaxis_title="Data",
             yaxis_title="% MLT",
+            yaxis_tickformat=".0%",
             hovermode="x unified",
             legend=dict(groupclick="toggleitem"),
         )
@@ -395,12 +401,7 @@ def generate_scenario_graph_casos(
 def generate_operation_graph_encadeador(
     operation_data, variable: str, filters: dict, studies_data
 ):
-    graph_layout = go.Layout(
-        plot_bgcolor="rgba(158, 149, 128, 0.2)",
-        paper_bgcolor="rgba(255, 255, 255, 1)",
-    )
     fig = go.Figure()
-    fig.update_layout(graph_layout)
     if operation_data is None:
         return fig
     Log.log().info(f"Plotando gráfico - ENCADEADOR ({variable}, {filters})")
@@ -503,12 +504,7 @@ def generate_operation_graph_encadeador(
 def generate_operation_graph_ppq(
     operation_data, variable, filters, studies_data
 ):
-    graph_layout = go.Layout(
-        plot_bgcolor="rgba(158, 149, 128, 0.2)",
-        paper_bgcolor="rgba(255,255,255,1)",
-    )
     fig = go.Figure()
-    fig.update_layout(graph_layout)
     if operation_data is None:
         return fig
     dados = pd.read_json(StringIO(operation_data), orient="split")
@@ -592,12 +588,7 @@ def generate_operation_graph_ppq(
 def generate_distribution_graph_ppq(
     operation_data, variable, filters, studies_data
 ):
-    graph_layout = go.Layout(
-        plot_bgcolor="rgba(158, 149, 128, 0.2)",
-        paper_bgcolor="rgba(255,255,255,1)",
-    )
     fig = go.Figure()
-    fig.update_layout(graph_layout)
     if operation_data is None:
         return fig
     dados = pd.read_json(StringIO(operation_data), orient="split")
@@ -614,7 +605,6 @@ def generate_distribution_graph_ppq(
         color_discrete_map=mapa_cor,
         category_orders={"estudo": ordem_estudos},
     )
-    fig.update_layout(graph_layout)
     fig.update_layout(
         title=__make_operation_plot_title(variable, filters),
         xaxis_title="Iteracao",
@@ -646,12 +636,7 @@ def __process_acumprob(operation_data: pd.DataFrame) -> pd.DataFrame:
 def generate_acumprob_graph_casos(
     operation_data, variable, filters, studies_data
 ):
-    graph_layout = go.Layout(
-        plot_bgcolor="rgba(158, 149, 128, 0.2)",
-        paper_bgcolor="rgba(255,255,255,1)",
-    )
     fig = go.Figure()
-    fig.update_layout(graph_layout)
     if operation_data is None:
         return fig
     dados = pd.read_json(StringIO(operation_data), orient="split")
@@ -671,15 +656,23 @@ def generate_acumprob_graph_casos(
                         y=dados_estudo["values"],
                         line_color=cor,
                         line_shape=line_shape,
+                        line_width=LINE_WIDTH,
                         name=estudo,
                     )
                 )
 
     if variable is not None:
         fig.update_layout(
-            title=__make_operation_plot_title(variable, filters, df_estudos),
+            title={
+                "text": __make_operation_plot_title(
+                    variable, filters, df_estudos
+                ),
+                "x": X_TITLE_POS,
+                "y": Y_TITLE_POS,
+            },
             xaxis_title="%",
             yaxis_title=_generate_yaxis_title(variable, filters, df_estudos),
+            yaxis_tickformat=YAXIS_TICKFORMAT,
             hovermode="x unified",
             legend=dict(groupclick="toggleitem"),
         )
@@ -687,12 +680,7 @@ def generate_acumprob_graph_casos(
 
 
 def generate_timecosts_graph_encadeador(time_costs, variable, studies_data):
-    graph_layout = go.Layout(
-        plot_bgcolor="rgba(158, 149, 128, 0.2)",
-        paper_bgcolor="rgba(255,255,255,1)",
-    )
     fig = go.Figure()
-    fig.update_layout(graph_layout)
     if time_costs is None:
         return fig
     Log.log().info(f"Plotando gráfico - ENCADEADOR ({variable})")
@@ -765,7 +753,6 @@ def generate_timecosts_graph_encadeador(time_costs, variable, studies_data):
         category_orders={"estudo": ordem_estudos},
         barmode="group",
     )
-    fig.update_layout(graph_layout)
     if variable is not None:
         fig.update_traces(textposition="inside")
         fig.update_layout(uniformtext_minsize=12, uniformtext_mode="hide")
@@ -778,12 +765,7 @@ def generate_timecosts_graph_encadeador(time_costs, variable, studies_data):
 
 
 def generate_timecosts_graph_casos(time_costs, variable, studies_data):
-    graph_layout = go.Layout(
-        plot_bgcolor="rgba(158, 149, 128, 0.2)",
-        paper_bgcolor="rgba(255,255,255,1)",
-    )
     fig = go.Figure()
-    fig.update_layout(graph_layout)
     if time_costs is None:
         return fig
     Log.log().info(f"Plotando gráfico - CASOS ({variable})")
@@ -833,12 +815,14 @@ def generate_timecosts_graph_casos(time_costs, variable, studies_data):
             color_discrete_sequence=DISCRETE_COLOR_PALLETE_COSTS,
             text="label",
         )
-    fig.update_layout(graph_layout)
     if variable is not None:
         fig.update_traces(textposition="inside")
         fig.update_layout(uniformtext_minsize=12, uniformtext_mode="hide")
         fig.update_layout(
-            title=title,
+            title={
+                "text": title,
+            },
+            yaxis_tickformat=YAXIS_TICKFORMAT,
             yaxis_title=unit,
         )
     Log.log().info(f"Gráfico plotado - CASOS ({variable})")
@@ -848,17 +832,12 @@ def generate_timecosts_graph_casos(time_costs, variable, studies_data):
 def generate_violation_graph_encadeador(
     violation_data, violation, studies_data
 ):
-    graph_layout = go.Layout(
-        plot_bgcolor="rgba(158, 149, 128, 0.2)",
-        paper_bgcolor="rgba(255,255,255,1)",
-    )
     fig = go.Figure()
-    fig.update_layout(graph_layout)
     if violation_data is None:
         return fig
 
     Log.log().info(f"Plotando gráfico - ENCADEADOR ({violation})")
-    dados = pd.read_json(violation_data, orient="split")
+    dados = pd.read_json(StringIO(violation_data), orient="split")
 
     df_estudos = pd.read_json(StringIO(studies_data), orient="split")
     mapa_cor = {
@@ -893,7 +872,6 @@ def generate_violation_graph_encadeador(
         category_orders={"estudo": ordem_estudos},
         barmode="group",
     )
-    fig.update_layout(graph_layout)
     if violation is not None:
         fig.update_traces(textposition="inside")
         fig.update_layout(uniformtext_minsize=12, uniformtext_mode="hide")
@@ -906,15 +884,10 @@ def generate_violation_graph_encadeador(
 
 
 def generate_convergence_graph_casos(convergence_data, variable, studies_data):
-    graph_layout = go.Layout(
-        plot_bgcolor="rgba(158, 149, 128, 0.2)",
-        paper_bgcolor="rgba(255,255,255,1)",
-    )
     fig = go.Figure()
-    fig.update_layout(graph_layout)
     if convergence_data is None or variable is None:
         return fig
-    dados = pd.read_json(convergence_data, orient="split")
+    dados = pd.read_json(StringIO(convergence_data), orient="split")
     if dados.empty:
         return fig
     dados["tempo"] = pd.to_timedelta(dados["tempo"], unit="s")
@@ -929,7 +902,6 @@ def generate_convergence_graph_casos(convergence_data, variable, studies_data):
     mapa_cor = {
         linha["name"]: linha["color"] for _, linha in df_estudos.iterrows()
     }
-    fig.update_layout(graph_layout)
     if variable is not None:
         if variable == "tempo":
             fig = px.bar(
@@ -951,11 +923,13 @@ def generate_convergence_graph_casos(convergence_data, variable, studies_data):
             )
             unit = "" if variable != "delta_zinf" else "(%)"
         fig.update_layout(
-            title=f"Convergência - {variable}",
+            title={
+                "text": f"Convergência - {variable}",
+            },
             xaxis_title="Iteração",
+            yaxis_tickformat=YAXIS_TICKFORMAT,
             hovermode="x unified",
         )
-        fig.update_layout(graph_layout)
         fig.update_yaxes(
             title_text=unit,
         )
@@ -965,12 +939,7 @@ def generate_convergence_graph_casos(convergence_data, variable, studies_data):
 def generate_resources_graph_casos(
     cluster_data, job_data, time_data, convergence_data, study
 ):
-    graph_layout = go.Layout(
-        plot_bgcolor="rgba(158, 149, 128, 0.2)",
-        paper_bgcolor="rgba(255,255,255,1)",
-    )
     fig = go.Figure()
-    fig.update_layout(graph_layout)
     if cluster_data is None:
         return fig
     if job_data is None:
@@ -1063,7 +1032,6 @@ def generate_resources_graph_casos(
     area_sf_y = np.ones_like(area_sf_x) * max_y
 
     fig = make_subplots(specs=[[{"secondary_y": True}]])
-    fig.update_layout(graph_layout)
     fig.add_trace(
         go.Scatter(
             x=master["timeInstant"],
