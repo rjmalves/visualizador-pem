@@ -247,8 +247,8 @@ def edit_current_study_data(
             )
             screen_df["system"] = screen_df.apply(
                 lambda linha: __merge_casos_encadeador_options(
-                    update_system_entities_casos([linha["options"]]),
-                    update_system_entities_encadeador([linha["options"]]),
+                    update_system_entities_casos(linha["path"], linha["options"]),
+                    update_system_entities_encadeador(linha["path"], linha["options"]),
                 ),
                 axis=1,
             )
