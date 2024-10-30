@@ -1,11 +1,13 @@
-from typing import Optional, List, Dict
-import requests
-import pandas as pd
-import base62
 import io
 import pathlib
-from src.utils.settings import Settings
+from typing import Dict, List, Optional
+
+import base62
+import pandas as pd
+import requests
 import src.utils.constants as constants
+from src.utils.log import Log
+from src.utils.settings import Settings
 
 
 class API:
@@ -18,10 +20,16 @@ class API:
         identifier = base62.encodebytes(study_path.encode("utf-8"))
         url = f"{Settings.result_api}/{identifier}"
         with requests.get(url) as r:
+            Log.log().info(
+                f"API - Resultados Disponiveis ({study_path}): {r.status_code}"
+            )
             if r.status_code != 200:
                 return None
             else:
                 if r.headers["Content-Type"] == "application/json":
+                    Log.log().info(
+                        f"API - Resultados Disponiveis ({study_path}): {r.json()}"
+                    )
                     return r.json()
                 else:
                     return None
@@ -67,6 +75,9 @@ class API:
         identifier = base62.encodebytes(study_path.encode("utf-8"))
         url = f"{Settings.result_api}/{identifier}/{desired_data}"
         with requests.get(url, params=filters) as r:
+            Log.log().info(
+                f"API - Resultados ({study_path} - {desired_data}): {r.status_code}"
+            )
             if r.status_code != 200:
                 return None
             else:
