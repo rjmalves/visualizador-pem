@@ -36,7 +36,7 @@ def update_variables_options_casos(paths):
 
 
 def update_variables_options_encadeador(paths):
-    all_variables = set()
+    all_variables = {}
     newaves_paths = []
     decomps_paths = []
     for path in paths:
@@ -51,18 +51,20 @@ def update_variables_options_encadeador(paths):
     newave_variables = API.fetch_available_results_list(newaves_paths)
     decomp_variables = API.fetch_available_results_list(decomps_paths)
 
-    # TODO - retomar suporte
-    # all_variables = all_variables.union(set(newave_variables))
-    # all_variables = all_variables.union(set(decomp_variables))
-    # all_variables = [a for a in all_variables if a not in ENCADEADOR_TABLES]
-    return {
-        k: pd.DataFrame().to_json(orient="split")
-        for k in SYNTHESIS_METADATA_NAMES.keys()
-    }
+    for k in SYNTHESIS_METADATA_NAMES.keys():
+        df_newave = pd.read_json(StringIO(newave_variables[k]), orient="split")
+        df_decomp = pd.read_json(StringIO(decomp_variables[k]), orient="split")
+        all_variables[k] = pd.concat(
+            [df_newave, df_decomp], ignore_index=True
+        ).to_json(orient="split")
+
+    return all_variables
 
 
 def update_system_entities_casos(path, options):
-    system_metadata = pd.read_json(StringIO(options["sistema"]), orient="split")
+    system_metadata = pd.read_json(
+        StringIO(options["sistema"]), orient="split"
+    )
     system_entities = {
         e: API.fetch_result(path, e, {"preprocess": "FULL"})
         for e in system_metadata["chave"].tolist()
@@ -151,9 +153,9 @@ def edit_current_study_data(
                     f"Adicionando estudo - CASOS ({new_study_id}, {label}, {color})"
                 )
                 casos_options = update_variables_options_casos([new_study_id])
-                encadeador_options = update_variables_options_encadeador([
-                    new_study_id
-                ])
+                encadeador_options = update_variables_options_encadeador(
+                    [new_study_id]
+                )
                 options = __merge_casos_encadeador_options(
                     casos_options, encadeador_options
                 )
@@ -205,9 +207,9 @@ def edit_current_study_data(
                 current_data["table_id"] == edit_study_id, "color"
             ] = edit_study_color
             casos_options = update_variables_options_casos([edit_study_path])
-            encadeador_options = update_variables_options_encadeador([
-                edit_study_path
-            ])
+            encadeador_options = update_variables_options_encadeador(
+                [edit_study_path]
+            )
             options = __merge_casos_encadeador_options(
                 casos_options, encadeador_options
             )
@@ -299,7 +301,9 @@ def extract_selected_study_data(
 
 def get_statistics_scenarios(all_scenarios: List[str]) -> List[str]:
     scenarios = [
-        s for s in all_scenarios if s in ["min", "max", "median", "mean", "std"]
+        s
+        for s in all_scenarios
+        if s in ["min", "max", "median", "mean", "std"]
     ]
     scenarios = [s for s in scenarios if "p" in s]
     return scenarios
