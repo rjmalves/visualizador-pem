@@ -5,9 +5,10 @@ from io import StringIO
 from typing import List, Optional
 
 import pandas as pd
+from dash import ctx
+
 import src.utils.db as db
 import src.utils.validation as validation
-from dash import ctx
 from src.utils.api import API
 from src.utils.constants import SYNTHESIS_METADATA_NAMES
 from src.utils.log import Log
@@ -62,13 +63,14 @@ def update_variables_options_encadeador(paths):
 
 
 def update_system_entities_casos(path, options):
-    system_metadata = pd.read_json(
-        StringIO(options["sistema"]), orient="split"
-    )
-    system_entities = {
-        e: API.fetch_result(path, e, {"preprocess": "FULL"})
-        for e in system_metadata["chave"].tolist()
-    }
+    system_metadata = pd.read_json(StringIO(options["sistema"]), orient="split")
+    if "chave" in system_metadata:
+        system_entities = {
+            e: API.fetch_result(path, e, {"preprocess": "FULL"})
+            for e in system_metadata["chave"].tolist()
+        }
+    else:
+        system_entities = {}
     return {
         e: df.to_json(orient="split")
         for e, df in system_entities.items()
@@ -77,8 +79,31 @@ def update_system_entities_casos(path, options):
 
 
 def update_system_entities_encadeador(paths, options):
-    # TODO - retomar suporte
-    return {}
+    system_metadata = pd.read_json(StringIO(options["sistema"]), orient="split")
+    if "chave" in system_metadata:
+        for path in paths:
+            newave_path = os.path.join(
+                path, Settings.synthesis_dir, Settings.newave_dir
+            )
+            decomp_path = os.path.join(
+                path, Settings.synthesis_dir, Settings.decomp_dir
+            )
+            newave_system_entities = {
+                e: API.fetch_result(newave_path, e, {"preprocess": "FULL"})
+                for e in system_metadata["chave"].tolist()
+            }
+            decomp_system_entities = {
+                e: API.fetch_result(decomp_path, e, {"preprocess": "FULL"})
+                for e in system_metadata["chave"].tolist()
+            }
+            # TODO - terminar
+    else:
+        system_entities = {}
+    return {
+        e: df.to_json(orient="split")
+        for e, df in system_entities.items()
+        if isinstance(df, pd.DataFrame)
+    }
 
 
 def __merge_casos_encadeador_options(
@@ -153,9 +178,9 @@ def edit_current_study_data(
                     f"Adicionando estudo - CASOS ({new_study_id}, {label}, {color})"
                 )
                 casos_options = update_variables_options_casos([new_study_id])
-                encadeador_options = update_variables_options_encadeador(
-                    [new_study_id]
-                )
+                encadeador_options = update_variables_options_encadeador([
+                    new_study_id
+                ])
                 options = __merge_casos_encadeador_options(
                     casos_options, encadeador_options
                 )
@@ -207,9 +232,9 @@ def edit_current_study_data(
                 current_data["table_id"] == edit_study_id, "color"
             ] = edit_study_color
             casos_options = update_variables_options_casos([edit_study_path])
-            encadeador_options = update_variables_options_encadeador(
-                [edit_study_path]
-            )
+            encadeador_options = update_variables_options_encadeador([
+                edit_study_path
+            ])
             options = __merge_casos_encadeador_options(
                 casos_options, encadeador_options
             )
@@ -301,9 +326,7 @@ def extract_selected_study_data(
 
 def get_statistics_scenarios(all_scenarios: List[str]) -> List[str]:
     scenarios = [
-        s
-        for s in all_scenarios
-        if s in ["min", "max", "median", "mean", "std"]
+        s for s in all_scenarios if s in ["min", "max", "median", "mean", "std"]
     ]
     scenarios = [s for s in scenarios if "p" in s]
     return scenarios
