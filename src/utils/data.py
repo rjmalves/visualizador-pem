@@ -32,7 +32,7 @@ ENCADEADOR_TABLES = ["ESTUDO", "CASOS", "RODADAS"]
 
 def update_variables_options_casos(paths):
     unique_variables = API.fetch_available_results_list(paths)
-    Log.log().info(f"Obtendo variaveis - CASOS ({paths}): {unique_variables}")
+    Log.log().info(f"Obtendo variaveis - CASOS ({paths})")
     return unique_variables
 
 
@@ -58,6 +58,7 @@ def update_variables_options_encadeador(paths):
         all_variables[k] = pd.concat(
             [df_newave, df_decomp], ignore_index=True
         ).to_json(orient="split")
+    # TODO - talvez tenha que dar drop_duplicates
 
     return all_variables
 
@@ -78,25 +79,30 @@ def update_system_entities_casos(path, options):
     }
 
 
-def update_system_entities_encadeador(paths, options):
+def update_system_entities_encadeador(path, options):
     system_metadata = pd.read_json(StringIO(options["sistema"]), orient="split")
     if "chave" in system_metadata:
-        for path in paths:
-            newave_path = os.path.join(
-                path, Settings.synthesis_dir, Settings.newave_dir
+        newave_path = os.path.join(
+            path, Settings.synthesis_dir, Settings.newave_dir
+        )
+        decomp_path = os.path.join(
+            path, Settings.synthesis_dir, Settings.decomp_dir
+        )
+        newave_system_entities = {
+            e: API.fetch_result(newave_path, e, {"preprocess": "FULL"})
+            for e in system_metadata["chave"].tolist()
+        }
+        decomp_system_entities = {
+            e: API.fetch_result(decomp_path, e, {"preprocess": "FULL"})
+            for e in system_metadata["chave"].tolist()
+        }
+        system_entities = {
+            e: pd.concat(
+                [newave_system_entities[e], decomp_system_entities[e]],
+                ignore_index=True,
             )
-            decomp_path = os.path.join(
-                path, Settings.synthesis_dir, Settings.decomp_dir
-            )
-            newave_system_entities = {
-                e: API.fetch_result(newave_path, e, {"preprocess": "FULL"})
-                for e in system_metadata["chave"].tolist()
-            }
-            decomp_system_entities = {
-                e: API.fetch_result(decomp_path, e, {"preprocess": "FULL"})
-                for e in system_metadata["chave"].tolist()
-            }
-            # TODO - terminar
+            for e in system_metadata["chave"].tolist()
+        }
     else:
         system_entities = {}
     return {
@@ -384,30 +390,33 @@ def update_status_data_encadeador(interval, studies):
     progress = []
     current = []
     status = []
-    for label in labels:
-        names.append(label)
-        study_cases = cases_df.loc[cases_df["estudo"] == label]
-        total_seconds = study_cases["tempo_execucao"].sum()
-        times.append(strfdelta(timedelta(seconds=total_seconds)))
-        n_total = study_cases.shape[0]
-        n_concluidos = study_cases.loc[
-            study_cases["estado"] == "CONCLUIDO"
-        ].shape[0]
-        progress.append(int(n_concluidos * 100 / n_total))
-        current_data = study_cases.loc[study_cases["estado"] != "CONCLUIDO"]
-        if current_data.shape[0] == 0:
-            current_name = "-"
-            current_status = "CONCLUIDO"
-        else:
-            program = current_data["programa"].tolist()[0]
-            year = current_data["ano"].tolist()[0]
-            month = current_data["mes"].tolist()[0]
-            rv = current_data["revisao"].tolist()[0]
-            stat = current_data["estado"].tolist()[0]
-            current_name = f"{program} - {year}_{str(month).zfill(2)}_rv{rv}"
-            current_status = stat
-        current.append(current_name)
-        status.append(current_status)
+    if cases_df is not None:
+        for label in labels:
+            names.append(label)
+            study_cases = cases_df.loc[cases_df["estudo"] == label]
+            total_seconds = study_cases["tempo_execucao"].sum()
+            times.append(strfdelta(timedelta(seconds=total_seconds)))
+            n_total = study_cases.shape[0]
+            n_concluidos = study_cases.loc[
+                study_cases["estado"] == "CONCLUIDO"
+            ].shape[0]
+            progress.append(int(n_concluidos * 100 / n_total))
+            current_data = study_cases.loc[study_cases["estado"] != "CONCLUIDO"]
+            if current_data.shape[0] == 0:
+                current_name = "-"
+                current_status = "CONCLUIDO"
+            else:
+                program = current_data["programa"].tolist()[0]
+                year = current_data["ano"].tolist()[0]
+                month = current_data["mes"].tolist()[0]
+                rv = current_data["revisao"].tolist()[0]
+                stat = current_data["estado"].tolist()[0]
+                current_name = (
+                    f"{program} - {year}_{str(month).zfill(2)}_rv{rv}"
+                )
+                current_status = stat
+            current.append(current_name)
+            status.append(current_status)
 
     status_df = pd.DataFrame(
         data={
@@ -422,29 +431,43 @@ def update_status_data_encadeador(interval, studies):
 
 
 def update_operation_data_encadeador(
-    interval, studies, filters: dict, variable: str
+    studies,
+    filters: dict,
+    variable: str,
+    kind: str = "STATISTICS",
+    needs_stage: bool = False,
 ):
     if not studies:
         return None
     if not variable:
         return None
-    req_filters = validation.validate_required_filters(variable, filters)
+    req_filters = validation.validate_required_filters_operation(
+        variable, filters, needs_stage=needs_stage
+    )
     if req_filters is None:
         return None
-    Log.log().info(f"Obtendo dados - ENCADEADOR ({variable}, {filters})")
-    fetch_filters = {**req_filters, "estagio": 1, "preprocess": "STATISTICS"}
     studies_df = pd.read_json(StringIO(studies), orient="split")
     paths = studies_df["path"].tolist()
     labels = studies_df["name"].tolist()
+    aggregation = req_filters.pop("agregacao")
+    data_filename, unit, data_filters = _get_operation_data_filename(
+        studies_df, kind, variable, aggregation, req_filters
+    )
+    data_filters = {**data_filters, "estagio": 1, "preprocess": kind}
+    if aggregation == "Usina Hidroelétrica":
+        data_filters["codigo_usina"] = data_filters["codigo_uhe"]
+    elif aggregation == "Usina Termelétrica":
+        data_filters["codigo_usina"] = data_filters["codigo_ute"]
     complete_df = pd.DataFrame()
+    Log.log().info(f"Obtendo dados - ENCADEADOR ({variable}, {filters})")
     newave_df = API.fetch_result_list(
         [
             os.path.join(p, Settings.synthesis_dir, Settings.newave_dir)
             for p in paths
         ],
         labels,
-        variable,
-        fetch_filters,
+        data_filename,
+        data_filters,
     )
     decomp_df = API.fetch_result_list(
         [
@@ -452,8 +475,8 @@ def update_operation_data_encadeador(
             for p in paths
         ],
         labels,
-        variable,
-        fetch_filters,
+        data_filename,
+        data_filters,
     )
     if newave_df is not None:
         cols_newave = newave_df.columns.to_list()
@@ -476,12 +499,14 @@ def update_operation_data_encadeador(
     if complete_df.empty:
         return None
     else:
-        for col in ["dataInicio", "dataFim"]:
-            if col in complete_df.columns:
-                complete_df[col] = complete_df[col].astype("datetime64[ns]")
-        return complete_df.to_json(
-            orient="split", date_format="epoch", date_unit="ms"
-        )
+        complete_df["unidade"] = unit
+        return complete_df.to_json(orient="split")
+        # for col in ["dataInicio", "dataFim"]:
+        #     if col in complete_df.columns:
+        #         complete_df[col] = complete_df[col].astype("datetime64[ns]")
+        # return complete_df.to_json(
+        #     orient="split", date_format="epoch", date_unit="ms"
+        # )
 
 
 def _get_programa(
@@ -757,7 +782,6 @@ def update_scenario_data_casos(
 
 
 def update_custos_tempo_data_encadeador(
-    interval,
     studies,
     filters: dict,
     variable: str,
@@ -790,7 +814,6 @@ def update_custos_tempo_data_encadeador(
 
 
 def update_violation_data_encadeador(
-    interval,
     studies,
     filters: dict,
     violation: str,

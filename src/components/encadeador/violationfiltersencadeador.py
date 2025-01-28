@@ -1,9 +1,10 @@
-from dash import html, dcc, callback, Input, State, Output, MATCH
-from dash.exceptions import PreventUpdate
 import uuid
-import pandas as pd
 from io import StringIO
-from src.utils.settings import Settings
+
+import pandas as pd
+from dash import MATCH, Input, Output, State, callback, dcc, html
+from dash.exceptions import PreventUpdate
+
 import src.utils.data as data
 
 NOMES_SUBMERCADOS = {
@@ -153,11 +154,6 @@ class ViolationFilters(html.Div):
                     id=self.ids.filters(aio_id),
                     storage_type="memory",
                 ),
-                dcc.Interval(
-                    id=self.ids.updater(aio_id),
-                    interval=int(Settings.graphs_update_period),
-                    n_intervals=0,
-                ),
                 dcc.Download(id=self.ids.download(aio_id)),
                 html.Button(
                     "CSV",
@@ -181,14 +177,12 @@ class ViolationFilters(html.Div):
 
     @callback(
         Output(ids.data(MATCH), "data"),
-        Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.studies(MATCH), "data"),
         Input(ids.filters(MATCH), "data"),
         Input(ids.violation_dropdown(MATCH), "value"),
     )
-    def update_data(interval, studies, filters, violation: str):
+    def update_data(studies, filters, violation: str):
         return data.update_violation_data_encadeador(
-            interval,
             studies,
             filters,
             violation,

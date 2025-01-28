@@ -1,4 +1,3 @@
-import itertools
 import os
 from io import StringIO
 
@@ -42,26 +41,42 @@ NOT_OPERATION_FILES = (
 SCENARIO_FILE_PATTERNS = ["_FOR", "_BKW", "_SF"]
 
 
-def update_operation_variables_dropdown_options_encadeador(
-    interval, studies_data
-):
+def update_operation_variables_dropdown_options_encadeador(studies_data):
     if studies_data is None:
         return []
     studies = pd.read_json(StringIO(studies_data), orient="split")
-    options = studies["options"].tolist()
-    unique_variables = [o.split(",") for o in options]
-    unique_variables = list(
-        set(list(itertools.chain.from_iterable(unique_variables)))
+    if studies.empty:
+        return []
+    options_df = pd.concat(
+        [
+            pd.read_json(StringIO(opt["operacao"]), orient="split")
+            for opt in studies["options"]
+        ],
+        ignore_index=True,
     )
-    unique_variables = [
-        a for a in unique_variables if a not in NOT_OPERATION_FILES
-    ]
-    unique_variables = [
-        a
-        for a in unique_variables
-        if not any([p in a for p in SCENARIO_FILE_PATTERNS])
-    ]
-    return sorted(unique_variables)
+    if options_df.empty:
+        return []
+    else:
+        return options_df["nome_longo_variavel"].unique().tolist()
+
+
+def update_operation_variables_dropdown_options_casos(studies_data):
+    if studies_data is None:
+        return []
+    studies = pd.read_json(StringIO(studies_data), orient="split")
+    if studies.empty:
+        return []
+    options_df = pd.concat(
+        [
+            pd.read_json(StringIO(opt["operacao"]), orient="split")
+            for opt in studies["options"]
+        ],
+        ignore_index=True,
+    )
+    if options_df.empty:
+        return []
+    else:
+        return options_df["nome_longo_variavel"].unique().tolist()
 
 
 def update_operation_resolution_dropdown_options_casos(studies_data, variable):
@@ -88,25 +103,6 @@ def update_operation_resolution_dropdown_options_casos(studies_data, variable):
             .unique()
             .tolist()
         )
-
-
-def update_operation_variables_dropdown_options_casos(studies_data):
-    if studies_data is None:
-        return []
-    studies = pd.read_json(StringIO(studies_data), orient="split")
-    if studies.empty:
-        return []
-    options_df = pd.concat(
-        [
-            pd.read_json(StringIO(opt["operacao"]), orient="split")
-            for opt in studies["options"]
-        ],
-        ignore_index=True,
-    )
-    if options_df.empty:
-        return []
-    else:
-        return options_df["nome_longo_variavel"].unique().tolist()
 
 
 def update_scenario_variables_dropdown_options_casos(studies_data):
@@ -182,19 +178,27 @@ def update_scenarios_etapa_dropdown_options_casos(
         )
 
 
-def update_costs_time_variables_dropdown_options_encadeador(
-    interval, studies_data
-):
+def update_costs_time_variables_dropdown_options_encadeador(studies_data):
     if studies_data is None:
         return []
     studies = pd.read_json(StringIO(studies_data), orient="split")
-    options = studies["options"].tolist()
-    unique_variables = [o.split(",") for o in options]
-    unique_variables = list(
-        set(list(itertools.chain.from_iterable(unique_variables)))
+    if studies.empty:
+        return []
+    options_df = pd.concat(
+        [
+            pd.read_json(StringIO(opt["execucao"]), orient="split")
+            for opt in studies["options"]
+        ],
+        ignore_index=True,
     )
-    unique_variables = [a for a in unique_variables if a in COSTS_TIME_FILES]
-    return sorted(unique_variables)
+    if options_df.empty:
+        return []
+    else:
+        return [
+            o
+            for o in options_df["chave"].unique().tolist()
+            if o in ["TEMPO", "CUSTOS"]
+        ]
 
 
 def update_costs_time_variables_dropdown_options_casos(studies_data):
@@ -220,7 +224,7 @@ def update_costs_time_variables_dropdown_options_casos(studies_data):
         ]
 
 
-def update_studies_names_dropdown_options_encadeador(interval, studies_data):
+def update_studies_names_dropdown_options_encadeador(studies_data):
     if studies_data is None:
         return []
     studies = pd.read_json(StringIO(studies_data), orient="split")
@@ -236,7 +240,7 @@ def update_studies_names_dropdown_options_casos(studies_data):
     return labels
 
 
-def update_operation_options_encadeador(interval, studies, variable: str):
+def update_operation_options_encadeador(studies, variable: str):
     if not studies:
         return None
     if not variable:

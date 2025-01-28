@@ -1,11 +1,12 @@
-from dash import html, dcc, callback, Input, State, Output, MATCH
-from dash.exceptions import PreventUpdate
 import uuid
-import pandas as pd
 from io import StringIO
-from src.utils.settings import Settings
-import src.utils.dropdowns as dropdowns
+
+import pandas as pd
+from dash import MATCH, Input, Output, State, callback, dcc, html
+from dash.exceptions import PreventUpdate
+
 import src.utils.data as data
+import src.utils.dropdowns as dropdowns
 
 NOMES_SUBMERCADOS = {
     "SUDESTE": "'SUDESTE'|'SE'",
@@ -367,11 +368,6 @@ class OperationFiltersEncadeador(html.Div):
                     id=self.ids.filters(aio_id),
                     storage_type="memory",
                 ),
-                dcc.Interval(
-                    id=self.ids.updater(aio_id),
-                    interval=int(Settings.graphs_update_period),
-                    n_intervals=0,
-                ),
                 dcc.Download(id=self.ids.download(aio_id)),
                 html.Button(
                     "CSV",
@@ -455,10 +451,9 @@ class OperationFiltersEncadeador(html.Div):
 
     @callback(
         Output(ids.usina_dropdown(MATCH), "options"),
-        Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.options(MATCH), "data"),
     )
-    def update_usina_options(interval, options):
+    def update_usina_options(options):
         if options:
             if "usina" in options.keys():
                 return sorted(list(set(options["usina"])))
@@ -466,10 +461,9 @@ class OperationFiltersEncadeador(html.Div):
 
     @callback(
         Output(ids.ree_dropdown(MATCH), "options"),
-        Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.options(MATCH), "data"),
     )
-    def update_ree_options(interval, options):
+    def update_ree_options(options):
         if options:
             if "ree" in options.keys():
                 return sorted(list(set(options["ree"])))
@@ -477,10 +471,9 @@ class OperationFiltersEncadeador(html.Div):
 
     @callback(
         Output(ids.submercado_dropdown(MATCH), "options"),
-        Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.options(MATCH), "data"),
     )
-    def update_submercado_options(interval, options):
+    def update_submercado_options(options):
         if options:
             if "submercado" in options.keys():
                 subs = list(set(options["submercado"]))
@@ -491,10 +484,9 @@ class OperationFiltersEncadeador(html.Div):
 
     @callback(
         Output(ids.submercadoDe_dropdown(MATCH), "options"),
-        Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.options(MATCH), "data"),
     )
-    def update_submercadoDe_options(interval, options):
+    def update_submercadoDe_options(options):
         if options:
             if "submercadoDe" in options.keys():
                 subs = list(set(options["submercadoDe"]))
@@ -505,10 +497,9 @@ class OperationFiltersEncadeador(html.Div):
 
     @callback(
         Output(ids.submercadoPara_dropdown(MATCH), "options"),
-        Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.options(MATCH), "data"),
     )
-    def update_submercadoPara_options(interval, options):
+    def update_submercadoPara_options(options):
         if options:
             if "submercadoPara" in options.keys():
                 subs = list(set(options["submercadoPara"]))
@@ -519,10 +510,9 @@ class OperationFiltersEncadeador(html.Div):
 
     @callback(
         Output(ids.patamar_dropdown(MATCH), "options"),
-        Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.options(MATCH), "data"),
     )
-    def update_patamar_options(interval, options):
+    def update_patamar_options(options):
         if options:
             if "patamar" in options.keys():
                 return sorted(list(set(options["patamar"])))
@@ -530,10 +520,9 @@ class OperationFiltersEncadeador(html.Div):
 
     @callback(
         Output(ids.estagio_dropdown(MATCH), "options"),
-        Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.options(MATCH), "data"),
     )
-    def update_estagio_options(interval, options):
+    def update_estagio_options(options):
         if options:
             if "estagio" in options.keys():
                 return sorted(list(set(options["estagio"])))
@@ -579,37 +568,30 @@ class OperationFiltersEncadeador(html.Div):
 
     @callback(
         Output(ids.variable_dropdown(MATCH), "options"),
-        Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.studies(MATCH), "data"),
     )
-    def update_variables_dropdown_options(interval, studies_data):
-        return (
-            dropdowns.update_operation_variables_dropdown_options_encadeador(
-                interval, studies_data
-            )
+    def update_variables_dropdown_options(studies_data):
+        return dropdowns.update_operation_variables_dropdown_options_encadeador(
+            studies_data
         )
 
     @callback(
         Output(ids.options(MATCH), "data"),
-        Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.studies(MATCH), "data"),
         Input(ids.variable_dropdown(MATCH), "value"),
     )
-    def update_options(interval, studies, variable: str):
-        return dropdowns.update_operation_options_encadeador(
-            interval, studies, variable
-        )
+    def update_options(studies, variable: str):
+        return dropdowns.update_operation_options_encadeador(studies, variable)
 
     @callback(
         Output(ids.data(MATCH), "data"),
-        Input(ids.updater(MATCH), "n_intervals"),
         Input(ids.studies(MATCH), "data"),
         Input(ids.filters(MATCH), "data"),
         Input(ids.variable_dropdown(MATCH), "value"),
     )
-    def update_data(interval, studies, filters: dict, variable: str):
+    def update_data(studies, filters: dict, variable: str):
         return data.update_operation_data_encadeador(
-            interval, studies, filters, variable
+            studies, filters, variable, kind="STATISTICS"
         )
 
     @callback(
@@ -617,14 +599,13 @@ class OperationFiltersEncadeador(html.Div):
         Input(ids.download_btn(MATCH), "n_clicks"),
         State(ids.data(MATCH), "data"),
         State(ids.variable_dropdown(MATCH), "value"),
+        prevent_initial_call=True,
     )
     def generate_csv(n_clicks, operation_data, variable):
         if n_clicks is None:
             raise PreventUpdate
         if operation_data is not None:
             dados = pd.read_json(StringIO(operation_data), orient="split")
-            dados["dataInicio"] = pd.to_datetime(
-                dados["dataInicio"], unit="ms"
-            )
+            dados["dataInicio"] = pd.to_datetime(dados["dataInicio"], unit="ms")
             dados["dataFim"] = pd.to_datetime(dados["dataFim"], unit="ms")
             return dcc.send_data_frame(dados.to_csv, f"{variable}.csv")

@@ -5,6 +5,7 @@ from typing import Dict, List, Optional
 import base62
 import pandas as pd
 import requests
+
 import src.utils.constants as constants
 from src.utils.log import Log
 from src.utils.settings import Settings
@@ -28,7 +29,7 @@ class API:
             else:
                 if r.headers["Content-Type"] == "application/json":
                     Log.log().info(
-                        f"API - Resultados Disponiveis ({study_path}): {r.json()}"
+                        f"API - Resultados Disponiveis ({study_path})"
                     )
                     return r.json()
                 else:
