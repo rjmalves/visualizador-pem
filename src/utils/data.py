@@ -190,9 +190,7 @@ def edit_current_study_data(
                 options = __merge_casos_encadeador_options(
                     casos_options, encadeador_options
                 )
-                Log.log().info(
-                    f"Adicionando estudo - CASOS - Opcoes: ({options})"
-                )
+                Log.log().info("Adicionando estudo - CASOS - Opcoes")
                 casos_system = update_system_entities_casos(
                     new_study_id, casos_options
                 )
@@ -202,9 +200,7 @@ def edit_current_study_data(
                 system = __merge_casos_encadeador_options(
                     casos_system, encadeador_system
                 )
-                Log.log().info(
-                    f"Adicionando estudo - CASOS - Sistema: ({system})"
-                )
+                Log.log().info("Adicionando estudo - CASOS - Sistema")
                 new_data = pd.DataFrame(
                     data={
                         "study_id": [None],
@@ -459,7 +455,7 @@ def update_operation_data_encadeador(
     elif aggregation == "Usina Termelétrica":
         data_filters["codigo_usina"] = data_filters["codigo_ute"]
     complete_df = pd.DataFrame()
-    Log.log().info(f"Obtendo dados - ENCADEADOR ({variable}, {filters})")
+    Log.log().info(f"Obtendo dados - ENCADEADOR ({variable})")
     newave_df = API.fetch_result_list(
         [
             os.path.join(p, Settings.synthesis_dir, Settings.newave_dir)
@@ -495,7 +491,7 @@ def update_operation_data_encadeador(
             ],
             ignore_index=True,
         )
-    Log.log().info(f"Dados obtidos - ENCADEADOR ({variable}, {filters})")
+    Log.log().info(f"Dados obtidos - ENCADEADOR ({variable})")
     if complete_df.empty:
         return None
     else:
@@ -720,7 +716,7 @@ def update_operation_data_casos(
         data_filters["codigo_usina"] = data_filters["codigo_uhe"]
     elif aggregation == "Usina Termelétrica":
         data_filters["codigo_usina"] = data_filters["codigo_ute"]
-    Log.log().info(f"Obtendo dados - CASOS ({variable}, {filters})")
+    Log.log().info(f"Obtendo dados - CASOS ({variable})")
     df = API.fetch_result_list(
         paths,
         labels,
@@ -764,7 +760,7 @@ def update_scenario_data_casos(
     data_filename, unit, data_filters = _get_scenario_data_filename(
         studies_df, kind, variable, aggregation, step, req_filters
     )
-    Log.log().info(f"Obtendo dados - CASOS ({variable}, {filters})")
+    Log.log().info(f"Obtendo dados - CASOS ({variable})")
     df = API.fetch_result_list(
         paths,
         labels,
@@ -793,7 +789,7 @@ def update_custos_tempo_data_encadeador(
     programa = filters.get("programa")
     if programa is None:
         return None
-    Log.log().info(f"Obtendo dados - ENCADEADOR ({variable}, {filters})")
+    Log.log().info(f"Obtendo dados - ENCADEADOR ({variable})")
     studies_df = pd.read_json(StringIO(studies), orient="split")
     paths = studies_df["path"].tolist()
     labels = studies_df["name"].tolist()
@@ -806,7 +802,7 @@ def update_custos_tempo_data_encadeador(
         variable,
         {},
     )
-    Log.log().info(f"Dados obtidos - ENCADEADOR ({variable}, {filters})")
+    Log.log().info(f"Dados obtidos - ENCADEADOR ({variable})")
     if df.empty:
         return None
     else:
@@ -825,7 +821,7 @@ def update_violation_data_encadeador(
     programa = filters.get("programa")
     if programa is None:
         return None
-    Log.log().info(f"Obtendo dados - ENCADEADOR ({violation}, {filters})")
+    Log.log().info(f"Obtendo dados - ENCADEADOR ({violation})")
     studies_df = pd.read_json(StringIO(studies), orient="split")
     paths = studies_df["path"].tolist()
     labels = studies_df["name"].tolist()
@@ -840,7 +836,7 @@ def update_violation_data_encadeador(
         {"iteracao": -1, "tipo": f"'{violation}'", "preprocess": "FULL"},
     )
 
-    Log.log().info(f"Dados obtidos - ENCADEADOR ({violation}, {filters})")
+    Log.log().info(f"Dados obtidos - ENCADEADOR ({violation})")
     if df is None:
         return None
     if df.empty:
