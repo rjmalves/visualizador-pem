@@ -1,6 +1,5 @@
 import pandas as pd
 
-
 SYNTHESIS_METADATA_NAMES = {
     "operacao": "METADADOS_OPERACAO",
     "cenarios": "METADADOS_CENARIOS",
@@ -273,3 +272,8 @@ ARESTAS_INTERCAMBIOS_DECOMP = {
         "textframe": [7.5, 2],
     },
 }
+
+START_DATE_COLUMN = "data_inicio"
+END_DATE_COLUMN = "data_fim"
+SCENARIO_COLUMN = "cenario"
+UNIT_COLUMN = "unidade"

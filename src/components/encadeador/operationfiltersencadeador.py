@@ -7,6 +7,7 @@ from dash.exceptions import PreventUpdate
 
 import src.utils.data as data
 import src.utils.dropdowns as dropdowns
+from src.utils.constants import END_DATE_COLUMN, START_DATE_COLUMN
 
 NOMES_SUBMERCADOS = {
     "SUDESTE": "'SUDESTE'|'SE'",
@@ -50,14 +51,24 @@ class OperationFiltersEncadeador(html.Div):
             "subcomponent": "filters",
             "aio_id": aio_id,
         }
-        usina_dropdown = lambda aio_id: {
+        uhe_dropdown = lambda aio_id: {
             "component": "OperationFiltersEncadeador",
-            "subcomponent": "usina_dropdown",
+            "subcomponent": "uhe_dropdown",
             "aio_id": aio_id,
         }
-        usina_dropdown_container = lambda aio_id: {
+        uhe_dropdown_container = lambda aio_id: {
             "component": "OperationFiltersEncadeador",
-            "subcomponent": "usina_dropdown_container",
+            "subcomponent": "uhe_dropdown_container",
+            "aio_id": aio_id,
+        }
+        ute_dropdown = lambda aio_id: {
+            "component": "OperationFiltersEncadeador",
+            "subcomponent": "ute_dropdown",
+            "aio_id": aio_id,
+        }
+        ute_dropdown_container = lambda aio_id: {
+            "component": "OperationFiltersEncadeador",
+            "subcomponent": "ute_dropdown_container",
             "aio_id": aio_id,
         }
         ree_dropdown = lambda aio_id: {
@@ -80,24 +91,24 @@ class OperationFiltersEncadeador(html.Div):
             "subcomponent": "submercado_dropdown_container",
             "aio_id": aio_id,
         }
-        submercadoDe_dropdown = lambda aio_id: {
+        submercado_de_dropdown = lambda aio_id: {
             "component": "OperationFiltersEncadeador",
-            "subcomponent": "submercadoDe_dropdown",
+            "subcomponent": "submercado_de_dropdown",
             "aio_id": aio_id,
         }
-        submercadoDe_dropdown_container = lambda aio_id: {
+        submercado_de_dropdown_container = lambda aio_id: {
             "component": "OperationFiltersEncadeador",
-            "subcomponent": "submercadoDe_dropdown_container",
+            "subcomponent": "submercado_de_dropdown_container",
             "aio_id": aio_id,
         }
-        submercadoPara_dropdown = lambda aio_id: {
+        submercado_para_dropdown = lambda aio_id: {
             "component": "OperationFiltersEncadeador",
-            "subcomponent": "submercadoPara_dropdown",
+            "subcomponent": "submercado_para_dropdown",
             "aio_id": aio_id,
         }
-        submercadoPara_dropdown_container = lambda aio_id: {
+        submercado_para_dropdown_container = lambda aio_id: {
             "component": "OperationFiltersEncadeador",
-            "subcomponent": "submercadoPara_dropdown_container",
+            "subcomponent": "submercado_para_dropdown_container",
             "aio_id": aio_id,
         }
         patamar_dropdown = lambda aio_id: {
@@ -120,14 +131,14 @@ class OperationFiltersEncadeador(html.Div):
             "subcomponent": "estagio_dropdown_container",
             "aio_id": aio_id,
         }
-        cenario_dropdown = lambda aio_id: {
+        resolution_dropdown = lambda aio_id: {
             "component": "OperationFiltersEncadeador",
-            "subcomponent": "cenario_dropdown",
+            "subcomponent": "resolution_dropdown",
             "aio_id": aio_id,
         }
-        cenario_dropdown_container = lambda aio_id: {
+        resolution_dropdown_container = lambda aio_id: {
             "component": "OperationFiltersEncadeador",
-            "subcomponent": "cenario_dropdown_container",
+            "subcomponent": "resolution_dropdown_container",
             "aio_id": aio_id,
         }
         variable_dropdown = lambda aio_id: {
@@ -156,22 +167,26 @@ class OperationFiltersEncadeador(html.Div):
     def __init__(
         self,
         aio_id=None,
-        usina_dropdown_props=None,
+        uhe_dropdown_props=None,
+        ute_dropdown_props=None,
         ree_dropdown_props=None,
         submercado_dropdown_props=None,
-        submercadoDe_dropdown_props=None,
-        submercadoPara_dropdown_props=None,
+        submercado_de_dropdown_props=None,
+        submercado_para_dropdown_props=None,
         patamar_dropdown_props=None,
         estagio_dropdown_props=None,
-        cenario_dropdown_props=None,
+        resolution_dropdown_props=None,
         variable_dropdown_props=None,
     ):
         if aio_id is None:
             aio_id = str(uuid.uuid4())
         pass
 
-        usina_dropdown_props = (
-            usina_dropdown_props.copy() if usina_dropdown_props else {}
+        uhe_dropdown_props = (
+            uhe_dropdown_props.copy() if uhe_dropdown_props else {}
+        )
+        ute_dropdown_props = (
+            ute_dropdown_props.copy() if ute_dropdown_props else {}
         )
         ree_dropdown_props = (
             ree_dropdown_props.copy() if ree_dropdown_props else {}
@@ -181,14 +196,14 @@ class OperationFiltersEncadeador(html.Div):
             if submercado_dropdown_props
             else {}
         )
-        submercadoDe_dropdown_props = (
-            submercadoDe_dropdown_props.copy()
-            if submercadoDe_dropdown_props
+        submercado_de_dropdown_props = (
+            submercado_de_dropdown_props.copy()
+            if submercado_de_dropdown_props
             else {}
         )
-        submercadoPara_dropdown_props = (
-            submercadoPara_dropdown_props.copy()
-            if submercadoPara_dropdown_props
+        submercado_para_dropdown_props = (
+            submercado_para_dropdown_props.copy()
+            if submercado_para_dropdown_props
             else {}
         )
         patamar_dropdown_props = (
@@ -197,54 +212,68 @@ class OperationFiltersEncadeador(html.Div):
         estagio_dropdown_props = (
             estagio_dropdown_props.copy() if estagio_dropdown_props else {}
         )
-        cenario_dropdown_props = (
-            cenario_dropdown_props.copy() if cenario_dropdown_props else {}
+        resolution_dropdown_props = (
+            resolution_dropdown_props.copy()
+            if resolution_dropdown_props
+            else {}
         )
         variable_dropdown_props = (
             variable_dropdown_props.copy() if variable_dropdown_props else {}
         )
 
-        if "style" not in usina_dropdown_props:
-            usina_dropdown_props["style"] = {"display": "none"}
+        if "style" not in uhe_dropdown_props:
+            uhe_dropdown_props["style"] = {"display": "none"}
+        if "style" not in ute_dropdown_props:
+            ute_dropdown_props["style"] = {"display": "none"}
         if "style" not in ree_dropdown_props:
             ree_dropdown_props["style"] = {"display": "none"}
         if "style" not in submercado_dropdown_props:
             submercado_dropdown_props["style"] = {"display": "none"}
-        if "style" not in submercadoDe_dropdown_props:
-            submercadoDe_dropdown_props["style"] = {"display": "none"}
-        if "style" not in submercadoPara_dropdown_props:
-            submercadoPara_dropdown_props["style"] = {"display": "none"}
+        if "style" not in submercado_de_dropdown_props:
+            submercado_de_dropdown_props["style"] = {"display": "none"}
+        if "style" not in submercado_para_dropdown_props:
+            submercado_para_dropdown_props["style"] = {"display": "none"}
         if "style" not in patamar_dropdown_props:
             patamar_dropdown_props["style"] = {"display": "none"}
         if "style" not in estagio_dropdown_props:
             estagio_dropdown_props["style"] = {"display": "none"}
-        if "style" not in cenario_dropdown_props:
-            cenario_dropdown_props["style"] = {"display": "none"}
+        if "style" not in resolution_dropdown_props:
+            resolution_dropdown_props["style"] = {"display": "none"}
         # if "style" not in variable_dropdown_props:
         #     variable_dropdown_props["style"] = {"display": "none"}
 
-        if "className" not in usina_dropdown_props:
-            usina_dropdown_props["className"] = "dropdown-container"
+        if "className" not in uhe_dropdown_props:
+            uhe_dropdown_props["className"] = "dropdown-container"
+        if "className" not in ute_dropdown_props:
+            ute_dropdown_props["className"] = "dropdown-container"
         if "className" not in ree_dropdown_props:
             ree_dropdown_props["className"] = "dropdown-container"
         if "className" not in submercado_dropdown_props:
             submercado_dropdown_props["className"] = "dropdown-container"
-        if "className" not in submercadoDe_dropdown_props:
-            submercadoDe_dropdown_props["className"] = "dropdown-container"
-        if "className" not in submercadoPara_dropdown_props:
-            submercadoPara_dropdown_props["className"] = "dropdown-container"
+        if "className" not in submercado_de_dropdown_props:
+            submercado_de_dropdown_props["className"] = "dropdown-container"
+        if "className" not in submercado_para_dropdown_props:
+            submercado_para_dropdown_props["className"] = "dropdown-container"
         if "className" not in patamar_dropdown_props:
             patamar_dropdown_props["className"] = "dropdown-container"
         if "className" not in estagio_dropdown_props:
             estagio_dropdown_props["className"] = "dropdown-container"
-        if "className" not in cenario_dropdown_props:
-            cenario_dropdown_props["className"] = "dropdown-container"
+        if "className" not in resolution_dropdown_props:
+            resolution_dropdown_props["className"] = "dropdown-container"
         if "className" not in variable_dropdown_props:
             variable_dropdown_props["className"] = "dropdown-container"
 
-        if "children" not in usina_dropdown_props:
-            usina_dropdown_props["children"] = dcc.Dropdown(
-                id=self.ids.usina_dropdown(aio_id),
+        if "children" not in uhe_dropdown_props:
+            uhe_dropdown_props["children"] = dcc.Dropdown(
+                id=self.ids.uhe_dropdown(aio_id),
+                options=[],
+                value=None,
+                placeholder="Usina",
+                className="variable-dropdown",
+            )
+        if "children" not in ute_dropdown_props:
+            ute_dropdown_props["children"] = dcc.Dropdown(
+                id=self.ids.ute_dropdown(aio_id),
                 options=[],
                 value=None,
                 placeholder="Usina",
@@ -266,20 +295,26 @@ class OperationFiltersEncadeador(html.Div):
                 placeholder="Submercado",
                 className="variable-dropdown",
             )
-        if "children" not in submercadoDe_dropdown_props:
-            submercadoDe_dropdown_props["children"] = dcc.Dropdown(
-                id=self.ids.submercadoDe_dropdown(aio_id),
+        if "children" not in submercado_de_dropdown_props:
+            submercado_de_dropdown_props["children"] = dcc.Dropdown(
+                id=self.ids.submercado_de_dropdown(aio_id),
                 options=[],
+                style={
+                    "width": "150px",
+                },
                 value=None,
                 placeholder="Submercado De",
                 className="variable-dropdown",
             )
-        if "children" not in submercadoPara_dropdown_props:
-            submercadoPara_dropdown_props["children"] = dcc.Dropdown(
-                id=self.ids.submercadoPara_dropdown(aio_id),
+        if "children" not in submercado_para_dropdown_props:
+            submercado_para_dropdown_props["children"] = dcc.Dropdown(
+                id=self.ids.submercado_para_dropdown(aio_id),
                 options=[],
+                style={
+                    "width": "150px",
+                },
                 value=None,
-                placeholder="Submercado De",
+                placeholder="Submercado Para",
                 className="variable-dropdown",
             )
         if "children" not in patamar_dropdown_props:
@@ -298,12 +333,12 @@ class OperationFiltersEncadeador(html.Div):
                 placeholder="Estagio",
                 className="variable-dropdown",
             )
-        if "children" not in cenario_dropdown_props:
-            cenario_dropdown_props["children"] = dcc.Dropdown(
-                id=self.ids.cenario_dropdown(aio_id),
+        if "children" not in resolution_dropdown_props:
+            resolution_dropdown_props["children"] = dcc.Dropdown(
+                id=self.ids.resolution_dropdown(aio_id),
                 options=[],
                 value=None,
-                placeholder="Cenario",
+                placeholder="Agregação",
                 className="variable-dropdown",
             )
         if "children" not in variable_dropdown_props:
@@ -322,12 +357,12 @@ class OperationFiltersEncadeador(html.Div):
                     **estagio_dropdown_props,
                 ),
                 html.Div(
-                    id=self.ids.cenario_dropdown_container(aio_id),
-                    **cenario_dropdown_props,
+                    id=self.ids.uhe_dropdown_container(aio_id),
+                    **uhe_dropdown_props,
                 ),
                 html.Div(
-                    id=self.ids.usina_dropdown_container(aio_id),
-                    **usina_dropdown_props,
+                    id=self.ids.ute_dropdown_container(aio_id),
+                    **ute_dropdown_props,
                 ),
                 html.Div(
                     id=self.ids.ree_dropdown_container(aio_id),
@@ -338,16 +373,20 @@ class OperationFiltersEncadeador(html.Div):
                     **submercado_dropdown_props,
                 ),
                 html.Div(
-                    id=self.ids.submercadoDe_dropdown_container(aio_id),
-                    **submercadoDe_dropdown_props,
+                    id=self.ids.submercado_de_dropdown_container(aio_id),
+                    **submercado_de_dropdown_props,
                 ),
                 html.Div(
-                    id=self.ids.submercadoPara_dropdown_container(aio_id),
-                    **submercadoPara_dropdown_props,
+                    id=self.ids.submercado_para_dropdown_container(aio_id),
+                    **submercado_para_dropdown_props,
                 ),
                 html.Div(
                     id=self.ids.patamar_dropdown_container(aio_id),
                     **patamar_dropdown_props,
+                ),
+                html.Div(
+                    id=self.ids.resolution_dropdown_container(aio_id),
+                    **resolution_dropdown_props,
                 ),
                 html.Div(
                     **variable_dropdown_props,
@@ -378,210 +417,249 @@ class OperationFiltersEncadeador(html.Div):
         )
 
     @callback(
-        Output(ids.usina_dropdown_container(MATCH), "style"),
-        Input(ids.variable_dropdown(MATCH), "value"),
+        Output(ids.uhe_dropdown_container(MATCH), "style"),
+        Input(ids.resolution_dropdown(MATCH), "value"),
+        prevent_initial_call=True,
     )
-    def update_display_usina_dropdown(variavel: str):
-        agregacao_espacial = variavel.split("_")[1] if variavel else ""
+    def update_display_uhe_dropdown(resolution: str):
         return (
             {"display": "flex"}
-            if agregacao_espacial in ["UHE", "UTE", "UEE"]
+            if resolution == "Usina Hidroelétrica"
+            else {"display": "none"}
+        )
+
+    @callback(
+        Output(ids.ute_dropdown_container(MATCH), "style"),
+        Input(ids.resolution_dropdown(MATCH), "value"),
+        prevent_initial_call=True,
+    )
+    def update_display_ute_dropdown(resolution: str):
+        return (
+            {"display": "flex"}
+            if resolution == "Usina Termelétrica"
             else {"display": "none"}
         )
 
     @callback(
         Output(ids.ree_dropdown_container(MATCH), "style"),
-        Input(ids.variable_dropdown(MATCH), "value"),
+        Input(ids.resolution_dropdown(MATCH), "value"),
+        prevent_initial_call=True,
     )
-    def update_display_ree_dropdown(variavel: str):
-        agregacao_espacial = variavel.split("_")[1] if variavel else ""
+    def update_display_ree_dropdown(resolution: str):
         return (
             {"display": "flex"}
-            if agregacao_espacial == "REE"
+            if resolution == "Reservatório Equivalente"
             else {"display": "none"}
         )
 
     @callback(
         Output(ids.submercado_dropdown_container(MATCH), "style"),
-        Input(ids.variable_dropdown(MATCH), "value"),
+        Input(ids.resolution_dropdown(MATCH), "value"),
+        prevent_initial_call=True,
     )
-    def update_display_submercado_dropdown(variavel: str):
-        agregacao_espacial = variavel.split("_")[1] if variavel else ""
+    def update_display_submercado_dropdown(resolution: str):
         return (
             {"display": "flex"}
-            if agregacao_espacial == "SBM"
+            if resolution == "Submercado"
             else {"display": "none"}
         )
 
     @callback(
-        Output(ids.submercadoDe_dropdown_container(MATCH), "style"),
-        Input(ids.variable_dropdown(MATCH), "value"),
+        Output(ids.submercado_de_dropdown_container(MATCH), "style"),
+        Input(ids.resolution_dropdown(MATCH), "value"),
+        prevent_initial_call=True,
     )
-    def update_display_submercadoDe_dropdown(variavel: str):
-        agregacao_espacial = variavel.split("_")[1] if variavel else ""
+    def update_display_submercado_de_dropdown(resolution: str):
         return (
             {"display": "flex"}
-            if agregacao_espacial == "SBP"
+            if resolution == "Par de Submercados"
             else {"display": "none"}
         )
 
     @callback(
-        Output(ids.submercadoPara_dropdown_container(MATCH), "style"),
-        Input(ids.variable_dropdown(MATCH), "value"),
+        Output(ids.submercado_para_dropdown_container(MATCH), "style"),
+        Input(ids.resolution_dropdown(MATCH), "value"),
+        prevent_initial_call=True,
     )
-    def update_display_submercadoPara_dropdown(variavel: str):
-        agregacao_espacial = variavel.split("_")[1] if variavel else ""
+    def update_display_submercado_para_dropdown(resolution: str):
         return (
             {"display": "flex"}
-            if agregacao_espacial == "SBP"
+            if resolution == "Par de Submercados"
             else {"display": "none"}
         )
 
     @callback(
         Output(ids.patamar_dropdown_container(MATCH), "style"),
+        Input(ids.resolution_dropdown(MATCH), "value"),
         Input(ids.variable_dropdown(MATCH), "value"),
+        prevent_initial_call=True,
     )
-    def update_display_patamar_dropdown(variavel: str):
-        agregacao_temporal = variavel.split("_")[2] if variavel else ""
+    def update_display_patamar_dropdown(agregacao: str, variavel: str):
+        should_display = all([agregacao is not None, variavel is not None])
+        return {"display": "flex"} if should_display else {"display": "none"}
+
+    @callback(
+        Output(ids.resolution_dropdown_container(MATCH), "style"),
+        Input(ids.variable_dropdown(MATCH), "value"),
+        prevent_initial_call=True,
+    )
+    def update_display_resolution_dropdown(variavel: str):
         return (
-            {"display": "flex"}
-            if agregacao_temporal == "PAT"
-            else {"display": "none"}
+            {"display": "flex"} if variavel is not None else {"display": "none"}
         )
 
     @callback(
-        Output(ids.usina_dropdown(MATCH), "options"),
-        Input(ids.options(MATCH), "data"),
+        Output(ids.filters(MATCH), "data"),
+        Input(ids.uhe_dropdown(MATCH), "value"),
+        Input(ids.ute_dropdown(MATCH), "value"),
+        Input(ids.ree_dropdown(MATCH), "value"),
+        Input(ids.submercado_dropdown(MATCH), "value"),
+        Input(ids.submercado_de_dropdown(MATCH), "value"),
+        Input(ids.submercado_para_dropdown(MATCH), "value"),
+        Input(ids.patamar_dropdown(MATCH), "value"),
+        Input(ids.estagio_dropdown(MATCH), "value"),
+        Input(ids.resolution_dropdown(MATCH), "value"),
     )
-    def update_usina_options(options):
-        if options:
-            if "usina" in options.keys():
-                return sorted(list(set(options["usina"])))
-        return []
-
-    @callback(
-        Output(ids.ree_dropdown(MATCH), "options"),
-        Input(ids.options(MATCH), "data"),
-    )
-    def update_ree_options(options):
-        if options:
-            if "ree" in options.keys():
-                return sorted(list(set(options["ree"])))
-        return []
-
-    @callback(
-        Output(ids.submercado_dropdown(MATCH), "options"),
-        Input(ids.options(MATCH), "data"),
-    )
-    def update_submercado_options(options):
-        if options:
-            if "submercado" in options.keys():
-                subs = list(set(options["submercado"]))
-                return sorted(
-                    list(set([GRUPOS_SUBMERCADOS.get(s, s) for s in subs]))
-                )
-        return []
-
-    @callback(
-        Output(ids.submercadoDe_dropdown(MATCH), "options"),
-        Input(ids.options(MATCH), "data"),
-    )
-    def update_submercadoDe_options(options):
-        if options:
-            if "submercadoDe" in options.keys():
-                subs = list(set(options["submercadoDe"]))
-                return sorted(
-                    list(set([GRUPOS_SUBMERCADOS.get(s, s) for s in subs]))
-                )
-        return []
-
-    @callback(
-        Output(ids.submercadoPara_dropdown(MATCH), "options"),
-        Input(ids.options(MATCH), "data"),
-    )
-    def update_submercadoPara_options(options):
-        if options:
-            if "submercadoPara" in options.keys():
-                subs = list(set(options["submercadoPara"]))
-                return sorted(
-                    list(set([GRUPOS_SUBMERCADOS.get(s, s) for s in subs]))
-                )
-        return []
-
-    @callback(
-        Output(ids.patamar_dropdown(MATCH), "options"),
-        Input(ids.options(MATCH), "data"),
-    )
-    def update_patamar_options(options):
-        if options:
-            if "patamar" in options.keys():
-                return sorted(list(set(options["patamar"])))
-        return []
+    def update_filters(
+        uhe: int,
+        ute: int,
+        ree: int,
+        submercado: int,
+        submercado_de: int,
+        submercado_para: int,
+        patamar: int,
+        estagio: int,
+        agregacao: str,
+    ):
+        filtros = {}
+        if uhe:
+            filtros["codigo_uhe"] = uhe
+        if ute:
+            filtros["codigo_ute"] = ute
+        if ree:
+            filtros["codigo_ree"] = ree
+        if submercado:
+            filtros["codigo_submercado"] = submercado
+        if submercado_de:
+            filtros["codigo_submercado_de"] = submercado_de
+        if submercado_para:
+            filtros["codigo_submercado_para"] = submercado_para
+        if patamar:
+            filtros["patamar"] = patamar
+        if estagio:
+            filtros["estagio"] = estagio
+        if agregacao:
+            filtros["agregacao"] = agregacao
+        return filtros
 
     @callback(
         Output(ids.estagio_dropdown(MATCH), "options"),
-        Input(ids.options(MATCH), "data"),
+        Input(ids.studies(MATCH), "data"),
+        prevent_initial_call=True,
     )
-    def update_estagio_options(options):
-        if options:
-            if "estagio" in options.keys():
-                return sorted(list(set(options["estagio"])))
-        return []
+    def update_variables_estagio_dropdown_options(studies_data):
+        return dropdowns.update_operation_dropdown_system_entity_options_casos(
+            studies_data, "EST"
+        )
 
     @callback(
-        Output(ids.filters(MATCH), "data"),
-        Input(ids.usina_dropdown(MATCH), "value"),
-        Input(ids.ree_dropdown(MATCH), "value"),
-        Input(ids.submercado_dropdown(MATCH), "value"),
-        Input(ids.submercadoDe_dropdown(MATCH), "value"),
-        Input(ids.submercadoPara_dropdown(MATCH), "value"),
-        Input(ids.patamar_dropdown(MATCH), "value"),
-        Input(ids.estagio_dropdown(MATCH), "value"),
-        Input(ids.cenario_dropdown(MATCH), "value"),
+        Output(ids.patamar_dropdown(MATCH), "options"),
+        Input(ids.studies(MATCH), "data"),
+        prevent_initial_call=True,
     )
-    def update_filters(
-        usina: str,
-        ree: str,
-        submercado: str,
-        submercado_de: str,
-        submercado_para: str,
-        patamar: str,
-        estagio: str,
-        cenario: str,
-    ):
-        filtros = {}
-        if usina:
-            filtros["usina"] = f"'{usina}'"
-        if ree:
-            filtros["ree"] = f"'{ree}'"
-        if submercado:
-            filtros["submercado"] = NOMES_SUBMERCADOS.get(submercado)
-        if submercado_de:
-            filtros["submercadoDe"] = NOMES_SUBMERCADOS.get(submercado_de)
-        if submercado_de:
-            filtros["submercadoPara"] = NOMES_SUBMERCADOS.get(submercado_para)
-        if patamar:
-            filtros["patamar"] = f"'{patamar}'"
-        if estagio:
-            filtros["estagio"] = f"{estagio}"
-        return filtros
+    def update_variables_patamar_dropdown_options(studies_data):
+        return dropdowns.update_operation_dropdown_system_entity_options_casos(
+            studies_data, "PAT"
+        )
+
+    @callback(
+        Output(ids.submercado_dropdown(MATCH), "options"),
+        Input(ids.studies(MATCH), "data"),
+        prevent_initial_call=True,
+    )
+    def update_variables_submercado_dropdown_options(studies_data):
+        return dropdowns.update_operation_dropdown_system_entity_options_casos(
+            studies_data, "SBM"
+        )
+
+    @callback(
+        Output(ids.submercado_de_dropdown(MATCH), "options"),
+        Input(ids.studies(MATCH), "data"),
+        prevent_initial_call=True,
+    )
+    def update_variables_submercado_de_dropdown_options(studies_data):
+        return dropdowns.update_operation_dropdown_system_entity_options_casos(
+            studies_data, "SBM"
+        )
+
+    @callback(
+        Output(ids.submercado_para_dropdown(MATCH), "options"),
+        Input(ids.studies(MATCH), "data"),
+        prevent_initial_call=True,
+    )
+    def update_variables_submercado_para_dropdown_options(studies_data):
+        return dropdowns.update_operation_dropdown_system_entity_options_casos(
+            studies_data, "SBM"
+        )
+
+    @callback(
+        Output(ids.ree_dropdown(MATCH), "options"),
+        Input(ids.studies(MATCH), "data"),
+        prevent_initial_call=True,
+    )
+    def update_variables_ree_dropdown_options(studies_data):
+        return dropdowns.update_operation_dropdown_system_entity_options_casos(
+            studies_data, "REE"
+        )
+
+    @callback(
+        Output(ids.uhe_dropdown(MATCH), "options"),
+        Input(ids.studies(MATCH), "data"),
+        prevent_initial_call=True,
+    )
+    def update_variables_uhe_dropdown_options(studies_data):
+        return dropdowns.update_operation_dropdown_system_entity_options_casos(
+            studies_data, "UHE"
+        )
+
+    @callback(
+        Output(ids.ute_dropdown(MATCH), "options"),
+        Input(ids.studies(MATCH), "data"),
+        prevent_initial_call=True,
+    )
+    def update_variables_ute_dropdown_options(studies_data):
+        return dropdowns.update_operation_dropdown_system_entity_options_casos(
+            studies_data, "UTE"
+        )
 
     @callback(
         Output(ids.variable_dropdown(MATCH), "options"),
         Input(ids.studies(MATCH), "data"),
+        prevent_initial_call=True,
     )
-    def update_variables_dropdown_options(studies_data):
-        return dropdowns.update_operation_variables_dropdown_options_encadeador(
+    def update_variable_dropdown_options(studies_data):
+        return dropdowns.update_operation_variables_dropdown_options_casos(
             studies_data
         )
 
     @callback(
-        Output(ids.options(MATCH), "data"),
+        Output(ids.resolution_dropdown(MATCH), "options"),
         Input(ids.studies(MATCH), "data"),
         Input(ids.variable_dropdown(MATCH), "value"),
+        prevent_initial_call=True,
     )
-    def update_options(studies, variable: str):
-        return dropdowns.update_operation_options_encadeador(studies, variable)
+    def update_resolution_dropdown_options(studies_data, variable: str):
+        return dropdowns.update_operation_resolution_dropdown_options_casos(
+            studies_data, variable
+        )
+
+    # @callback(
+    #     Output(ids.options(MATCH), "data"),
+    #     Input(ids.studies(MATCH), "data"),
+    #     Input(ids.variable_dropdown(MATCH), "value"),
+    # )
+    # def update_options(studies, variable: str):
+    #     return dropdowns.update_operation_options_encadeador(studies, variable)
 
     @callback(
         Output(ids.data(MATCH), "data"),
@@ -606,6 +684,8 @@ class OperationFiltersEncadeador(html.Div):
             raise PreventUpdate
         if operation_data is not None:
             dados = pd.read_json(StringIO(operation_data), orient="split")
-            dados["dataInicio"] = pd.to_datetime(dados["dataInicio"], unit="ms")
-            dados["dataFim"] = pd.to_datetime(dados["dataFim"], unit="ms")
+            dados[START_DATE_COLUMN] = pd.to_datetime(
+                dados["dataInicio"], unit="ms"
+            )
+            dados[END_DATE_COLUMN] = pd.to_datetime(dados["dataFim"], unit="ms")
             return dcc.send_data_frame(dados.to_csv, f"{variable}.csv")
