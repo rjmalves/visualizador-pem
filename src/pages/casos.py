@@ -1,28 +1,28 @@
 # package imports
 import dash
-from dash import html, dcc, callback, Input, Output, State, ctx
+from dash import Input, Output, State, callback, ctx, dcc, html
 from dash.exceptions import PreventUpdate
-from src.components.newstudymodal import NewStudyModal
-from src.components.editstudymodal import EditStudyModal
-from src.components.currentstudiestable import CurrentStudiesTable
+from flask_login import current_user
+
+import src.utils.data as data
+import src.utils.db as db
+import src.utils.modals as modals
 from src.components.casos.operationgraph import OperationGraph
 
 # from src.components.casos.spatialviewgraph import SpatialViewGraph
-from src.components.casos.scenariograph import ScenarioGraph
-from src.components.casos.acumprobgraph import AcumProbGraph
+# from src.components.casos.scenariograph import ScenarioGraph
+# from src.components.casos.acumprobgraph import AcumProbGraph
 from src.components.casos.timecostsgraph import TimeCostsGraph
-from src.components.casos.convergencegraph import ConvergenceGraph
+from src.components.currentstudiestable import CurrentStudiesTable
+from src.components.editstudymodal import EditStudyModal
+from src.components.loadscreenmodal import LoadScreenModal
+from src.components.newstudymodal import NewStudyModal
 
+# from src.components.casos.convergencegraph import ConvergenceGraph
 # from src.components.casos.resourcesgraph import ResourcesGraph
 from src.components.savescreenmodal import SaveScreenModal
-from src.components.loadscreenmodal import LoadScreenModal
-from flask_login import current_user
 from src.utils.log import Log
 from src.utils.settings import Settings
-import src.utils.modals as modals
-import src.utils.data as data
-import src.utils.db as db
-
 
 dash.register_page(
     __name__,
@@ -42,11 +42,11 @@ def layout(screen_id=None):
             EditStudyModal(aio_id="casos-edit-modal"),
             CurrentStudiesTable(aio_id="casos-current-studies"),
             OperationGraph(aio_id="casos-operation-graph"),
-            AcumProbGraph(aio_id="casos-permanencia-graph"),
+            # AcumProbGraph(aio_id="casos-permanencia-graph"),
             # SpatialViewGraph(aio_id="casos-espacial-graph"),
-            ScenarioGraph(aio_id="casos-scenario-graph"),
+            # ScenarioGraph(aio_id="casos-scenario-graph"),
             TimeCostsGraph(aio_id="casos-tempo-custos-graph"),
-            ConvergenceGraph(aio_id="casos-convergence-graph"),
+            # ConvergenceGraph(aio_id="casos-convergence-graph"),
             # ResourcesGraph(aio_id="casos-resources-graph"),
             SaveScreenModal(aio_id="casos-save-screen-modal"),
             LoadScreenModal(aio_id="casos-load-screen-modal"),
@@ -307,13 +307,13 @@ def update_current_studies(studies_data):
     return studies_data
 
 
-@callback(
-    Output(AcumProbGraph.ids.studies("casos-permanencia-graph"), "data"),
-    Input(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
-    prevent_initial_call=True,
-)
-def update_current_studies(studies_data):
-    return studies_data
+# @callback(
+#     Output(AcumProbGraph.ids.studies("casos-permanencia-graph"), "data"),
+#     Input(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
+#     prevent_initial_call=True,
+# )
+# def update_current_studies(studies_data):
+#     return studies_data
 
 
 # @callback(
@@ -334,22 +334,22 @@ def update_current_studies(studies_data):
     return studies_data
 
 
-@callback(
-    Output(ScenarioGraph.ids.studies("casos-scenario-graph"), "data"),
-    Input(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
-    prevent_initial_call=True,
-)
-def update_current_studies(studies_data):
-    return studies_data
+# @callback(
+#     Output(ScenarioGraph.ids.studies("casos-scenario-graph"), "data"),
+#     Input(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
+#     prevent_initial_call=True,
+# )
+# def update_current_studies(studies_data):
+#     return studies_data
 
 
-@callback(
-    Output(ConvergenceGraph.ids.studies("casos-convergence-graph"), "data"),
-    Input(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
-    prevent_initial_call=True,
-)
-def update_current_studies(studies_data):
-    return studies_data
+# @callback(
+#     Output(ConvergenceGraph.ids.studies("casos-convergence-graph"), "data"),
+#     Input(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
+#     prevent_initial_call=True,
+# )
+# def update_current_studies(studies_data):
+#     return studies_data
 
 
 # @callback(

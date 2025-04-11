@@ -40,6 +40,7 @@ def update_variables_options_encadeador(paths):
     all_variables = {}
     newaves_paths = []
     decomps_paths = []
+    dessems_paths = []
     for path in paths:
         newave_path = os.path.join(
             path, Settings.synthesis_dir, Settings.newave_dir
@@ -47,16 +48,22 @@ def update_variables_options_encadeador(paths):
         decomp_path = os.path.join(
             path, Settings.synthesis_dir, Settings.decomp_dir
         )
+        dessem_path = os.path.join(
+            path, Settings.synthesis_dir, Settings.dessem_dir
+        )
         newaves_paths.append(newave_path)
         decomps_paths.append(decomp_path)
+        dessems_paths.append(dessem_path)
     newave_variables = API.fetch_available_results_list(newaves_paths)
     decomp_variables = API.fetch_available_results_list(decomps_paths)
+    dessem_variables = API.fetch_available_results_list(dessems_paths)
 
     for k in SYNTHESIS_METADATA_NAMES.keys():
         df_newave = pd.read_json(StringIO(newave_variables[k]), orient="split")
         df_decomp = pd.read_json(StringIO(decomp_variables[k]), orient="split")
+        df_dessem = pd.read_json(StringIO(dessem_variables[k]), orient="split")
         all_variables[k] = pd.concat(
-            [df_newave, df_decomp], ignore_index=True
+            [df_newave, df_decomp, df_dessem], ignore_index=True
         ).to_json(orient="split")
     # TODO - talvez tenha que dar drop_duplicates
 
@@ -88,6 +95,9 @@ def update_system_entities_encadeador(path, options):
         decomp_path = os.path.join(
             path, Settings.synthesis_dir, Settings.decomp_dir
         )
+        dessem_path = os.path.join(
+            path, Settings.synthesis_dir, Settings.dessem_dir
+        )
         newave_system_entities = {
             e: API.fetch_result(newave_path, e, {"preprocess": "FULL"})
             for e in system_metadata["chave"].tolist()
@@ -96,9 +106,17 @@ def update_system_entities_encadeador(path, options):
             e: API.fetch_result(decomp_path, e, {"preprocess": "FULL"})
             for e in system_metadata["chave"].tolist()
         }
+        dessem_system_entities = {
+            e: API.fetch_result(dessem_path, e, {"preprocess": "FULL"})
+            for e in system_metadata["chave"].tolist()
+        }
         system_entities = {
             e: pd.concat(
-                [newave_system_entities[e], decomp_system_entities[e]],
+                [
+                    newave_system_entities[e],
+                    decomp_system_entities[e],
+                    dessem_system_entities[e],
+                ],
                 ignore_index=True,
             )
             for e in system_metadata["chave"].tolist()
@@ -374,6 +392,15 @@ def update_status_data_encadeador(interval, studies):
         "CASOS",
         {"preprocess": "FULL"},
     )
+    if cases_df is None:
+        return pd.DataFrame(
+            columns=[
+                "NOMETEMPO DE EXECUCAO",
+                "PROGRESSO (%)",
+                "CASO ATUAL",
+                "ESTADO",
+            ]
+        ).to_json(orient="split")
 
     runs_df = API.fetch_result_list(
         paths,
@@ -474,6 +501,15 @@ def update_operation_data_encadeador(
         data_filename,
         data_filters,
     )
+    dessem_df = API.fetch_result_list(
+        [
+            os.path.join(p, Settings.synthesis_dir, Settings.dessem_dir)
+            for p in paths
+        ],
+        labels,
+        data_filename,
+        data_filters,
+    )
     if newave_df is not None:
         cols_newave = newave_df.columns.to_list()
         newave_df["programa"] = "NEWAVE"
@@ -488,6 +524,16 @@ def update_operation_data_encadeador(
             [
                 complete_df,
                 decomp_df[["programa"] + cols_decomp],
+            ],
+            ignore_index=True,
+        )
+    if dessem_df is not None:
+        cols_dessem = dessem_df.columns.to_list()
+        dessem_df["programa"] = "DESSEM"
+        complete_df = pd.concat(
+            [
+                complete_df,
+                dessem_df[["programa"] + cols_dessem],
             ],
             ignore_index=True,
         )
@@ -793,9 +839,11 @@ def update_custos_tempo_data_encadeador(
     studies_df = pd.read_json(StringIO(studies), orient="split")
     paths = studies_df["path"].tolist()
     labels = studies_df["name"].tolist()
-    dir = {"NEWAVE": Settings.newave_dir, "DECOMP": Settings.decomp_dir}.get(
-        programa
-    )
+    dir = {
+        "NEWAVE": Settings.newave_dir,
+        "DECOMP": Settings.decomp_dir,
+        "DESSEM": Settings.dessem_dir,
+    }.get(programa)
     df = API.fetch_result_list(
         [os.path.join(p, Settings.synthesis_dir, dir) for p in paths],
         labels,
@@ -825,9 +873,11 @@ def update_violation_data_encadeador(
     studies_df = pd.read_json(StringIO(studies), orient="split")
     paths = studies_df["path"].tolist()
     labels = studies_df["name"].tolist()
-    dir = {"NEWAVE": Settings.newave_dir, "DECOMP": Settings.decomp_dir}.get(
-        programa
-    )
+    dir = {
+        "NEWAVE": Settings.newave_dir,
+        "DECOMP": Settings.decomp_dir,
+        "DESSEM": Settings.dessem_dir,
+    }.get(programa)
 
     df = API.fetch_result_list(
         [os.path.join(p, Settings.synthesis_dir, dir) for p in paths],

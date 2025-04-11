@@ -1,6 +1,6 @@
+import fcntl
 import os
 import socket
-import fcntl
 import struct
 
 
@@ -34,6 +34,7 @@ class Settings:
     synthesis_dir = os.getenv("SYNTHESIS_DIR", "sintese")
     newave_dir = os.getenv("NEWAVE_DIR", "NEWAVE")
     decomp_dir = os.getenv("DECOMP_DIR", "DECOMP")
+    dessem_dir = os.getenv("DESSEM_DIR", "DESSEM")
     secret_key = os.getenv("SECRET_KEY", "test")
     user = os.getenv("USER")
     password = os.getenv("PASSWORD")
@@ -59,6 +60,7 @@ class Settings:
         cls.synthesis_dir = os.getenv("SYNTHESIS_DIR", "sintese")
         cls.newave_dir = os.getenv("NEWAVE_DIR", "NEWAVE")
         cls.decomp_dir = os.getenv("DECOMP_DIR", "DECOMP")
+        cls.dessem_dir = os.getenv("DESSEM_DIR", "DESSEM")
         cls.secret_key = os.getenv("SECRET_KEY", "test")
         cls.user = os.getenv("USER")
         cls.password = os.getenv("PASSWORD")
