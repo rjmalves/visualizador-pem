@@ -1,13 +1,18 @@
-import plotly.graph_objects as go
-import plotly.express as px
-from plotly.subplots import make_subplots
-import pandas as pd
-import numpy as np
-from typing import List, Dict
 from datetime import timedelta
-from src.utils.log import Log
-from src.utils.data import DISCRETE_COLOR_PALLETE
 from io import StringIO
+
+import numpy as np
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+import plotly.io as pio
+from plotly.subplots import make_subplots
+
+from src.utils.constants import END_DATE_COLUMN, START_DATE_COLUMN
+from src.utils.data import DISCRETE_COLOR_PALLETE
+from src.utils.log import Log
+
+pio.templates.default = "plotly_white"
 
 DISCRETE_COLOR_PALLETE_COSTS = [
     "rgba(249, 65, 68, 1)",
@@ -23,405 +28,50 @@ DISCRETE_COLOR_PALLETE_COSTS = [
 ]
 
 
-VARIABLE_NAMES = {
-    "COP": "Custo de Operação",
-    "CFU": "Custo Futuro",
-    "CMO": "Custo Marginal de Operação",
-    "CTER": "Custo de Geração Térmica",
-    "DEF": "Déficit",
-    "EARMI": "Energia Armazenada Inicial",
-    "EARPI": "Energia Armazenada Inicial",
-    "EARMF": "Energia Armazenada Final",
-    "EARPF": "Energia Armazenada Final",
-    "EDESR": "Energia de Desvio em Reservatórios",
-    "EDESF": "Energia de Desvio em Fio d'Água",
-    "EVMIN": "Energia de Defluência Mínima",
-    "EDESF": "Energia de Desvio em Fio d'Água",
-    "EVMOR": "Energia de Volume Morto",
-    "EEVAP": "Energia de Evaporação",
-    "ENAA": "Energia Natural Afluente",
-    "ENAAR": "Energia Natural Afluente em Reservatórios",
-    "ENAAF": "Energia Natural Afluente em Fio d'Água",
-    "EVER": "Energia Vertida",
-    "EVERNT": "Energia Vertida Não-Turbinável",
-    "EVERT": "Energia Vertida Turbinável",
-    "EVERR": "Energia Vertida em Reservatórios",
-    "EVERF": "Energia Vertida em Fio d'Água",
-    "EVERRT": "Energia Vertida Turbinável em Reservatórios",
-    "EVERRNT": "Energia Vertida Não-Turbinável em Reservatórios",
-    "EVERFT": "Energia Vertida Turbinável em Fio d'Água",
-    "EVERFNT": "Energia Vertida Não-Turbinável em Fio d'Água",
-    "GHID": "Geração Hidráulica",
-    "GHIDR": "Geração Hidráulica em Reservatórios",
-    "GHIDF": "Geração Hidráulica em Fio d'Água",
-    "GTER": "Geração Térmica",
-    "GEOL": "Geração Eólica",
-    "HMON": "Cota de Montante",
-    "HJUS": "Cota de Jusante",
-    "HLIQ": "Queda Líquida",
-    "INT": "Intercâmbio",
-    "MER": "Mercado",
-    "MERL": "Mercado Líquido",
-    "QAFL": "Vazão Afluente",
-    "QDEF": "Vazão Defluente",
-    "QDES": "Vazão Desviada",
-    "QINC": "Vazão Incremental",
-    "QRET": "Vazão Retirada",
-    "QTUR": "Vazão Turbinada",
-    "QVER": "Vazão Vertida",
-    "VAGUA": "Valor da Água",
-    "VARMI": "Volume Armazenado Inicial",
-    "VARMF": "Volume Armazenado Final",
-    "VARPI": "Volume Armazenado Inicial",
-    "VARPF": "Volume Armazenado Final",
-    "VAFL": "Volume Afluente",
-    "VDEF": "Volume Defluente",
-    "VDES": "Volume Desviado",
-    "VINC": "Volume Incremental",
-    "VRET": "Volume Retirado",
-    "VTUR": "Volume Turbinado",
-    "VVER": "Volume Vertido",
-    "VENTO": "Velocidade do Vento",
-    "VDEFMIN": "Violação de Restrições de Defluência Mínima",
-    "VDEFMAX": "Violação de Restrições de Defluência Máxima",
-    "VTURMIN": "Violação de Restrições de Turbinamento Mínimo",
-    "VTURMAX": "Violação de Restrições de Turbinamento Máximo",
-    "VEVMIN": "Violação de Energia de Vazão Mínima",
-    "VVMINOP": "Violação do Volume Mínimo Operativo",
-    "VFPHA": "Violação das Restrições da FPHA",
-    "VEOL": "Corte de Geração Eólica",
-}
-
-SPATIAL_RES_NAMES = {
-    "SIN": "SIN",
-    "SBM": "Submercado",
-    "SBP": "Submercados",
-    "REE": "REE",
-    "PEE": "PEE",
-    "UHE": "UHE",
-    "UTE": "UTE",
-    "UEE": "UEE",
-}
-
-SPATIAL_RES_FILTER_NAMES = {
-    "SIN": "SIN",
-    "SBM": "submercado",
-    "REE": "ree",
-    "PEE": "pee",
-    "UHE": "usina",
-    "UTE": "usina",
-    "UEE": "usina",
-}
-
-TEMPORAL_RES_NAMES = {
-    "PAT": "Patamar",
-    "FOR": "Iteração",
-    "BKW": "Iteração",
-    "SF": "Simulação Final",
-}
-
-TEMPORAL_RES_FILTER_NAMES = {
-    "PAT": "patamar",
-    "FOR": "iteracao",
-    "BKW": "iteracao",
-}
-
-VARIABLE_UNITS = {
-    "COP": "R$",
-    "CFU": "R$",
-    "CMO": "R$ / MWh",
-    "CTER": "R$",
-    "DEF": "MWmed",
-    "EARMI": "MWmed",
-    "EARPI": "%",
-    "EARMF": "MWmed",
-    "EARPF": "%",
-    "ENAA": "MWmed",
-    "ENAM": "%",
-    "EVER": "MWmed",
-    "EVERT": "MWmed",
-    "EVERNT": "MWmed",
-    "EVERR": "MWmed",
-    "EVERRT": "MWmed",
-    "EVERRNT": "MWmed",
-    "EVERF": "MWmed",
-    "EVERFT": "MWmed",
-    "EVERFNT": "MWmed",
-    "GHID": "MWmed",
-    "GTER": "MWmed",
-    "GEOL": "MWmed",
-    "INT": "MWmed",
-    "MER": "MWmed",
-    "MERL": "MWmed",
-    "QAFL": "m3/s",
-    "QDEF": "m3/s",
-    "QINC": "m3/s",
-    "QTUR": "m3/s",
-    "QVER": "m3/s",
-    "VAGUA": "R$ / hm3",
-    "VARMI": "hm3",
-    "VARMF": "hm3",
-    "VARPI": "%",
-    "VARPF": "%",
-    "VTUR": "hm3",
-    "VVER": "hm3",
-    "VENTO": "m/s",
-    "VDEFMIN": "m3/s",
-    "VDEFMAX": "m3/s",
-    "VTURMIN": "m3/s",
-    "VTURMAX": "m3/s",
-    "VEVMIN": "MWmed",
-    "VVMINOP": "MWmed",
-    "VFPHA": "MWmed",
-    "VEOL": "MWmed",
-}
-
-
-VARIABLE_UNITS_NEWAVE = {
-    "COP": "10^6 R$",
-    "CFU": "10^6 R$",
-    "CMO": "R$ / MWh",
-    "CTER": "10^6 R$",
-    "DEF": "MWmes",
-    "EARMI": "MWmes",
-    "EARPI": "%",
-    "EARMF": "MWmes",
-    "EARPF": "%",
-    "EDESR": "MWmes",
-    "EDESF": "MWmes",
-    "EVMIN": "MWmes",
-    "EVMOR": "MWmes",
-    "EEVAP": "MWmes",
-    "ENAA": "MWmes",
-    "ENAAR": "MWmes",
-    "ENAAF": "MWmes",
-    "EVER": "MWmes",
-    "EVERT": "MWmes",
-    "EVERNT": "MWmes",
-    "EVERR": "MWmes",
-    "EVERRT": "MWmes",
-    "EVERRNT": "MWmes",
-    "EVERF": "MWmes",
-    "EVERFT": "MWmes",
-    "EVERFNT": "MWmes",
-    "GHID": "MWmes",
-    "GHIDR": "MWmes",
-    "GHIDF": "MWmes",
-    "GTER": "MWmes",
-    "GEOL": "MWmes",
-    "HMON": "m",
-    "HJUS": "m",
-    "HLIQ": "m",
-    "INT": "MWmes",
-    "MER": "MWmes",
-    "MERL": "MWmes",
-    "QAFL": "m3/s",
-    "QDEF": "m3/s",
-    "QDES": "m3/s",
-    "QINC": "m3/s",
-    "QRET": "m3/s",
-    "QTUR": "m3/s",
-    "QVER": "m3/s",
-    "VAGUA": "R$ / hm3 (UHE) | R$ / MWh (REE)",
-    "VARMI": "hm3",
-    "VARMF": "hm3",
-    "VARPI": "%",
-    "VARPF": "%",
-    "VAFL": "hm3",
-    "VDEF": "hm3",
-    "VDES": "hm3",
-    "VINC": "hm3",
-    "VRET": "hm3",
-    "VTUR": "hm3",
-    "VVER": "hm3",
-    "VENTO": "m/s",
-    "VDEFMIN": "m3/s",
-    "VDEFMAX": "m3/s",
-    "VTURMIN": "m3/s",
-    "VTURMAX": "m3/s",
-    "VEVMIN": "MWmes",
-    "VVMINOP": "MWmes",
-    "VFPHA": "MWmes",
-    "VEOL": "MWmes",
-}
-
-
-VARIABLE_UNITS_DECOMP = {
-    "COP": "10^3 R$",
-    "CFU": "10^3 R$",
-    "CMO": "R$ / MWh",
-    "CTER": "10^3 R$",
-    "DEF": "MWmed",
-    "EARMI": "MWmes",
-    "EARPI": "%",
-    "EARMF": "MWmes",
-    "EARPF": "%",
-    "EDESR": "MWmed",
-    "EDESF": "MWmed",
-    "EVMIN": "MWmed",
-    "EVMOR": "MWmed",
-    "EEVAP": "MWmed",
-    "ENAA": "MWmes",
-    "ENAAR": "MWmes",
-    "ENAAF": "MWmes",
-    "EVER": "MWmed",
-    "EVERT": "MWmed",
-    "EVERNT": "MWmed",
-    "EVERR": "MWmed",
-    "EVERRT": "MWmed",
-    "EVERRNT": "MWmed",
-    "EVERF": "MWmed",
-    "EVERFT": "MWmed",
-    "EVERFNT": "MWmed",
-    "GHID": "MWmed",
-    "GHIDR": "MWmed",
-    "GHIDF": "MWmed",
-    "GTER": "MWmed",
-    "GEOL": "MWmed",
-    "HMON": "m",
-    "HJUS": "m",
-    "HLIQ": "m",
-    "INT": "MWmed",
-    "MER": "MWmed",
-    "MERL": "MWmed",
-    "QAFL": "m3/s",
-    "QDEF": "m3/s",
-    "QDES": "m3/s",
-    "QINC": "m3/s",
-    "QRET": "m3/s",
-    "QTUR": "m3/s",
-    "QVER": "m3/s",
-    "VAGUA": "R$ / hm3 (UHE) | R$ / MWh (REE)",
-    "VARMI": "hm3",
-    "VARMF": "hm3",
-    "VARPI": "%",
-    "VARPF": "%",
-    "VAFL": "hm3",
-    "VDEF": "hm3",
-    "VDES": "hm3",
-    "VINC": "hm3",
-    "VRET": "hm3",
-    "VTUR": "hm3",
-    "VVER": "hm3",
-    "VENTO": "m/s",
-    "VDEFMIN": "m3/s",
-    "VDEFMAX": "m3/s",
-    "VTURMIN": "m3/s",
-    "VTURMAX": "m3/s",
-    "VEVMIN": "MWmes",
-    "VVMINOP": "MWmes",
-    "VFPHA": "MWmes",
-    "VEOL": "MWmes",
-}
-
-
-VARIABLE_UNITS_DESSEM = {
-    "COP": "10^3 R$",
-    "CFU": "10^3 R$",
-    "CMO": "R$ / MWh",
-    "CTER": "10^3 R$",
-    "DEF": "MWmed",
-    "EARMI": "MWmes",
-    "EARPI": "%",
-    "EARMF": "MWmes",
-    "EARPF": "%",
-    "EDESR": "MWmed",
-    "EDESF": "MWmed",
-    "EVMIN": "MWmed",
-    "EVMOR": "MWmed",
-    "EEVAP": "MWmed",
-    "ENAA": "MWmes",
-    "ENAAR": "MWmes",
-    "ENAAF": "MWmes",
-    "EVER": "MWmed",
-    "EVERT": "MWmed",
-    "EVERNT": "MWmed",
-    "EVERR": "MWmed",
-    "EVERRT": "MWmed",
-    "EVERRNT": "MWmed",
-    "EVERF": "MWmed",
-    "EVERFT": "MWmed",
-    "EVERFNT": "MWmed",
-    "GHID": "MWmed",
-    "GHIDR": "MWmed",
-    "GHIDF": "MWmed",
-    "GTER": "MWmed",
-    "GEOL": "MWmed",
-    "HMON": "m",
-    "HJUS": "m",
-    "HLIQ": "m",
-    "INT": "MWmed",
-    "MER": "MWmed",
-    "MERL": "MWmed",
-    "QAFL": "m3/s",
-    "QDEF": "m3/s",
-    "QDES": "m3/s",
-    "QINC": "m3/s",
-    "QRET": "m3/s",
-    "QTUR": "m3/s",
-    "QVER": "m3/s",
-    "VAGUA": "R$ / hm3 (UHE) | R$ / MWh (REE)",
-    "VARMI": "hm3",
-    "VARMF": "hm3",
-    "VARPI": "%",
-    "VARPF": "%",
-    "VAFL": "hm3",
-    "VDEF": "hm3",
-    "VDES": "hm3",
-    "VINC": "hm3",
-    "VRET": "hm3",
-    "VTUR": "hm3",
-    "VVER": "hm3",
-    "VENTO": "m/s",
-    "VDEFMIN": "m3/s",
-    "VDEFMAX": "m3/s",
-    "VTURMIN": "m3/s",
-    "VTURMAX": "m3/s",
-    "VEVMIN": "MWmes",
-    "VVMINOP": "MWmes",
-    "VFPHA": "MWmes",
-    "VEOL": "MWmes",
-}
-
-
-def _get_variable_units(program: str) -> Dict[str, str]:
-    return {
-        "NEWAVE": VARIABLE_UNITS_NEWAVE,
-        "DECOMP": VARIABLE_UNITS_DECOMP,
-        "DESSEM": VARIABLE_UNITS_DESSEM,
-    }.get(program, VARIABLE_UNITS)
-
-
-def _generate_yaxis_title(variable: str, programs: List[str]) -> str:
-    programs_units = {
-        p: _get_variable_units(p).get(variable, "")
-        for p in programs
-        if p is not None
-    }
-    unique_units = list(set(list(programs_units.values())))
-    if len(unique_units) == 0:
-        return VARIABLE_UNITS.get(variable, "")
-    elif len(unique_units) == 1:
-        return unique_units[0]
-    else:
-        return " | ".join([f"{v} ({k})" for k, v in programs_units.items()])
-
+LINE_WIDTH = 2
+YAXIS_TICKFORMAT = ",.2f"
+X_TITLE_POS = 0.05
+Y_TITLE_POS = 0.9
 
 NOT_SCENARIO_COLUMNS = [
     "iteracao",
     "estudo",
     "caso",
     "estagio",
-    "submercado",
-    "submercadoDe",
-    "submercadoPara",
-    "ree",
-    "pee",
-    "usina",
+    "codigo_submercado",
+    "codigo_submercado_de",
+    "codigo_submercado_para",
+    "codigo_ree",
+    "codigo_usina",
     "patamar",
-    "dataInicio",
-    "dataFim",
+    "duracao_patamar",
+    "limite_inferior",
+    "limite_superior",
+    "data_inicio",
+    "data_fim",
+    "unidade",
 ]
+
+
+def _generate_yaxis_title(
+    variable: str, filters: dict, studies: pd.DataFrame
+) -> str:
+    aggregation = filters["agregacao"]
+    operation_options_df = pd.concat(
+        [
+            pd.read_json(StringIO(opt["operacao"]), orient="split")
+            for opt in studies["options"]
+        ],
+        ignore_index=True,
+    )
+    units = operation_options_df.loc[
+        (operation_options_df["nome_longo_variavel"] == variable)
+        & (operation_options_df["nome_longo_agregacao"] == aggregation),
+        "unidade",
+    ].tolist()
+    units = list(set(units))
+    axis_text = " | ".join(units)
+    return axis_text
 
 
 def pivot_df_for_plot(df: pd.DataFrame, col: str = "valor") -> pd.DataFrame:
@@ -436,31 +86,26 @@ def pivot_df_for_plot(df: pd.DataFrame, col: str = "valor") -> pd.DataFrame:
 def hex_to_rgb(value):
     value = value.lstrip("#")
     lv = len(value)
-    return tuple(
-        int(value[i : i + lv // 3], 16) for i in range(0, lv, lv // 3)
-    )
+    return tuple(int(value[i : i + lv // 3], 16) for i in range(0, lv, lv // 3))
 
 
 def generate_operation_graph_casos(
     operation_data, variable, filters, studies_data
 ):
-    graph_layout = go.Layout(
-        plot_bgcolor="rgba(158, 149, 128, 0.2)",
-        paper_bgcolor="rgba(255,255,255,1)",
-    )
     fig = go.Figure()
-    fig.update_layout(graph_layout)
     if operation_data is None:
         return fig
+    Log.log().info(f"Plotando gráfico - CASOS ({variable})")
     dados = pd.read_json(StringIO(operation_data), orient="split")
-    dados["dataInicio"] = pd.to_datetime(dados["dataInicio"], unit="ms")
-    dados["dataFim"] = pd.to_datetime(dados["dataFim"], unit="ms")
-    df_estudos = pd.read_json(StringIO(studies_data), orient="split")
-    programas = df_estudos["program"].unique().tolist()
+    dados[START_DATE_COLUMN] = pd.to_datetime(
+        dados[START_DATE_COLUMN], unit="ms"
+    )
+    dados[END_DATE_COLUMN] = pd.to_datetime(dados[END_DATE_COLUMN], unit="ms")
+    studies_df = pd.read_json(StringIO(studies_data), orient="split")
     line_shape = "linear"
     mode = "lines"
-    visibilidade_p = __background_area_visibility(df_estudos["name"])
-    for _, linha_df in df_estudos.iterrows():
+    visibilidade_p = __background_area_visibility(studies_df["name"])
+    for _, linha_df in studies_df.iterrows():
         estudo = linha_df["name"]
         rgb = hex_to_rgb(linha_df["color"])
         cor = f"rgba({rgb[0]},{rgb[1]},{rgb[2]}, 1.0)"
@@ -472,11 +117,11 @@ def generate_operation_graph_casos(
             if not dados_estudo.empty:
                 fig.add_trace(
                     go.Scatter(
-                        x=dados_estudo["dataInicio"],
+                        x=dados_estudo[START_DATE_COLUMN],
                         y=dados_estudo["mean"],
                         line={
                             "color": cor,
-                            "width": 3,
+                            "width": LINE_WIDTH,
                             "shape": line_shape,
                         },
                         mode=mode,
@@ -488,7 +133,7 @@ def generate_operation_graph_casos(
                 if "p10" in dados_estudo.columns:
                     fig.add_trace(
                         go.Scatter(
-                            x=dados_estudo["dataInicio"],
+                            x=dados_estudo[START_DATE_COLUMN],
                             y=dados_estudo["p10"],
                             line_color=cor_fundo,
                             line_shape=line_shape,
@@ -502,7 +147,7 @@ def generate_operation_graph_casos(
                 if "p90" in dados_estudo.columns:
                     fig.add_trace(
                         go.Scatter(
-                            x=dados_estudo["dataInicio"],
+                            x=dados_estudo[START_DATE_COLUMN],
                             y=dados_estudo["p90"],
                             line_color=cor_fundo,
                             fillcolor=cor_fundo,
@@ -518,11 +163,16 @@ def generate_operation_graph_casos(
 
     if variable is not None:
         fig.update_layout(
-            title=__make_operation_plot_title(variable, filters),
+            title={
+                "text": __make_operation_plot_title(
+                    variable, filters, studies_df
+                ),
+                "x": X_TITLE_POS,
+                "y": Y_TITLE_POS,
+            },
             xaxis_title="Data",
-            yaxis_title=_generate_yaxis_title(
-                variable.split("_")[0], programas
-            ),
+            yaxis_title=_generate_yaxis_title(variable, filters, studies_df),
+            yaxis_tickformat=YAXIS_TICKFORMAT,
             hovermode="x unified",
             legend=dict(groupclick="toggleitem"),
         )
@@ -538,12 +188,7 @@ def generate_operation_graph_casos_twinx(
     filters_twinx,
     studies_data,
 ):
-    graph_layout = go.Layout(
-        plot_bgcolor="rgba(158, 149, 128, 0.2)",
-        paper_bgcolor="rgba(255,255,255,1)",
-    )
     fig = make_subplots(specs=[[{"secondary_y": True}]])
-    fig.update_layout(graph_layout)
     if operation_data is None and operation_data_twinx is None:
         return fig
     if operation_data is not None and operation_data_twinx is None:
@@ -555,40 +200,44 @@ def generate_operation_graph_casos_twinx(
             operation_data_twinx, variable_twinx, filters_twinx, studies_data
         )
 
+    Log.log().info(f"Plotando gráfico - CASOS ({variable})")
     dados = pd.read_json(StringIO(operation_data), orient="split")
-    dados["dataInicio"] = pd.to_datetime(dados["dataInicio"], unit="ms")
-    dados["dataFim"] = pd.to_datetime(dados["dataFim"], unit="ms")
-    dados_twinx = pd.read_json(StringIO(operation_data_twinx), orient="split")
-    dados_twinx["dataInicio"] = pd.to_datetime(
-        dados_twinx["dataInicio"], unit="ms"
+    dados[START_DATE_COLUMN] = pd.to_datetime(
+        dados[START_DATE_COLUMN], unit="ms"
     )
-    dados_twinx["dataFim"] = pd.to_datetime(dados_twinx["dataFim"], unit="ms")
-    df_estudos = pd.read_json(StringIO(studies_data), orient="split")
-    programas = df_estudos["program"].unique().tolist()
+    dados[END_DATE_COLUMN] = pd.to_datetime(dados[END_DATE_COLUMN], unit="ms")
+    dados_twinx = pd.read_json(StringIO(operation_data_twinx), orient="split")
+    dados_twinx[START_DATE_COLUMN] = pd.to_datetime(
+        dados_twinx[START_DATE_COLUMN], unit="ms"
+    )
+    dados_twinx[END_DATE_COLUMN] = pd.to_datetime(
+        dados_twinx[END_DATE_COLUMN], unit="ms"
+    )
+    studies_df = pd.read_json(StringIO(studies_data), orient="split")
 
     line_shape = "linear"
     mode = "lines"
-    visibilidade_p = __background_area_visibility(df_estudos["name"])
-    for _, linha_df in df_estudos.iterrows():
+    visibilidade_p = __background_area_visibility(studies_df["name"])
+    for _, linha_df in studies_df.iterrows():
         estudo = linha_df["name"]
         rgb = hex_to_rgb(linha_df["color"])
         cor = f"rgba({rgb[0]},{rgb[1]},{rgb[2]}, 1.0)"
         cor_fundo = f"rgba({rgb[0]},{rgb[1]},{rgb[2]}, 0.3)"
         dados_estudo = pivot_df_for_plot(dados.loc[dados["estudo"] == estudo])
         dados_legend = __make_operation_plot_legend_name(
-            df_estudos["name"].tolist(), estudo, variable, filters
+            estudo, variable, filters, studies_df
         )
         dados_twinx_legend = __make_operation_plot_legend_name(
-            df_estudos["name"].tolist(), estudo, variable_twinx, filters_twinx
+            estudo, variable_twinx, filters_twinx, studies_df
         )
         if not dados_estudo.empty:
             fig.add_trace(
                 go.Scatter(
-                    x=dados_estudo["dataInicio"],
+                    x=dados_estudo[START_DATE_COLUMN],
                     y=dados_estudo["mean"],
                     line={
                         "color": cor,
-                        "width": 3,
+                        "width": LINE_WIDTH,
                         "shape": line_shape,
                     },
                     mode=mode,
@@ -600,7 +249,7 @@ def generate_operation_graph_casos_twinx(
             if "p10" in dados_estudo.columns:
                 fig.add_trace(
                     go.Scatter(
-                        x=dados_estudo["dataInicio"],
+                        x=dados_estudo[START_DATE_COLUMN],
                         y=dados_estudo["p10"],
                         line_color=cor_fundo,
                         line_shape=line_shape,
@@ -613,7 +262,7 @@ def generate_operation_graph_casos_twinx(
             if "p90" in dados_estudo.columns:
                 fig.add_trace(
                     go.Scatter(
-                        x=dados_estudo["dataInicio"],
+                        x=dados_estudo[START_DATE_COLUMN],
                         y=dados_estudo["p90"],
                         line_color=cor_fundo,
                         fillcolor=cor_fundo,
@@ -632,11 +281,11 @@ def generate_operation_graph_casos_twinx(
         if not dados_estudo.empty:
             fig.add_trace(
                 go.Scatter(
-                    x=dados_estudo["dataInicio"],
+                    x=dados_estudo[START_DATE_COLUMN],
                     y=dados_estudo["mean"],
                     line={
                         "color": cor,
-                        "width": 3,
+                        "width": LINE_WIDTH,
                         "shape": line_shape,
                         "dash": "dash",
                     },
@@ -649,7 +298,7 @@ def generate_operation_graph_casos_twinx(
             if "p10" in dados_estudo.columns:
                 fig.add_trace(
                     go.Scatter(
-                        x=dados_estudo["dataInicio"],
+                        x=dados_estudo[START_DATE_COLUMN],
                         y=dados_estudo["p10"],
                         line_color=cor_fundo,
                         line_shape=line_shape,
@@ -662,7 +311,7 @@ def generate_operation_graph_casos_twinx(
             if "p90" in dados_estudo.columns:
                 fig.add_trace(
                     go.Scatter(
-                        x=dados_estudo["dataInicio"],
+                        x=dados_estudo[START_DATE_COLUMN],
                         y=dados_estudo["p90"],
                         line_color=cor_fundo,
                         fillcolor=cor_fundo,
@@ -679,20 +328,22 @@ def generate_operation_graph_casos_twinx(
                 )
 
     full_title = (
-        f"{__make_operation_plot_title(variable, filters)}"
-        + f" | {__make_operation_plot_title(variable_twinx, filters_twinx)}"
+        f"{__make_operation_plot_title(variable, filters, studies_df)}"
+        + f" | {__make_operation_plot_title(variable_twinx, filters_twinx, studies_df)}"
     )
     fig.update_layout(
-        title=full_title,
+        title={"text": full_title, "x": X_TITLE_POS, "y": Y_TITLE_POS},
         xaxis_title="Data",
-        yaxis_title=_generate_yaxis_title(variable.split("_")[0], programas),
+        yaxis_title=_generate_yaxis_title(variable, filters, studies_df),
+        yaxis_tickformat=YAXIS_TICKFORMAT,
         hovermode="x unified",
         legend=dict(groupclick="toggleitem"),
     )
     fig.update_yaxes(
         title_text=_generate_yaxis_title(
-            variable_twinx.split("_")[0], programas
+            variable_twinx, filters_twinx, studies_df
         ),
+        yaxis_tickformat=YAXIS_TICKFORMAT,
         secondary_y=True,
     )
 
@@ -702,21 +353,15 @@ def generate_operation_graph_casos_twinx(
 def generate_scenario_graph_casos(
     scenario_data, variable, filters, studies_data
 ):
-    graph_layout = go.Layout(
-        plot_bgcolor="rgba(158, 149, 128, 0.2)",
-        paper_bgcolor="rgba(255,255,255,1)",
-    )
     fig = go.Figure()
-    fig.update_layout(graph_layout)
     if scenario_data is None:
         return fig
-    dados = pd.read_json(scenario_data, orient="split")
-    dados["dataInicio"] = pd.to_datetime(dados["dataInicio"], unit="ms")
-    dados["dataFim"] = pd.to_datetime(dados["dataFim"], unit="ms")
-    all_scenarios = dados["cenario"].unique().tolist()
-    stats_scenarios = ["mean", "min", "max", "median", "std"] + [
-        c for c in all_scenarios if "p" in str(c)
-    ]
+    Log.log().info(f"Plotando gráfico - CASOS ({variable})")
+    dados = pd.read_json(StringIO(scenario_data), orient="split")
+    dados[START_DATE_COLUMN] = pd.to_datetime(
+        dados[START_DATE_COLUMN], unit="ms"
+    )
+    dados[END_DATE_COLUMN] = pd.to_datetime(dados[END_DATE_COLUMN], unit="ms")
 
     df_estudos = pd.read_json(StringIO(studies_data), orient="split")
 
@@ -727,18 +372,24 @@ def generate_scenario_graph_casos(
         rgb = hex_to_rgb(cor)
         mapas_cores[nome] = f"rgba({rgb[0]},{rgb[1]},{rgb[2]}, 1.0)"
     fig = px.box(
-        dados.loc[~dados["cenario"].isin(stats_scenarios)],
-        x="dataInicio",
-        y="valorMlt",
+        dados,
+        x=START_DATE_COLUMN,
+        y="valor_mlt",
         color="estudo",
         color_discrete_map=mapas_cores,
     )
-    fig.update_layout(graph_layout)
     if variable is not None:
         fig.update_layout(
-            title=__make_operation_plot_title(variable, filters),
+            title={
+                "text": __make_scenario_plot_title(
+                    variable, filters, df_estudos
+                ),
+                "x": X_TITLE_POS,
+                "y": Y_TITLE_POS,
+            },
             xaxis_title="Data",
             yaxis_title="% MLT",
+            yaxis_tickformat=".0%",
             hovermode="x unified",
             legend=dict(groupclick="toggleitem"),
         )
@@ -748,18 +399,15 @@ def generate_scenario_graph_casos(
 def generate_operation_graph_encadeador(
     operation_data, variable: str, filters: dict, studies_data
 ):
-    graph_layout = go.Layout(
-        plot_bgcolor="rgba(158, 149, 128, 0.2)",
-        paper_bgcolor="rgba(255, 255, 255, 1)",
-    )
     fig = go.Figure()
-    fig.update_layout(graph_layout)
     if operation_data is None:
         return fig
-    Log.log().info(f"Plotando gráfico - ENCADEADOR ({variable}, {filters})")
+    Log.log().info(f"Plotando gráfico - ENCADEADOR ({variable})")
     dados = pd.read_json(StringIO(operation_data), orient="split")
-    dados["dataInicio"] = pd.to_datetime(dados["dataInicio"], unit="ms")
-    dados["dataFim"] = pd.to_datetime(dados["dataFim"], unit="ms")
+    dados[START_DATE_COLUMN] = pd.to_datetime(
+        dados[START_DATE_COLUMN], unit="ms"
+    )
+    dados[END_DATE_COLUMN] = pd.to_datetime(dados[END_DATE_COLUMN], unit="ms")
     df_estudos = pd.read_json(StringIO(studies_data), orient="split")
     programas = df_estudos["program"].unique().tolist()
 
@@ -782,7 +430,7 @@ def generate_operation_graph_encadeador(
             if not estudo_decomp.empty:
                 fig.add_trace(
                     go.Scatter(
-                        x=estudo_decomp["dataFim"],
+                        x=estudo_decomp[END_DATE_COLUMN],
                         y=estudo_decomp["mean"],
                         line={
                             "color": cor,
@@ -801,7 +449,7 @@ def generate_operation_graph_encadeador(
             if not estudo_newave.empty:
                 fig.add_trace(
                     go.Scatter(
-                        x=estudo_newave["dataFim"],
+                        x=estudo_newave[END_DATE_COLUMN],
                         y=estudo_newave["mean"],
                         line={
                             "color": cor,
@@ -817,7 +465,7 @@ def generate_operation_graph_encadeador(
                 )
                 fig.add_trace(
                     go.Scatter(
-                        x=estudo_newave["dataFim"],
+                        x=estudo_newave[END_DATE_COLUMN],
                         y=estudo_newave["p10"],
                         line_color=cor_fundo,
                         mode=mode,
@@ -829,7 +477,7 @@ def generate_operation_graph_encadeador(
                 )
                 fig.add_trace(
                     go.Scatter(
-                        x=estudo_newave["dataFim"],
+                        x=estudo_newave[END_DATE_COLUMN],
                         y=estudo_newave["p90"],
                         line_color=cor_fundo,
                         fillcolor=cor_fundo,
@@ -843,30 +491,27 @@ def generate_operation_graph_encadeador(
                 )
     if variable is not None:
         fig.update_layout(
-            title=__make_operation_plot_title(variable, filters),
+            title=__make_operation_plot_title(variable, filters, df_estudos),
             xaxis_title="Data",
-            yaxis_title=VARIABLE_UNITS.get(variable.split("_")[0], ""),
+            yaxis_title=_generate_yaxis_title(variable, filters, df_estudos),
             hovermode="x unified",
             legend=dict(groupclick="toggleitem"),
         )
-    Log.log().info(f"Gráfico plotado - ENCADEADOR ({variable}, {filters})")
+    Log.log().info(f"Gráfico plotado - ENCADEADOR ({variable})")
     return fig
 
 
 def generate_operation_graph_ppq(
     operation_data, variable, filters, studies_data
 ):
-    graph_layout = go.Layout(
-        plot_bgcolor="rgba(158, 149, 128, 0.2)",
-        paper_bgcolor="rgba(255,255,255,1)",
-    )
     fig = go.Figure()
-    fig.update_layout(graph_layout)
     if operation_data is None:
         return fig
     dados = pd.read_json(StringIO(operation_data), orient="split")
-    dados["dataInicio"] = pd.to_datetime(dados["dataInicio"], unit="ms")
-    dados["dataFim"] = pd.to_datetime(dados["dataFim"], unit="ms")
+    dados[START_DATE_COLUMN] = pd.to_datetime(
+        dados[START_DATE_COLUMN], unit="ms"
+    )
+    dados[END_DATE_COLUMN] = pd.to_datetime(dados[END_DATE_COLUMN], unit="ms")
 
     line_shape = "linear"
 
@@ -889,7 +534,7 @@ def generate_operation_graph_ppq(
             if not dados_estudo.empty:
                 fig.add_trace(
                     go.Scatter(
-                        x=dados_estudo["dataInicio"],
+                        x=dados_estudo[START_DATE_COLUMN],
                         y=dados_estudo["mean"],
                         line={
                             "color": cor,
@@ -904,7 +549,7 @@ def generate_operation_graph_ppq(
                 )
                 fig.add_trace(
                     go.Scatter(
-                        x=dados_estudo["dataInicio"],
+                        x=dados_estudo[START_DATE_COLUMN],
                         y=dados_estudo["p10"],
                         line_color=cor_fundo,
                         line_shape=line_shape,
@@ -917,7 +562,7 @@ def generate_operation_graph_ppq(
                 )
                 fig.add_trace(
                     go.Scatter(
-                        x=dados_estudo["dataInicio"],
+                        x=dados_estudo[START_DATE_COLUMN],
                         y=dados_estudo["p90"],
                         line_color=cor_fundo,
                         fillcolor=cor_fundo,
@@ -933,9 +578,9 @@ def generate_operation_graph_ppq(
 
     if variable is not None:
         fig.update_layout(
-            title=__make_operation_plot_title(variable, filters),
+            title=__make_operation_plot_title(variable, filters, dados_estudo),
             xaxis_title="Data",
-            yaxis_title=VARIABLE_UNITS_NEWAVE.get(variable.split("_")[0], ""),
+            yaxis_title=_generate_yaxis_title(variable, filters, dados_estudo),
             hovermode="x unified",
             legend=dict(groupclick="toggleitem"),
         )
@@ -945,12 +590,7 @@ def generate_operation_graph_ppq(
 def generate_distribution_graph_ppq(
     operation_data, variable, filters, studies_data
 ):
-    graph_layout = go.Layout(
-        plot_bgcolor="rgba(158, 149, 128, 0.2)",
-        paper_bgcolor="rgba(255,255,255,1)",
-    )
     fig = go.Figure()
-    fig.update_layout(graph_layout)
     if operation_data is None:
         return fig
     dados = pd.read_json(StringIO(operation_data), orient="split")
@@ -967,11 +607,10 @@ def generate_distribution_graph_ppq(
         color_discrete_map=mapa_cor,
         category_orders={"estudo": ordem_estudos},
     )
-    fig.update_layout(graph_layout)
     fig.update_layout(
-        title=__make_operation_plot_title(variable, filters),
+        title=__make_operation_plot_title(variable, filters, dados),
         xaxis_title="Iteracao",
-        yaxis_title=VARIABLE_UNITS_NEWAVE.get(variable.split("_")[0], ""),
+        yaxis_title=_generate_yaxis_title(variable, filters, dados),
         hovermode="x unified",
         legend=dict(groupclick="toggleitem"),
     )
@@ -999,17 +638,11 @@ def __process_acumprob(operation_data: pd.DataFrame) -> pd.DataFrame:
 def generate_acumprob_graph_casos(
     operation_data, variable, filters, studies_data
 ):
-    graph_layout = go.Layout(
-        plot_bgcolor="rgba(158, 149, 128, 0.2)",
-        paper_bgcolor="rgba(255,255,255,1)",
-    )
     fig = go.Figure()
-    fig.update_layout(graph_layout)
     if operation_data is None:
         return fig
     dados = pd.read_json(StringIO(operation_data), orient="split")
     df_estudos = pd.read_json(StringIO(studies_data), orient="split")
-    programas = df_estudos["program"].unique().tolist()
     line_shape = "hv"
     for _, linha_df in df_estudos.iterrows():
         estudo = linha_df["name"]
@@ -1025,17 +658,23 @@ def generate_acumprob_graph_casos(
                         y=dados_estudo["values"],
                         line_color=cor,
                         line_shape=line_shape,
+                        line_width=LINE_WIDTH,
                         name=estudo,
                     )
                 )
 
     if variable is not None:
         fig.update_layout(
-            title=__make_operation_plot_title(variable, filters),
+            title={
+                "text": __make_operation_plot_title(
+                    variable, filters, df_estudos
+                ),
+                "x": X_TITLE_POS,
+                "y": Y_TITLE_POS,
+            },
             xaxis_title="%",
-            yaxis_title=_generate_yaxis_title(
-                variable.split("_")[0], programas
-            ),
+            yaxis_title=_generate_yaxis_title(variable, filters, df_estudos),
+            yaxis_tickformat=YAXIS_TICKFORMAT,
             hovermode="x unified",
             legend=dict(groupclick="toggleitem"),
         )
@@ -1043,12 +682,7 @@ def generate_acumprob_graph_casos(
 
 
 def generate_timecosts_graph_encadeador(time_costs, variable, studies_data):
-    graph_layout = go.Layout(
-        plot_bgcolor="rgba(158, 149, 128, 0.2)",
-        paper_bgcolor="rgba(255,255,255,1)",
-    )
     fig = go.Figure()
-    fig.update_layout(graph_layout)
     if time_costs is None:
         return fig
     Log.log().info(f"Plotando gráfico - ENCADEADOR ({variable})")
@@ -1121,7 +755,6 @@ def generate_timecosts_graph_encadeador(time_costs, variable, studies_data):
         category_orders={"estudo": ordem_estudos},
         barmode="group",
     )
-    fig.update_layout(graph_layout)
     if variable is not None:
         fig.update_traces(textposition="inside")
         fig.update_layout(uniformtext_minsize=12, uniformtext_mode="hide")
@@ -1134,22 +767,16 @@ def generate_timecosts_graph_encadeador(time_costs, variable, studies_data):
 
 
 def generate_timecosts_graph_casos(time_costs, variable, studies_data):
-    graph_layout = go.Layout(
-        plot_bgcolor="rgba(158, 149, 128, 0.2)",
-        paper_bgcolor="rgba(255,255,255,1)",
-    )
     fig = go.Figure()
-    fig.update_layout(graph_layout)
     if time_costs is None:
         return fig
-    Log.log().info(f"Plotando gráfico - ENCADEADOR ({variable})")
-    dados = pd.read_json(time_costs, orient="split")
+    Log.log().info(f"Plotando gráfico - CASOS ({variable})")
+    dados = pd.read_json(StringIO(time_costs), orient="split")
     df_estudos = pd.read_json(StringIO(studies_data), orient="split")
     mapa_cor = {
         linha["name"]: linha["color"] for _, linha in df_estudos.iterrows()
     }
     if "etapa" in dados.columns:
-        dados = dados.loc[dados["etapa"] != "Tempo Total", :]
         dados["tempo"] = pd.to_timedelta(dados["tempo"], unit="s") / timedelta(
             hours=1
         )
@@ -1171,15 +798,15 @@ def generate_timecosts_graph_casos(time_costs, variable, studies_data):
             text="label",
         )
     else:
-        dados = dados.loc[dados["mean"] > 0, :]
-        dados["label"] = dados["mean"]
-        y_col = "mean"
+        dados = dados.loc[dados["valor_esperado"] > 0, :]
+        dados["label"] = dados["valor_esperado"]
+        y_col = "valor_esperado"
         color_col = "parcela"
         title = "Custos de Operação"
         unit = "Custo ($)"
         # CI de 95%
-        dados["std"] *= 1.96
-        error_y = "std"
+        dados["desvio_padrao"] *= 1.96
+        error_y = "desvio_padrao"
 
         fig = px.bar(
             dados,
@@ -1190,32 +817,29 @@ def generate_timecosts_graph_casos(time_costs, variable, studies_data):
             color_discrete_sequence=DISCRETE_COLOR_PALLETE_COSTS,
             text="label",
         )
-    fig.update_layout(graph_layout)
     if variable is not None:
         fig.update_traces(textposition="inside")
         fig.update_layout(uniformtext_minsize=12, uniformtext_mode="hide")
         fig.update_layout(
-            title=title,
+            title={
+                "text": title,
+            },
+            yaxis_tickformat=YAXIS_TICKFORMAT,
             yaxis_title=unit,
         )
-    Log.log().info(f"Gráfico plotado - ENCADEADOR ({variable})")
+    Log.log().info(f"Gráfico plotado - CASOS ({variable})")
     return fig
 
 
 def generate_violation_graph_encadeador(
     violation_data, violation, studies_data
 ):
-    graph_layout = go.Layout(
-        plot_bgcolor="rgba(158, 149, 128, 0.2)",
-        paper_bgcolor="rgba(255,255,255,1)",
-    )
     fig = go.Figure()
-    fig.update_layout(graph_layout)
     if violation_data is None:
         return fig
 
     Log.log().info(f"Plotando gráfico - ENCADEADOR ({violation})")
-    dados = pd.read_json(violation_data, orient="split")
+    dados = pd.read_json(StringIO(violation_data), orient="split")
 
     df_estudos = pd.read_json(StringIO(studies_data), orient="split")
     mapa_cor = {
@@ -1250,7 +874,6 @@ def generate_violation_graph_encadeador(
         category_orders={"estudo": ordem_estudos},
         barmode="group",
     )
-    fig.update_layout(graph_layout)
     if violation is not None:
         fig.update_traces(textposition="inside")
         fig.update_layout(uniformtext_minsize=12, uniformtext_mode="hide")
@@ -1263,20 +886,15 @@ def generate_violation_graph_encadeador(
 
 
 def generate_convergence_graph_casos(convergence_data, variable, studies_data):
-    graph_layout = go.Layout(
-        plot_bgcolor="rgba(158, 149, 128, 0.2)",
-        paper_bgcolor="rgba(255,255,255,1)",
-    )
     fig = go.Figure()
-    fig.update_layout(graph_layout)
     if convergence_data is None or variable is None:
         return fig
-    dados = pd.read_json(convergence_data, orient="split")
+    dados = pd.read_json(StringIO(convergence_data), orient="split")
     if dados.empty:
         return fig
     dados["tempo"] = pd.to_timedelta(dados["tempo"], unit="s")
     dados["tempo"] /= timedelta(minutes=1)
-    x_col = "iter"
+    x_col = "iteracao"
     fig = make_subplots(specs=[[{"secondary_y": True}]])
     fig.add_trace(
         go.Bar(x=dados[x_col], y=dados["tempo"], name="tempo"),
@@ -1286,7 +904,6 @@ def generate_convergence_graph_casos(convergence_data, variable, studies_data):
     mapa_cor = {
         linha["name"]: linha["color"] for _, linha in df_estudos.iterrows()
     }
-    fig.update_layout(graph_layout)
     if variable is not None:
         if variable == "tempo":
             fig = px.bar(
@@ -1306,13 +923,15 @@ def generate_convergence_graph_casos(convergence_data, variable, studies_data):
                 color="estudo",
                 color_discrete_map=mapa_cor,
             )
-            unit = "" if variable != "dZinf" else "(%)"
+            unit = "" if variable != "delta_zinf" else "(%)"
         fig.update_layout(
-            title=f"Convergência - {variable}",
-            xaxis_title="iteração",
+            title={
+                "text": f"Convergência - {variable}",
+            },
+            xaxis_title="Iteração",
+            yaxis_tickformat=YAXIS_TICKFORMAT,
             hovermode="x unified",
         )
-        fig.update_layout(graph_layout)
         fig.update_yaxes(
             title_text=unit,
         )
@@ -1322,12 +941,7 @@ def generate_convergence_graph_casos(convergence_data, variable, studies_data):
 def generate_resources_graph_casos(
     cluster_data, job_data, time_data, convergence_data, study
 ):
-    graph_layout = go.Layout(
-        plot_bgcolor="rgba(158, 149, 128, 0.2)",
-        paper_bgcolor="rgba(255,255,255,1)",
-    )
     fig = go.Figure()
-    fig.update_layout(graph_layout)
     if cluster_data is None:
         return fig
     if job_data is None:
@@ -1412,15 +1026,15 @@ def generate_resources_graph_casos(
 
     max_y = 1.1 * master["totalMem"].max()
 
-    area_calculos_iniciais_x = np.array(
-        [instante_inicial, instante_inicial_politica]
-    )
+    area_calculos_iniciais_x = np.array([
+        instante_inicial,
+        instante_inicial_politica,
+    ])
     area_calculos_iniciais_y = np.ones_like(area_calculos_iniciais_x) * max_y
     area_sf_x = np.array([instante_final_politica, instante_final])
     area_sf_y = np.ones_like(area_sf_x) * max_y
 
     fig = make_subplots(specs=[[{"secondary_y": True}]])
-    fig.update_layout(graph_layout)
     fig.add_trace(
         go.Scatter(
             x=master["timeInstant"],
@@ -1478,12 +1092,10 @@ def generate_resources_graph_casos(
     )
 
     for i in range(1, len(tempos_iteracoes_com_inicial), 2):
-        area_x = np.array(
-            [
-                tempos_iteracoes_com_inicial[i - 1],
-                tempos_iteracoes_com_inicial[i],
-            ]
-        )
+        area_x = np.array([
+            tempos_iteracoes_com_inicial[i - 1],
+            tempos_iteracoes_com_inicial[i],
+        ])
         area_y = np.ones_like(area_x) * max_y
         fig.add_trace(
             go.Scatter(
@@ -1499,12 +1111,10 @@ def generate_resources_graph_casos(
         )
 
     for i in range(2, len(tempos_iteracoes_com_inicial), 2):
-        area_x = np.array(
-            [
-                tempos_iteracoes_com_inicial[i - 1],
-                tempos_iteracoes_com_inicial[i],
-            ]
-        )
+        area_x = np.array([
+            tempos_iteracoes_com_inicial[i - 1],
+            tempos_iteracoes_com_inicial[i],
+        ])
         area_y = np.ones_like(area_x) * max_y
         fig.add_trace(
             go.Scatter(
@@ -1529,44 +1139,142 @@ def generate_resources_graph_casos(
         range=[0, 1.1 * job["memoryPerCore"].max()],
         secondary_y=True,
     )
-    fig.update_layout(
-        title=f"Uso de Recursos - {study}", hovermode="x unified"
-    )
+    fig.update_layout(title=f"Uso de Recursos - {study}", hovermode="x unified")
     return fig
 
 
-def __make_operation_plot_title(variable: str, filters: dict) -> str:
-    variable_data = variable.split("_")
-    name = variable_data[0]
-    spatial_res = variable_data[1]
-    temporal_res = variable_data[2]
+def __get_system_element_name(
+    system_options_df: pd.DataFrame, system_elem: str, filters: dict
+) -> str:
+    if system_elem == "EST":
+        return system_options_df.loc[
+            system_options_df["estagio"] == int(filters["estagio"]), "estagio"
+        ].iloc[0]
+    elif system_elem == "PAT":
+        return system_options_df.loc[
+            system_options_df["patamar"] == int(filters["patamar"]), "patamar"
+        ].iloc[0]
+    elif system_elem == "SBM":
+        return system_options_df.loc[
+            system_options_df["codigo_submercado"]
+            == int(filters["codigo_submercado"]),
+            "submercado",
+        ].iloc[0]
+    elif system_elem == "SBP":
+        src = system_options_df.loc[
+            system_options_df["codigo_submercado"]
+            == int(filters["codigo_submercado_de"]),
+            "submercado",
+        ].iloc[0]
+        dst = system_options_df.loc[
+            system_options_df["codigo_submercado"]
+            == int(filters["codigo_submercado_para"]),
+            "submercado",
+        ].iloc[0]
+        return f"{src} -> {dst}"
+    elif system_elem == "REE":
+        return system_options_df.loc[
+            system_options_df["codigo_ree"] == int(filters["codigo_ree"]),
+            "ree",
+        ].iloc[0]
+    elif system_elem == "UHE":
+        return system_options_df.loc[
+            system_options_df["codigo_usina"] == int(filters["codigo_uhe"]),
+            "usina",
+        ].iloc[0]
+    elif system_elem == "UTE":
+        return system_options_df.loc[
+            system_options_df["codigo_usina"] == int(filters["codigo_ute"]),
+            "usina",
+        ].iloc[0]
+    elif system_elem == "SIN":
+        return ""
 
-    full_name = VARIABLE_NAMES.get(name)
-    full_spatial_res = SPATIAL_RES_NAMES.get(spatial_res)
-    full_temporal_res = TEMPORAL_RES_NAMES.get(temporal_res)
-    title = ""
-    if full_name:
-        title += full_name
 
-    if spatial_res == "SIN":
-        title += " - SIN"
-    elif spatial_res == "SBP":
-        sbm_de = filters["submercadoDe"].split("|")[0].strip("'")
-        sbm_para = filters["submercadoPara"].split("|")[0].strip("'")
-        title += f" - {full_spatial_res} {sbm_de} -> {sbm_para}"
-    elif spatial_res == "SBM":
-        sbm = filters["submercado"].split("|")[0].strip("'")
-        title += f" - {full_spatial_res} {sbm}"
-    elif full_spatial_res:
-        title += f" - {full_spatial_res} {filters[SPATIAL_RES_FILTER_NAMES[spatial_res]]}"
+def __make_operation_plot_title(
+    variable: str, filters: dict, studies: pd.DataFrame
+) -> str:
+    aggregation = filters["agregacao"]
+    pat = int(filters["patamar"])
+    patamar_str = "" if pat == 0 else f" - Patamar {pat}"
+    operation_options_df = pd.concat(
+        [
+            pd.read_json(StringIO(opt["operacao"]), orient="split")
+            for opt in studies["options"]
+        ],
+        ignore_index=True,
+    )
+    system_elem = operation_options_df.loc[
+        operation_options_df["nome_longo_agregacao"] == aggregation,
+        "nome_curto_agregacao",
+    ].iloc[0]
+    if system_elem == "SIN":
+        return variable + " - " + f"{aggregation}" + patamar_str
+    system_elem_for_options = "SBM" if system_elem == "SBP" else system_elem
+    system_options_df = pd.concat(
+        [
+            pd.read_json(StringIO(opt[system_elem_for_options]), orient="split")
+            for opt in studies["system"]
+        ],
+        ignore_index=True,
+    )
+    elem_name = __get_system_element_name(
+        system_options_df, system_elem, filters
+    )
 
-    if temporal_res in ["EST", "SF"]:
-        pass
-    elif full_temporal_res:
-        title += f" - {full_temporal_res} {filters[TEMPORAL_RES_FILTER_NAMES[temporal_res]]}"
+    title = variable + " - " + f"{aggregation} {elem_name}" + patamar_str
 
-    if "estagio" in filters:
-        title += f" - Estagio {filters['estagio']}"
+    return title
+
+
+def __make_scenario_plot_title(
+    variable: str, filters: dict, studies: pd.DataFrame
+) -> str:
+    aggregation = filters["agregacao"]
+    step = filters["etapa"]
+    iteration = filters["iteracao"] if "iteracao" in filters else None
+    iteration_str = f" - Iteração {iteration}" if iteration else ""
+    scenario_options_df = pd.concat(
+        [
+            pd.read_json(StringIO(opt["cenarios"]), orient="split")
+            for opt in studies["options"]
+        ],
+        ignore_index=True,
+    )
+    system_elem = scenario_options_df.loc[
+        scenario_options_df["nome_longo_agregacao"] == aggregation,
+        "nome_curto_agregacao",
+    ].iloc[0]
+
+    if system_elem == "SIN":
+        return (
+            variable
+            + " - "
+            + f"{step}"
+            + " - "
+            + f"{aggregation}"
+            + iteration_str
+        )
+    system_elem_for_options = "SBM" if system_elem == "SBP" else system_elem
+    system_options_df = pd.concat(
+        [
+            pd.read_json(StringIO(opt[system_elem_for_options]), orient="split")
+            for opt in studies["system"]
+        ],
+        ignore_index=True,
+    )
+    elem_name = __get_system_element_name(
+        system_options_df, system_elem, filters
+    )
+
+    title = (
+        variable
+        + " - "
+        + f"{step}"
+        + " - "
+        + f"{aggregation} {elem_name}"
+        + iteration_str
+    )
 
     return title
 
@@ -1575,39 +1283,9 @@ def __background_area_visibility(estudos: list) -> str:
     return "legendonly" if len(estudos) > 2 else None
 
 
-def __add_final_date_line_to_df(df: pd.DataFrame) -> pd.DataFrame:
-    new_df = df.copy()
-    last_index = df.index.tolist()[-1]
-    new_df.loc[last_index + 1, :] = df.loc[last_index, :]
-    new_df.loc[last_index + 1, "dataInicio"] = df.loc[last_index, "dataFim"]
-    return new_df
-
-
 def __make_operation_plot_legend_name(
-    estudos: List[str], estudo: str, variable: str, filters: dict
+    estudo: str, variable: str, filters: dict, studies: pd.DataFrame
 ) -> str:
-    variable_data = variable.split("_")
-    name = variable_data[0]
-    spatial_res = variable_data[1]
-    temporal_res = variable_data[2]
-
-    legend = f"{estudo} - {name}" if len(estudos) > 1 else f"{name}"
-
-    if spatial_res == "SIN":
-        legend += " - SIN"
-    elif spatial_res == "SBP":
-        sbm_de = filters["submercadoDe"].split("|")[0].strip("'")
-        sbm_para = filters["submercadoPara"].split("|")[0].strip("'")
-        legend += f" - {spatial_res} {sbm_de} -> {sbm_para}"
-    elif spatial_res == "SBM":
-        sbm = filters["submercado"].split("|")[0].strip("'")
-        legend += f" - SBM {sbm}"
-    else:
-        legend += f" - {spatial_res} {filters[SPATIAL_RES_FILTER_NAMES[spatial_res]]}"
-
-    if temporal_res == "EST":
-        pass
-    else:
-        legend += f" - {temporal_res} {filters[TEMPORAL_RES_FILTER_NAMES[temporal_res]]}"
-
-    return legend
+    return (
+        estudo + " - " + __make_operation_plot_title(variable, filters, studies)
+    )

@@ -1,11 +1,14 @@
-from typing import Optional, List
-import requests
-import pandas as pd
-import base62
 import io
 import pathlib
-from src.utils.settings import Settings
+from typing import Dict, List, Optional
+
+import base62
+import pandas as pd
+import requests
+
 import src.utils.constants as constants
+from src.utils.log import Log
+from src.utils.settings import Settings
 
 
 class API:
@@ -18,21 +21,50 @@ class API:
         identifier = base62.encodebytes(study_path.encode("utf-8"))
         url = f"{Settings.result_api}/{identifier}"
         with requests.get(url) as r:
+            Log.log().info(
+                f"API - Resultados Disponiveis ({study_path}): {r.status_code}"
+            )
             if r.status_code != 200:
                 return None
             else:
-                return r.json()
+                if r.headers["Content-Type"] == "application/json":
+                    Log.log().info(
+                        f"API - Resultados Disponiveis ({study_path})"
+                    )
+                    return r.json()
+                else:
+                    return None
 
     @classmethod
     def fetch_available_results_list(
         cls, studies_paths: List[str]
-    ) -> List[str]:
-        unique_variables = set()
-        ret = [cls.fetch_available_results(p) for p in studies_paths]
-        for variables in ret:
-            if variables:
-                unique_variables = unique_variables.union(set(variables))
-        return list(unique_variables)
+    ) -> Dict[str, List[str]]:
+        ret = {p: cls.fetch_available_results(p) for p in studies_paths}
+        metadata_names = constants.SYNTHESIS_METADATA_NAMES
+        available_variables: Dict[str, pd.DataFrame] = {
+            cat: [pd.DataFrame()] for cat in metadata_names.keys()
+        }
+        for p, results in ret.items():
+            if results is None:
+                continue
+            for cat, metadata_file in metadata_names.items():
+                if metadata_file in results:
+                    metadata = cls.fetch_result(
+                        p, metadata_file, {"preprocess": "FULL"}
+                    )
+                    metadata["estudo"] = p
+                    if metadata is not None:
+                        available_variables[cat].append(metadata)
+        for cat in available_variables.keys():
+            available_variables[cat] = pd.concat(
+                available_variables[cat], ignore_index=True
+            )
+            available_variables[cat] = (
+                available_variables[cat]
+                .drop_duplicates(subset=["chave", "estudo"], ignore_index=True)
+                .to_json(orient="split")
+            )
+        return available_variables
 
     @classmethod
     def fetch_result(
@@ -44,10 +76,16 @@ class API:
         identifier = base62.encodebytes(study_path.encode("utf-8"))
         url = f"{Settings.result_api}/{identifier}/{desired_data}"
         with requests.get(url, params=filters) as r:
+            Log.log().info(
+                f"API - Resultados ({study_path} - {desired_data}): {r.status_code}"
+            )
             if r.status_code != 200:
                 return None
             else:
-                df = pd.read_parquet(io.BytesIO(r.content))
+                try:
+                    df = pd.read_parquet(io.BytesIO(r.content))
+                except Exception:
+                    return None
                 return df
 
     @classmethod
@@ -63,7 +101,6 @@ class API:
             cls.fetch_result(str(pathlib.Path(p)), desired_data, filters)
             for p in studies_paths
         ]
-
         for study, df in zip(studies_labels, ret):
             if df is not None:
                 df_cols = df.columns.to_list()

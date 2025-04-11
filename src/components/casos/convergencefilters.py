@@ -111,7 +111,7 @@ class ConvergenceFilters(html.Div):
         Input(ids.studies(MATCH), "data"),
     )
     def update_variables_dropdown_options(studies_data):
-        return ["zsup", "zinf", "dZinf", "tempo"]
+        return ["zsup", "zinf", "delta_zinf", "tempo"]
 
     @callback(
         Output(ids.data(MATCH), "data"),
