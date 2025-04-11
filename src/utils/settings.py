@@ -15,7 +15,7 @@ def __get_ip_address(ifname: str):
     )
 
 
-LOCALHOST = __get_ip_address("eth0")
+LOCALHOST = __get_ip_address("ens192")
 
 
 class Settings:
