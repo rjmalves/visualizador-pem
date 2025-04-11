@@ -43,8 +43,6 @@ NOT_SCENARIO_COLUMNS = [
     "codigo_submercado_para",
     "codigo_ree",
     "codigo_usina",
-    "patamar",
-    "duracao_patamar",
     "limite_inferior",
     "limite_superior",
     "data_inicio",
@@ -1150,10 +1148,6 @@ def __get_system_element_name(
         return system_options_df.loc[
             system_options_df["estagio"] == int(filters["estagio"]), "estagio"
         ].iloc[0]
-    elif system_elem == "PAT":
-        return system_options_df.loc[
-            system_options_df["patamar"] == int(filters["patamar"]), "patamar"
-        ].iloc[0]
     elif system_elem == "SBM":
         return system_options_df.loc[
             system_options_df["codigo_submercado"]
@@ -1195,8 +1189,6 @@ def __make_operation_plot_title(
     variable: str, filters: dict, studies: pd.DataFrame
 ) -> str:
     aggregation = filters["agregacao"]
-    pat = int(filters["patamar"])
-    patamar_str = "" if pat == 0 else f" - Patamar {pat}"
     operation_options_df = pd.concat(
         [
             pd.read_json(StringIO(opt["operacao"]), orient="split")
@@ -1209,7 +1201,7 @@ def __make_operation_plot_title(
         "nome_curto_agregacao",
     ].iloc[0]
     if system_elem == "SIN":
-        return variable + " - " + f"{aggregation}" + patamar_str
+        return variable + " - " + f"{aggregation}"
     system_elem_for_options = "SBM" if system_elem == "SBP" else system_elem
     system_options_df = pd.concat(
         [
@@ -1222,7 +1214,7 @@ def __make_operation_plot_title(
         system_options_df, system_elem, filters
     )
 
-    title = variable + " - " + f"{aggregation} {elem_name}" + patamar_str
+    title = variable + " - " + f"{aggregation} {elem_name}"
 
     return title
 
