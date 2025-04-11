@@ -1,9 +1,11 @@
-from dash import html, dcc, callback, Input, State, Output, MATCH
 import uuid
-import pandas as pd
 from io import StringIO
-import src.utils.dropdowns as dropdowns
+
+import pandas as pd
+from dash import MATCH, Input, Output, State, callback, dcc, html
+
 import src.utils.data as data
+import src.utils.dropdowns as dropdowns
 
 NOMES_SUBMERCADOS = {
     "SUDESTE": "'SUDESTE'|'SE'",
@@ -11,6 +13,7 @@ NOMES_SUBMERCADOS = {
     "NORDESTE": "'NORDESTE'|'NE'",
     "NORTE": "'NORTE'|'N'",
     "FC": "'FC'",
+    "IV": "'IV'",
 }
 
 GRUPOS_SUBMERCADOS = {
