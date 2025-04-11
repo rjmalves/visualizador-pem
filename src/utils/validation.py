@@ -1,16 +1,15 @@
 from typing import Optional
 
 REQUIRED_OPERATION_FILTERS = {
-    "Sistema Interligado": ["patamar"],
-    "Submercado": ["patamar", "codigo_submercado"],
+    "Sistema Interligado": [],
+    "Submercado": ["codigo_submercado"],
     "Par de Submercados": [
-        "patamar",
         "codigo_submercado_de",
         "codigo_submercado_para",
     ],
-    "Reservatório Equivalente": ["patamar", "codigo_ree"],
-    "Usina Hidroelétrica": ["patamar", "codigo_uhe"],
-    "Usina Termelétrica": ["patamar", "codigo_ute"],
+    "Reservatório Equivalente": ["codigo_ree"],
+    "Usina Hidroelétrica": ["codigo_uhe"],
+    "Usina Termelétrica": ["codigo_ute"],
 }
 
 REQUIRED_SCENARIO_FILTERS = {
@@ -29,7 +28,6 @@ REQUIRED_FILTERS = {
     "UHE": ["usina"],
     "UTE": ["usina"],
     "UEE": ["usina"],
-    "PAT": ["patamar"],
     "EST": [],
     "FOR": ["iteracao"],
     "BKW": ["iteracao"],
@@ -93,12 +91,12 @@ def validate_required_filters(
         return False
     spatial_res = variable_data[1]
     temporal_res = variable_data[2]
-    valid_spatial = all(
-        [filters.get(k) for k in REQUIRED_FILTERS.get(spatial_res, [])]
-    )
-    valid_temporal = all(
-        [filters.get(k) for k in REQUIRED_FILTERS.get(temporal_res, [])]
-    )
+    valid_spatial = all([
+        filters.get(k) for k in REQUIRED_FILTERS.get(spatial_res, [])
+    ])
+    valid_temporal = all([
+        filters.get(k) for k in REQUIRED_FILTERS.get(temporal_res, [])
+    ])
     valid_ppq = any([filters.get("estagio"), not ppq])
     if valid_spatial and valid_temporal and valid_ppq:
         filters_spatial = {
