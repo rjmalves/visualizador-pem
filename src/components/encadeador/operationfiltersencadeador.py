@@ -111,16 +111,16 @@ class OperationFiltersEncadeador(html.Div):
             "subcomponent": "submercado_para_dropdown_container",
             "aio_id": aio_id,
         }
-        patamar_dropdown = lambda aio_id: {
-            "component": "OperationFiltersEncadeador",
-            "subcomponent": "patamar_dropdown",
-            "aio_id": aio_id,
-        }
-        patamar_dropdown_container = lambda aio_id: {
-            "component": "OperationFiltersEncadeador",
-            "subcomponent": "patamar_dropdown_container",
-            "aio_id": aio_id,
-        }
+        # patamar_dropdown = lambda aio_id: {
+        #     "component": "OperationFiltersEncadeador",
+        #     "subcomponent": "patamar_dropdown",
+        #     "aio_id": aio_id,
+        # }
+        # patamar_dropdown_container = lambda aio_id: {
+        #     "component": "OperationFiltersEncadeador",
+        #     "subcomponent": "patamar_dropdown_container",
+        #     "aio_id": aio_id,
+        # }
         estagio_dropdown = lambda aio_id: {
             "component": "OperationFiltersEncadeador",
             "subcomponent": "estagio_dropdown",
@@ -173,7 +173,7 @@ class OperationFiltersEncadeador(html.Div):
         submercado_dropdown_props=None,
         submercado_de_dropdown_props=None,
         submercado_para_dropdown_props=None,
-        patamar_dropdown_props=None,
+        # patamar_dropdown_props=None,
         estagio_dropdown_props=None,
         resolution_dropdown_props=None,
         variable_dropdown_props=None,
@@ -206,9 +206,9 @@ class OperationFiltersEncadeador(html.Div):
             if submercado_para_dropdown_props
             else {}
         )
-        patamar_dropdown_props = (
-            patamar_dropdown_props.copy() if patamar_dropdown_props else {}
-        )
+        # patamar_dropdown_props = (
+        #     patamar_dropdown_props.copy() if patamar_dropdown_props else {}
+        # )
         estagio_dropdown_props = (
             estagio_dropdown_props.copy() if estagio_dropdown_props else {}
         )
@@ -233,8 +233,8 @@ class OperationFiltersEncadeador(html.Div):
             submercado_de_dropdown_props["style"] = {"display": "none"}
         if "style" not in submercado_para_dropdown_props:
             submercado_para_dropdown_props["style"] = {"display": "none"}
-        if "style" not in patamar_dropdown_props:
-            patamar_dropdown_props["style"] = {"display": "none"}
+        # if "style" not in patamar_dropdown_props:
+        #     patamar_dropdown_props["style"] = {"display": "none"}
         if "style" not in estagio_dropdown_props:
             estagio_dropdown_props["style"] = {"display": "none"}
         if "style" not in resolution_dropdown_props:
@@ -254,8 +254,8 @@ class OperationFiltersEncadeador(html.Div):
             submercado_de_dropdown_props["className"] = "dropdown-container"
         if "className" not in submercado_para_dropdown_props:
             submercado_para_dropdown_props["className"] = "dropdown-container"
-        if "className" not in patamar_dropdown_props:
-            patamar_dropdown_props["className"] = "dropdown-container"
+        # if "className" not in patamar_dropdown_props:
+        #     patamar_dropdown_props["className"] = "dropdown-container"
         if "className" not in estagio_dropdown_props:
             estagio_dropdown_props["className"] = "dropdown-container"
         if "className" not in resolution_dropdown_props:
@@ -317,14 +317,14 @@ class OperationFiltersEncadeador(html.Div):
                 placeholder="Submercado Para",
                 className="variable-dropdown",
             )
-        if "children" not in patamar_dropdown_props:
-            patamar_dropdown_props["children"] = dcc.Dropdown(
-                id=self.ids.patamar_dropdown(aio_id),
-                options=[],
-                value=None,
-                placeholder="Patamar",
-                className="variable-dropdown",
-            )
+        # if "children" not in patamar_dropdown_props:
+        #     patamar_dropdown_props["children"] = dcc.Dropdown(
+        #         id=self.ids.patamar_dropdown(aio_id),
+        #         options=[],
+        #         value=None,
+        #         placeholder="Patamar",
+        #         className="variable-dropdown",
+        #     )
         if "children" not in estagio_dropdown_props:
             estagio_dropdown_props["children"] = dcc.Dropdown(
                 id=self.ids.estagio_dropdown(aio_id),
@@ -380,10 +380,10 @@ class OperationFiltersEncadeador(html.Div):
                     id=self.ids.submercado_para_dropdown_container(aio_id),
                     **submercado_para_dropdown_props,
                 ),
-                html.Div(
-                    id=self.ids.patamar_dropdown_container(aio_id),
-                    **patamar_dropdown_props,
-                ),
+                # html.Div(
+                #     id=self.ids.patamar_dropdown_container(aio_id),
+                #     **patamar_dropdown_props,
+                # ),
                 html.Div(
                     id=self.ids.resolution_dropdown_container(aio_id),
                     **resolution_dropdown_props,
@@ -488,15 +488,15 @@ class OperationFiltersEncadeador(html.Div):
             else {"display": "none"}
         )
 
-    @callback(
-        Output(ids.patamar_dropdown_container(MATCH), "style"),
-        Input(ids.resolution_dropdown(MATCH), "value"),
-        Input(ids.variable_dropdown(MATCH), "value"),
-        prevent_initial_call=True,
-    )
-    def update_display_patamar_dropdown(agregacao: str, variavel: str):
-        should_display = all([agregacao is not None, variavel is not None])
-        return {"display": "flex"} if should_display else {"display": "none"}
+    # @callback(
+    #     Output(ids.patamar_dropdown_container(MATCH), "style"),
+    #     Input(ids.resolution_dropdown(MATCH), "value"),
+    #     Input(ids.variable_dropdown(MATCH), "value"),
+    #     prevent_initial_call=True,
+    # )
+    # def update_display_patamar_dropdown(agregacao: str, variavel: str):
+    #     should_display = all([agregacao is not None, variavel is not None])
+    #     return {"display": "flex"} if should_display else {"display": "none"}
 
     @callback(
         Output(ids.resolution_dropdown_container(MATCH), "style"),
@@ -516,7 +516,7 @@ class OperationFiltersEncadeador(html.Div):
         Input(ids.submercado_dropdown(MATCH), "value"),
         Input(ids.submercado_de_dropdown(MATCH), "value"),
         Input(ids.submercado_para_dropdown(MATCH), "value"),
-        Input(ids.patamar_dropdown(MATCH), "value"),
+        # Input(ids.patamar_dropdown(MATCH), "value"),
         Input(ids.estagio_dropdown(MATCH), "value"),
         Input(ids.resolution_dropdown(MATCH), "value"),
     )
@@ -527,7 +527,7 @@ class OperationFiltersEncadeador(html.Div):
         submercado: int,
         submercado_de: int,
         submercado_para: int,
-        patamar: int,
+        # patamar: int,
         estagio: int,
         agregacao: str,
     ):
@@ -544,8 +544,8 @@ class OperationFiltersEncadeador(html.Div):
             filtros["codigo_submercado_de"] = submercado_de
         if submercado_para:
             filtros["codigo_submercado_para"] = submercado_para
-        if patamar:
-            filtros["patamar"] = patamar
+        # if patamar:
+        #     filtros["patamar"] = patamar
         if estagio:
             filtros["estagio"] = estagio
         if agregacao:
@@ -562,15 +562,15 @@ class OperationFiltersEncadeador(html.Div):
             studies_data, "EST"
         )
 
-    @callback(
-        Output(ids.patamar_dropdown(MATCH), "options"),
-        Input(ids.studies(MATCH), "data"),
-        prevent_initial_call=True,
-    )
-    def update_variables_patamar_dropdown_options(studies_data):
-        return dropdowns.update_operation_dropdown_system_entity_options_casos(
-            studies_data, "PAT"
-        )
+    # @callback(
+    #     Output(ids.patamar_dropdown(MATCH), "options"),
+    #     Input(ids.studies(MATCH), "data"),
+    #     prevent_initial_call=True,
+    # )
+    # def update_variables_patamar_dropdown_options(studies_data):
+    #     return dropdowns.update_operation_dropdown_system_entity_options_casos(
+    #         studies_data, "PAT"
+    #     )
 
     @callback(
         Output(ids.submercado_dropdown(MATCH), "options"),

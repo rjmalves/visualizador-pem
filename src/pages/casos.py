@@ -42,6 +42,7 @@ def layout(screen_id=None):
             EditStudyModal(aio_id="casos-edit-modal"),
             CurrentStudiesTable(aio_id="casos-current-studies"),
             OperationGraph(aio_id="casos-operation-graph"),
+            OperationGraph(aio_id="casos-operation-graph-2"),
             # AcumProbGraph(aio_id="casos-permanencia-graph"),
             # SpatialViewGraph(aio_id="casos-espacial-graph"),
             # ScenarioGraph(aio_id="casos-scenario-graph"),
@@ -300,6 +301,15 @@ def update_edit_study_modal_color(selected_study, current_studies):
 
 @callback(
     Output(OperationGraph.ids.studies("casos-operation-graph"), "data"),
+    Input(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
+    prevent_initial_call=True,
+)
+def update_current_studies(studies_data):
+    return studies_data
+
+
+@callback(
+    Output(OperationGraph.ids.studies("casos-operation-graph-2"), "data"),
     Input(CurrentStudiesTable.ids.data("casos-current-studies"), "data"),
     prevent_initial_call=True,
 )
