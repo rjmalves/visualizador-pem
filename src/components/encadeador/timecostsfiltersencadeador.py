@@ -109,7 +109,7 @@ class TimeCostsFiltersEncadeador(html.Div):
         if "children" not in programa_dropdown_props:
             programa_dropdown_props["children"] = dcc.Dropdown(
                 id=self.ids.programa_dropdown(aio_id),
-                options=["NEWAVE", "DECOMP"],
+                options=["NEWAVE", "DECOMP", "DESSEM"],
                 value=None,
                 placeholder="Programa",
                 className="variable-dropdown",
