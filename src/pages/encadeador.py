@@ -1,30 +1,31 @@
 # package imports
 import dash
-from dash import html, dcc, callback, Input, Output, State, ctx
+from dash import Input, Output, State, callback, ctx, dcc, html
+from flask_login import current_user
 
-from src.components.newstudymodal import NewStudyModal
-from src.components.editstudymodal import EditStudyModal
+import src.utils.data as data
+import src.utils.db as db
+import src.utils.modals as modals
 from src.components.currentstudiestable import CurrentStudiesTable
+from src.components.editstudymodal import EditStudyModal
 from src.components.encadeador.operationgraphencadeador import (
     OperationGraphEncadeador,
+)
+
+# from src.components.encadeador.violationgraphencadeador import (
+#     ViolationGraph,
+# )
+from src.components.encadeador.statustableencadeador import (
+    StatusTable,
 )
 from src.components.encadeador.timecostsgraphencadeador import (
     TimeCostsGraphEncadeador,
 )
-from src.components.encadeador.violationgraphencadeador import (
-    ViolationGraph,
-)
-from src.components.encadeador.statustableencadeador import (
-    StatusTable,
-)
-from src.components.savescreenmodal import SaveScreenModal
 from src.components.loadscreenmodal import LoadScreenModal
-from flask_login import current_user
-import src.utils.modals as modals
-import src.utils.data as data
-from src.utils.settings import Settings
+from src.components.newstudymodal import NewStudyModal
+from src.components.savescreenmodal import SaveScreenModal
 from src.utils.log import Log
-import src.utils.db as db
+from src.utils.settings import Settings
 
 dash.register_page(
     __name__,
@@ -42,8 +43,9 @@ def layout(screen_id=None):
             CurrentStudiesTable(aio_id="encadeador-current-studies"),
             StatusTable(aio_id="encadeador-status-table"),
             OperationGraphEncadeador(aio_id="encadeador-operation-graph"),
+            OperationGraphEncadeador(aio_id="encadeador-operation-graph-2"),
             TimeCostsGraphEncadeador(aio_id="encadeador-tempo-custos-graph"),
-            ViolationGraph(aio_id="encadeador-inviabs-graph"),
+            # ViolationGraph(aio_id="encadeador-inviabs-graph"),
             SaveScreenModal(aio_id="encadeador-save-screen-modal"),
             LoadScreenModal(aio_id="encadeador-load-screen-modal"),
             dcc.Store(
@@ -59,9 +61,7 @@ def layout(screen_id=None):
     Output(NewStudyModal.ids.modal("encadeador-modal"), "is_open"),
     [
         Input(
-            CurrentStudiesTable.ids.add_study_btn(
-                "encadeador-current-studies"
-            ),
+            CurrentStudiesTable.ids.add_study_btn("encadeador-current-studies"),
             "n_clicks",
         ),
         Input(
@@ -190,12 +190,8 @@ def toggle_encadeador_modal(src1, src2, is_open):
     State(NewStudyModal.ids.new_study_label("encadeador-modal"), "value"),
     State(NewStudyModal.ids.new_study_color("encadeador-modal"), "value"),
     State(EditStudyModal.ids.edit_study_id("encadeador-edit-modal"), "data"),
-    State(
-        EditStudyModal.ids.edit_study_path("encadeador-edit-modal"), "value"
-    ),
-    State(
-        EditStudyModal.ids.edit_study_name("encadeador-edit-modal"), "value"
-    ),
+    State(EditStudyModal.ids.edit_study_path("encadeador-edit-modal"), "value"),
+    State(EditStudyModal.ids.edit_study_name("encadeador-edit-modal"), "value"),
     State(
         EditStudyModal.ids.edit_study_color("encadeador-edit-modal"), "value"
     ),
@@ -368,6 +364,18 @@ def update_current_studies_operation_graph(studies_data):
 
 @callback(
     Output(
+        OperationGraphEncadeador.ids.studies("encadeador-operation-graph-2"),
+        "data",
+    ),
+    Input(CurrentStudiesTable.ids.data("encadeador-current-studies"), "data"),
+    prevent_initial_call=True,
+)
+def update_current_studies_operation2_graph(studies_data):
+    return studies_data
+
+
+@callback(
+    Output(
         TimeCostsGraphEncadeador.ids.studies("encadeador-tempo-custos-graph"),
         "data",
     ),
@@ -378,16 +386,16 @@ def update_current_studies_timecosts_graph(studies_data):
     return studies_data
 
 
-@callback(
-    Output(
-        ViolationGraph.ids.studies("encadeador-inviabs-graph"),
-        "data",
-    ),
-    Input(CurrentStudiesTable.ids.data("encadeador-current-studies"), "data"),
-    prevent_initial_call=True,
-)
-def update_current_studies_violation_graph(studies_data):
-    return studies_data
+# @callback(
+#     Output(
+#         ViolationGraph.ids.studies("encadeador-inviabs-graph"),
+#         "data",
+#     ),
+#     Input(CurrentStudiesTable.ids.data("encadeador-current-studies"), "data"),
+#     prevent_initial_call=True,
+# )
+# def update_current_studies_violation_graph(studies_data):
+#     return studies_data
 
 
 @callback(
