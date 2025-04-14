@@ -264,10 +264,20 @@ def update_operation_options_encadeador(studies, variable: str):
         variable,
     )
 
+    dessem_options = API.fetch_result_options_list(
+        [
+            os.path.join(p, Settings.synthesis_dir, Settings.dessem_dir)
+            for p in paths
+        ],
+        variable,
+    )
+
     if newave_options is not None:
         complete_options = {**complete_options, **newave_options}
     if decomp_options is not None:
         complete_options = {**complete_options, **decomp_options}
+    if dessem_options is not None:
+        complete_options = {**complete_options, **dessem_options}
     if len(complete_options) == 0:
         return None
     else:

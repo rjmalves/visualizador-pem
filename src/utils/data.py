@@ -395,7 +395,8 @@ def update_status_data_encadeador(interval, studies):
     if cases_df is None:
         return pd.DataFrame(
             columns=[
-                "NOMETEMPO DE EXECUCAO",
+                "NOME",
+                "TEMPO DE EXECUCAO",
                 "PROGRESSO (%)",
                 "CASO ATUAL",
                 "ESTADO",
@@ -476,11 +477,14 @@ def update_operation_data_encadeador(
     data_filename, unit, data_filters = _get_operation_data_filename(
         studies_df, kind, variable, aggregation, req_filters
     )
-    data_filters = {**data_filters, "estagio": 1, "preprocess": kind}
+    data_filters_nw_dc = {**data_filters, "estagio": 1, "preprocess": kind}
+    data_filters_ds = {**data_filters, "preprocess": kind}
     if aggregation == "Usina Hidroelétrica":
-        data_filters["codigo_usina"] = data_filters["codigo_uhe"]
+        data_filters_nw_dc["codigo_usina"] = data_filters_nw_dc["codigo_uhe"]
+        data_filters_ds["codigo_usina"] = data_filters_ds["codigo_uhe"]
     elif aggregation == "Usina Termelétrica":
-        data_filters["codigo_usina"] = data_filters["codigo_ute"]
+        data_filters_nw_dc["codigo_usina"] = data_filters_nw_dc["codigo_ute"]
+        data_filters_ds["codigo_usina"] = data_filters_ds["codigo_ute"]
     complete_df = pd.DataFrame()
     Log.log().info(f"Obtendo dados - ENCADEADOR ({variable})")
     newave_df = API.fetch_result_list(
@@ -490,7 +494,7 @@ def update_operation_data_encadeador(
         ],
         labels,
         data_filename,
-        data_filters,
+        data_filters_nw_dc,
     )
     decomp_df = API.fetch_result_list(
         [
@@ -499,7 +503,7 @@ def update_operation_data_encadeador(
         ],
         labels,
         data_filename,
-        data_filters,
+        data_filters_nw_dc,
     )
     dessem_df = API.fetch_result_list(
         [
@@ -508,7 +512,7 @@ def update_operation_data_encadeador(
         ],
         labels,
         data_filename,
-        data_filters,
+        data_filters_ds,
     )
     if newave_df is not None:
         cols_newave = newave_df.columns.to_list()
@@ -530,6 +534,10 @@ def update_operation_data_encadeador(
     if dessem_df is not None:
         cols_dessem = dessem_df.columns.to_list()
         dessem_df["programa"] = "DESSEM"
+
+        # TODO - melhorar filtro D1 DESSEM
+        dessem_df = dessem_df.loc[dessem_df["estagio"] <= 48]
+
         complete_df = pd.concat(
             [
                 complete_df,

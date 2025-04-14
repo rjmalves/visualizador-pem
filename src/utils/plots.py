@@ -411,8 +411,10 @@ def generate_operation_graph_encadeador(
 
     filtro_newave = dados["programa"] == "NEWAVE"
     filtro_decomp = dados["programa"] == "DECOMP"
+    filtro_dessem = dados["programa"] == "DESSEM"
     df_newave = dados.loc[filtro_newave]
     df_decomp = dados.loc[filtro_decomp]
+    df_dessem = dados.loc[filtro_dessem]
     mode = "lines"
     visibilidade_newave = __background_area_visibility(df_estudos["name"])
     for _, linha_df in df_estudos.iterrows():
@@ -420,6 +422,26 @@ def generate_operation_graph_encadeador(
         rgb = hex_to_rgb(linha_df["color"])
         cor = f"rgba({rgb[0]},{rgb[1]},{rgb[2]}, 1.0)"
         cor_fundo = f"rgba({rgb[0]},{rgb[1]},{rgb[2]}, 0.3)"
+
+        if df_dessem is not None:
+            estudo_dessem = pivot_df_for_plot(
+                df_dessem.loc[df_dessem["estudo"] == estudo]
+            )
+            if not estudo_dessem.empty:
+                fig.add_trace(
+                    go.Scatter(
+                        x=estudo_dessem[END_DATE_COLUMN],
+                        y=estudo_dessem["mean"],
+                        line={
+                            "color": cor,
+                            "width": 3,
+                        },
+                        mode=mode,
+                        name=estudo,
+                        legendgroup="DESSEM",
+                        legendgrouptitle_text="DESSEM",
+                    )
+                )
 
         if df_decomp is not None:
             estudo_decomp = pivot_df_for_plot(
