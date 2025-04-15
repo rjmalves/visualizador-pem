@@ -283,6 +283,9 @@ class OperationFiltersEncadeador(html.Div):
             ree_dropdown_props["children"] = dcc.Dropdown(
                 id=self.ids.ree_dropdown(aio_id),
                 options=[],
+                style={
+                    "width": "150px",
+                },
                 value=None,
                 placeholder="REE",
                 className="variable-dropdown",
@@ -291,6 +294,9 @@ class OperationFiltersEncadeador(html.Div):
             submercado_dropdown_props["children"] = dcc.Dropdown(
                 id=self.ids.submercado_dropdown(aio_id),
                 options=[],
+                style={
+                    "width": "150px",
+                },
                 value=None,
                 placeholder="Submercado",
                 className="variable-dropdown",
@@ -321,6 +327,9 @@ class OperationFiltersEncadeador(html.Div):
             patamar_dropdown_props["children"] = dcc.Dropdown(
                 id=self.ids.patamar_dropdown(aio_id),
                 options=[],
+                style={
+                    "width": "100px",
+                },
                 value=None,
                 placeholder="Patamar",
                 className="variable-dropdown",
@@ -329,6 +338,9 @@ class OperationFiltersEncadeador(html.Div):
             estagio_dropdown_props["children"] = dcc.Dropdown(
                 id=self.ids.estagio_dropdown(aio_id),
                 options=[],
+                style={
+                    "width": "100px",
+                },
                 value=None,
                 placeholder="Estagio",
                 className="variable-dropdown",
@@ -345,6 +357,9 @@ class OperationFiltersEncadeador(html.Div):
             variable_dropdown_props["children"] = dcc.Dropdown(
                 id=self.ids.variable_dropdown(aio_id),
                 options=[],
+                style={
+                    "width": "400px",
+                },
                 value=None,
                 placeholder="Variavel",
                 className="variable-dropdown",
@@ -685,7 +700,9 @@ class OperationFiltersEncadeador(html.Div):
         if operation_data is not None:
             dados = pd.read_json(StringIO(operation_data), orient="split")
             dados[START_DATE_COLUMN] = pd.to_datetime(
-                dados["dataInicio"], unit="ms"
+                dados["data_inicio"], unit="ms"
             )
-            dados[END_DATE_COLUMN] = pd.to_datetime(dados["dataFim"], unit="ms")
+            dados[END_DATE_COLUMN] = pd.to_datetime(
+                dados["data_fim"], unit="ms"
+            )
             return dcc.send_data_frame(dados.to_csv, f"{variable}.csv")
