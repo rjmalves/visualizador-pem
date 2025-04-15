@@ -730,19 +730,19 @@ def generate_timecosts_graph_encadeador(time_costs, variable, studies_data):
                 )
 
         dados = df_plot
-        dados = dados.loc[dados["mean"] > 0, :]
+        dados = dados.loc[dados["valor_esperado"] > 0, :]
         dados = (
             dados.groupby(["estudo", "caso"])
             .sum(numeric_only=True)
             .reset_index()
         )
-        dados["label"] = dados["mean"].round(2)
-        y_col = "mean"
+        dados["label"] = dados["valor_esperado"].round(2)
+        y_col = "valor_esperado"
         title = "Custos de Operação"
         unit = "Custo ($)"
         # CI de 95%
-        dados["std"] *= 1.96
-        error_y = "std"
+        dados["desvio_padrao"] *= 1.96
+        error_y = "desvio_padrao"
 
     fig = px.bar(
         dados,
