@@ -343,7 +343,7 @@ def generate_operation_graph_casos_twinx(
         title_text=_generate_yaxis_title(
             variable_twinx, filters_twinx, studies_df
         ),
-        yaxis_tickformat=YAXIS_TICKFORMAT,
+        tickformat=YAXIS_TICKFORMAT,
         secondary_y=True,
     )
 
