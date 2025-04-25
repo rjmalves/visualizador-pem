@@ -4,7 +4,7 @@ import socket
 import struct
 
 
-def __get_ip_address(ifname: str):
+def _get_ip_address(ifname: str):
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     return socket.inet_ntoa(
         fcntl.ioctl(
@@ -16,7 +16,7 @@ def __get_ip_address(ifname: str):
 
 
 class Settings:
-    network_interface = __get_ip_address(os.getenv("NETWORK_INTERFACE", "eth0"))
+    network_interface = _get_ip_address(os.getenv("NETWORK_INTERFACE", "eth0"))
     basedir = os.getenv("BASEDIR")
     mode = os.getenv("MODE", "DEV")
     host = os.getenv("HOST", "0.0.0.0")
@@ -40,7 +40,7 @@ class Settings:
 
     @classmethod
     def read_environments(cls):
-        cls.network_interface = __get_ip_address(
+        cls.network_interface = _get_ip_address(
             os.getenv("NETWORK_INTERFACE", "eth0")
         )
         cls.basedir = os.getenv("BASEDIR")
