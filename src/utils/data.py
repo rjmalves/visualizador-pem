@@ -232,9 +232,14 @@ def edit_current_study_data(
                         "program": [_get_programa(new_study_id)],
                     }
                 )
-                return pd.concat(
-                    [current_data, new_data], ignore_index=True
-                ).to_json(orient="split")
+                dfs_to_concat = (
+                    [current_data, new_data]
+                    if not current_data.empty
+                    else [new_data]
+                )
+                return pd.concat(dfs_to_concat, ignore_index=True).to_json(
+                    orient="split"
+                )
         else:
             return current_studies
     elif ctx.triggered_id == edit_trigger:
@@ -242,6 +247,9 @@ def edit_current_study_data(
             current_data = pd.read_json(
                 StringIO(current_studies), orient="split"
             )
+            old_study_path = current_data.loc[
+                current_data["table_id"] == edit_study_id, "path"
+            ].iloc[0]
             current_data.loc[
                 current_data["table_id"] == edit_study_id, "path"
             ] = edit_study_path
@@ -251,6 +259,10 @@ def edit_current_study_data(
             current_data.loc[
                 current_data["table_id"] == edit_study_id, "color"
             ] = edit_study_color
+            # Retorno rapido se mudou só "estética"
+            if edit_study_path == old_study_path:
+                return current_data.to_json(orient="split")
+
             casos_options = update_variables_options_casos([edit_study_path])
             encadeador_options = update_variables_options_encadeador([
                 edit_study_path
@@ -269,10 +281,10 @@ def edit_current_study_data(
             )
             current_data.loc[
                 current_data["table_id"] == edit_study_id, "options"
-            ] = options
+            ] = [options]
             current_data.loc[
                 current_data["table_id"] == edit_study_id, "system"
-            ] = system
+            ] = [system]
             current_data.loc[
                 current_data["table_id"] == edit_study_id, "program"
             ] = _get_programa(edit_study_path)

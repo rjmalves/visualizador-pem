@@ -286,6 +286,9 @@ class OperationFiltersEncadeador(html.Div):
                 style={
                     "width": "150px",
                 },
+                style={
+                    "width": "150px",
+                },
                 value=None,
                 placeholder="REE",
                 className="variable-dropdown",
@@ -294,6 +297,9 @@ class OperationFiltersEncadeador(html.Div):
             submercado_dropdown_props["children"] = dcc.Dropdown(
                 id=self.ids.submercado_dropdown(aio_id),
                 options=[],
+                style={
+                    "width": "150px",
+                },
                 style={
                     "width": "150px",
                 },
@@ -338,6 +344,9 @@ class OperationFiltersEncadeador(html.Div):
                 style={
                     "width": "100px",
                 },
+                style={
+                    "width": "100px",
+                },
                 value=None,
                 placeholder="Estagio",
                 className="variable-dropdown",
@@ -354,6 +363,9 @@ class OperationFiltersEncadeador(html.Div):
             variable_dropdown_props["children"] = dcc.Dropdown(
                 id=self.ids.variable_dropdown(aio_id),
                 options=[],
+                style={
+                    "width": "400px",
+                },
                 style={
                     "width": "400px",
                 },
