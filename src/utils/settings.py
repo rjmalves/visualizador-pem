@@ -15,9 +15,6 @@ def __get_ip_address(ifname: str):
     )
 
 
-LOCALHOST = __get_ip_address("ens192")
-
-
 class Settings:
     network_interface = __get_ip_address(os.getenv("NETWORK_INTERFACE", "eth0"))
     basedir = os.getenv("BASEDIR")
