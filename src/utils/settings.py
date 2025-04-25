@@ -1,6 +1,6 @@
+import fcntl
 import os
 import socket
-import fcntl
 import struct
 
 
@@ -15,16 +15,16 @@ def __get_ip_address(ifname: str):
     )
 
 
-LOCALHOST = __get_ip_address("eth0")
-
-
 class Settings:
+    network_interface = __get_ip_address(os.getenv("NETWORK_INTERFACE", "eth0"))
     basedir = os.getenv("BASEDIR")
     mode = os.getenv("MODE", "DEV")
     host = os.getenv("HOST", "0.0.0.0")
     port = int(os.getenv("PORT", "5050"))
     storage = os.getenv("STORAGE", "session")
-    result_api = os.getenv("RESULT_API", f"http://{LOCALHOST}:5048/results")
+    result_api = os.getenv(
+        "RESULT_API", f"http://{network_interface}:5048/results"
+    )
     api_key = os.getenv("API_KEY", "")
     graphs_update_period = int(os.getenv("GRAPHS_UPDATE_PERIOD", "600000"))
     current_state_update_period = int(
@@ -40,13 +40,16 @@ class Settings:
 
     @classmethod
     def read_environments(cls):
+        cls.network_interface = __get_ip_address(
+            os.getenv("NETWORK_INTERFACE", "eth0")
+        )
         cls.basedir = os.getenv("BASEDIR")
         cls.mode = os.getenv("MODE", "DEV")
         cls.host = os.getenv("HOST", "0.0.0.0")
         cls.port = int(os.getenv("PORT", "5050"))
         cls.storage = os.getenv("STORAGE", "session")
         cls.result_api = os.getenv(
-            "RESULT_API", f"http://{LOCALHOST}:5048/results"
+            "RESULT_API", f"http://{cls.network_interface}:5048/results"
         )
         cls.api_key = os.getenv("API_KEY", "")
         cls.graphs_update_period = int(
