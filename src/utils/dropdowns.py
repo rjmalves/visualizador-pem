@@ -120,6 +120,8 @@ def update_scenario_variables_dropdown_options_casos(studies_data):
     )
     if options_df.empty:
         return []
+    if "nome_longo_variavel" not in options_df.columns:
+        return []
     return options_df["nome_longo_variavel"].unique().tolist()
 
 
@@ -137,6 +139,8 @@ def update_scenarios_resolution_dropdown_options_casos(studies_data, variable):
         ignore_index=True,
     )
     if options_df.empty:
+        return []
+    elif "nome_longo_variavel" not in options_df.columns:
         return []
     else:
         return (
@@ -165,6 +169,8 @@ def update_scenarios_etapa_dropdown_options_casos(
         ignore_index=True,
     )
     if options_df.empty:
+        return []
+    elif "nome_longo_variavel" not in options_df.columns:
         return []
     else:
         return (
