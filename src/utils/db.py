@@ -1,13 +1,16 @@
-from src.services.unitofwork import SQLUnitOfWork
-from src.utils.settings import Settings
+from datetime import datetime
+from io import StringIO
+from typing import List, Optional
+
+import pandas as pd
+
 from src.models.screen import Screen
+from src.models.screenstudy import ScreenStudy
 from src.models.screentype import ScreenType
 from src.models.study import Study
-from src.models.screenstudy import ScreenStudy
-from typing import Optional, List
-import pandas as pd
-from datetime import datetime
+from src.services.unitofwork import SQLUnitOfWork
 from src.utils.log import Log
+from src.utils.settings import Settings
 
 
 def find_screen_type_in_url(url: str) -> str:
@@ -58,7 +61,7 @@ def create_or_update_screen(
     screen_name: str, screen_type_str: str, current_studies
 ):
     screen_type = ScreenType.factory(screen_type_str)
-    studies_df = pd.read_json(current_studies, orient="split")
+    studies_df = pd.read_json(StringIO(current_studies), orient="split")
     if studies_df.shape[0] == 0:
         return None
     studies_df["created_date"] = pd.to_datetime(studies_df["created_date"])

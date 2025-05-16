@@ -96,13 +96,14 @@ def update_system_entities_encadeador(path, options):
             e: API.fetch_result(decomp_path, e, {"preprocess": "FULL"})
             for e in system_metadata["chave"].tolist()
         }
-        system_entities = {
-            e: pd.concat(
-                [newave_system_entities[e], decomp_system_entities[e]],
-                ignore_index=True,
-            )
-            for e in system_metadata["chave"].tolist()
-        }
+        system_entities = {}
+        for e in system_metadata["chave"].tolist():
+            dfs = [newave_system_entities[e], decomp_system_entities[e]]
+            if any([df is not None for df in dfs]):
+                system_entities[e] = pd.concat(
+                    dfs,
+                    ignore_index=True,
+                )
     else:
         system_entities = {}
     return {
