@@ -42,15 +42,9 @@ def update_variables_options_encadeador(paths):
     decomps_paths = []
     dessems_paths = []
     for path in paths:
-        newave_path = os.path.join(
-            path, Settings.synthesis_dir, Settings.newave_dir
-        )
-        decomp_path = os.path.join(
-            path, Settings.synthesis_dir, Settings.decomp_dir
-        )
-        dessem_path = os.path.join(
-            path, Settings.synthesis_dir, Settings.dessem_dir
-        )
+        newave_path = os.path.join(path, Settings.synthesis_dir, Settings.newave_dir)
+        decomp_path = os.path.join(path, Settings.synthesis_dir, Settings.decomp_dir)
+        dessem_path = os.path.join(path, Settings.synthesis_dir, Settings.dessem_dir)
         newaves_paths.append(newave_path)
         decomps_paths.append(decomp_path)
         dessems_paths.append(dessem_path)
@@ -89,15 +83,9 @@ def update_system_entities_casos(path, options):
 def update_system_entities_encadeador(path, options):
     system_metadata = pd.read_json(StringIO(options["sistema"]), orient="split")
     if "chave" in system_metadata:
-        newave_path = os.path.join(
-            path, Settings.synthesis_dir, Settings.newave_dir
-        )
-        decomp_path = os.path.join(
-            path, Settings.synthesis_dir, Settings.decomp_dir
-        )
-        dessem_path = os.path.join(
-            path, Settings.synthesis_dir, Settings.dessem_dir
-        )
+        newave_path = os.path.join(path, Settings.synthesis_dir, Settings.newave_dir)
+        decomp_path = os.path.join(path, Settings.synthesis_dir, Settings.decomp_dir)
+        dessem_path = os.path.join(path, Settings.synthesis_dir, Settings.dessem_dir)
         newave_system_entities = {
             e: API.fetch_result(newave_path, e, {"preprocess": "FULL"})
             for e in system_metadata["chave"].tolist()
@@ -110,17 +98,18 @@ def update_system_entities_encadeador(path, options):
             e: API.fetch_result(dessem_path, e, {"preprocess": "FULL"})
             for e in system_metadata["chave"].tolist()
         }
-        system_entities = {
-            e: pd.concat(
-                [
-                    newave_system_entities[e],
-                    decomp_system_entities[e],
-                    dessem_system_entities[e],
-                ],
-                ignore_index=True,
-            )
-            for e in system_metadata["chave"].tolist()
-        }
+        system_entities = {}
+        for e in system_metadata["chave"].tolist():
+            dfs = [
+                newave_system_entities[e],
+                decomp_system_entities[e],
+                dessem_system_entities[e],
+            ]
+            if any([df is not None for df in dfs]):
+                system_entities[e] = pd.concat(
+                    dfs,
+                    ignore_index=True,
+                )
     else:
         system_entities = {}
     return {
@@ -142,9 +131,7 @@ def __merge_casos_encadeador_options(
             options[k] = pd.concat(
                 [
                     pd.read_json(StringIO(casos_options[k]), orient="split"),
-                    pd.read_json(
-                        StringIO(encadeador_options[k]), orient="split"
-                    ),
+                    pd.read_json(StringIO(encadeador_options[k]), orient="split"),
                 ],
                 ignore_index=True,
             ).to_json(orient="split")
@@ -180,9 +167,7 @@ def edit_current_study_data(
                 return current_studies
             elif len(new_study_id) == 0:
                 return current_studies
-            current_data = pd.read_json(
-                StringIO(current_studies), orient="split"
-            )
+            current_data = pd.read_json(StringIO(current_studies), orient="split")
             if new_study_id in current_data["path"].tolist():
                 return current_studies
             else:
@@ -202,16 +187,12 @@ def edit_current_study_data(
                     f"Adicionando estudo - CASOS ({new_study_id}, {label}, {color})"
                 )
                 casos_options = update_variables_options_casos([new_study_id])
-                encadeador_options = update_variables_options_encadeador([
-                    new_study_id
-                ])
+                encadeador_options = update_variables_options_encadeador([new_study_id])
                 options = __merge_casos_encadeador_options(
                     casos_options, encadeador_options
                 )
                 Log.log().info("Adicionando estudo - CASOS - Opcoes")
-                casos_system = update_system_entities_casos(
-                    new_study_id, casos_options
-                )
+                casos_system = update_system_entities_casos(new_study_id, casos_options)
                 encadeador_system = update_system_entities_encadeador(
                     new_study_id, encadeador_options
                 )
@@ -233,9 +214,7 @@ def edit_current_study_data(
                     }
                 )
                 dfs_to_concat = (
-                    [current_data, new_data]
-                    if not current_data.empty
-                    else [new_data]
+                    [current_data, new_data] if not current_data.empty else [new_data]
                 )
                 return pd.concat(dfs_to_concat, ignore_index=True).to_json(
                     orient="split"
@@ -244,59 +223,47 @@ def edit_current_study_data(
             return current_studies
     elif ctx.triggered_id == edit_trigger:
         if edit_study_button_clicks:
-            current_data = pd.read_json(
-                StringIO(current_studies), orient="split"
-            )
+            current_data = pd.read_json(StringIO(current_studies), orient="split")
             old_study_path = current_data.loc[
                 current_data["table_id"] == edit_study_id, "path"
             ].iloc[0]
-            current_data.loc[
-                current_data["table_id"] == edit_study_id, "path"
-            ] = edit_study_path
-            current_data.loc[
-                current_data["table_id"] == edit_study_id, "name"
-            ] = edit_study_name
-            current_data.loc[
-                current_data["table_id"] == edit_study_id, "color"
-            ] = edit_study_color
+            current_data.loc[current_data["table_id"] == edit_study_id, "path"] = (
+                edit_study_path
+            )
+            current_data.loc[current_data["table_id"] == edit_study_id, "name"] = (
+                edit_study_name
+            )
+            current_data.loc[current_data["table_id"] == edit_study_id, "color"] = (
+                edit_study_color
+            )
             # Retorno rapido se mudou só "estética"
             if edit_study_path == old_study_path:
                 return current_data.to_json(orient="split")
 
             casos_options = update_variables_options_casos([edit_study_path])
-            encadeador_options = update_variables_options_encadeador([
-                edit_study_path
-            ])
+            encadeador_options = update_variables_options_encadeador([edit_study_path])
             options = __merge_casos_encadeador_options(
                 casos_options, encadeador_options
             )
-            casos_system = update_system_entities_casos(
-                edit_study_path, casos_options
-            )
+            casos_system = update_system_entities_casos(edit_study_path, casos_options)
             encadeador_system = update_system_entities_encadeador(
                 edit_study_path, encadeador_options
             )
-            system = __merge_casos_encadeador_options(
-                casos_system, encadeador_system
+            system = __merge_casos_encadeador_options(casos_system, encadeador_system)
+            current_data.loc[current_data["table_id"] == edit_study_id, "options"] = [
+                options
+            ]
+            current_data.loc[current_data["table_id"] == edit_study_id, "system"] = [
+                system
+            ]
+            current_data.loc[current_data["table_id"] == edit_study_id, "program"] = (
+                _get_programa(edit_study_path)
             )
-            current_data.loc[
-                current_data["table_id"] == edit_study_id, "options"
-            ] = [options]
-            current_data.loc[
-                current_data["table_id"] == edit_study_id, "system"
-            ] = [system]
-            current_data.loc[
-                current_data["table_id"] == edit_study_id, "program"
-            ] = _get_programa(edit_study_path)
             return current_data.to_json(orient="split")
     elif ctx.triggered_id == remove_trigger:
         if remove_study_button_clicks:
-            current_data = pd.read_json(
-                StringIO(current_studies), orient="split"
-            )
-            new_data = current_data.loc[
-                ~current_data["table_id"].isin(selected_study)
-            ]
+            current_data = pd.read_json(StringIO(current_studies), orient="split")
+            new_data = current_data.loc[~current_data["table_id"].isin(selected_study)]
             return new_data.to_json(orient="split")
         else:
             return current_studies
@@ -312,12 +279,8 @@ def edit_current_study_data(
             )
             screen_df["system"] = screen_df.apply(
                 lambda linha: __merge_casos_encadeador_options(
-                    update_system_entities_casos(
-                        linha["path"], linha["options"]
-                    ),
-                    update_system_entities_encadeador(
-                        linha["path"], linha["options"]
-                    ),
+                    update_system_entities_casos(linha["path"], linha["options"]),
+                    update_system_entities_encadeador(linha["path"], linha["options"]),
                 ),
                 axis=1,
             )
@@ -366,9 +329,7 @@ def get_statistics_scenarios(all_scenarios: List[str]) -> List[str]:
 
 def get_non_statistics_scenarios(all_scenarios: List[str]) -> List[str]:
     scenarios = [
-        s
-        for s in all_scenarios
-        if s not in ["min", "max", "median", "mean", "std"]
+        s for s in all_scenarios if s not in ["min", "max", "median", "mean", "std"]
     ]
     scenarios = [s for s in scenarios if "p" not in s]
     return scenarios
@@ -433,9 +394,9 @@ def update_status_data_encadeador(interval, studies):
             total_seconds = study_cases["tempo_execucao"].sum()
             times.append(strfdelta(timedelta(seconds=total_seconds)))
             n_total = study_cases.shape[0]
-            n_concluidos = study_cases.loc[
-                study_cases["estado"] == "CONCLUIDO"
-            ].shape[0]
+            n_concluidos = study_cases.loc[study_cases["estado"] == "CONCLUIDO"].shape[
+                0
+            ]
             progress.append(int(n_concluidos * 100 / n_total))
             current_data = study_cases.loc[study_cases["estado"] != "CONCLUIDO"]
             if current_data.shape[0] == 0:
@@ -447,9 +408,7 @@ def update_status_data_encadeador(interval, studies):
                 month = current_data["mes"].tolist()[0]
                 rv = current_data["revisao"].tolist()[0]
                 stat = current_data["estado"].tolist()[0]
-                current_name = (
-                    f"{program} - {year}_{str(month).zfill(2)}_rv{rv}"
-                )
+                current_name = f"{program} - {year}_{str(month).zfill(2)}_rv{rv}"
                 current_status = stat
             current.append(current_name)
             status.append(current_status)
@@ -500,28 +459,19 @@ def update_operation_data_encadeador(
     complete_df = pd.DataFrame()
     Log.log().info(f"Obtendo dados - ENCADEADOR ({variable})")
     newave_df = API.fetch_result_list(
-        [
-            os.path.join(p, Settings.synthesis_dir, Settings.newave_dir)
-            for p in paths
-        ],
+        [os.path.join(p, Settings.synthesis_dir, Settings.newave_dir) for p in paths],
         labels,
         data_filename,
         data_filters_nw_dc,
     )
     decomp_df = API.fetch_result_list(
-        [
-            os.path.join(p, Settings.synthesis_dir, Settings.decomp_dir)
-            for p in paths
-        ],
+        [os.path.join(p, Settings.synthesis_dir, Settings.decomp_dir) for p in paths],
         labels,
         data_filename,
         data_filters_nw_dc,
     )
     dessem_df = API.fetch_result_list(
-        [
-            os.path.join(p, Settings.synthesis_dir, Settings.dessem_dir)
-            for p in paths
-        ],
+        [os.path.join(p, Settings.synthesis_dir, Settings.dessem_dir) for p in paths],
         labels,
         data_filename,
         data_filters_ds,
@@ -809,9 +759,7 @@ def update_scenario_data_casos(
     if not variable:
         return None
     needs_iteration = (
-        filters["etapa"] in ["Forward", "Backward"]
-        if "etapa" in filters
-        else False
+        filters["etapa"] in ["Forward", "Backward"] if "etapa" in filters else False
     )
     req_filters = validation.validate_required_filters_scenarios(
         variable, filters, needs_iteration=needs_iteration
@@ -1037,9 +985,7 @@ def update_distribution_data_ppq(studies, filters: dict, variable: str):
         return None
     if not variable:
         return None
-    req_filters = validation.validate_required_filters(
-        variable, filters, ppq=True
-    )
+    req_filters = validation.validate_required_filters(variable, filters, ppq=True)
     if req_filters is None:
         return None
     studies_df = pd.read_json(StringIO(studies), orient="split")
@@ -1060,9 +1006,7 @@ def update_distribution_data_ppq(studies, filters: dict, variable: str):
         return df.to_json(orient="split")
 
 
-def update_operation_data_ppq(
-    studies, filters: dict, variable: str, study: str
-):
+def update_operation_data_ppq(studies, filters: dict, variable: str, study: str):
     if not studies:
         return None
     if not variable:
